@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mes Photos</title>
+</head>
+<body>
+    <h1>Mes Photos</h1>
+    <ul>
+        {% for photo in photos %}
+            <li><a href="/photos/{{ photo.id }}">{{ photo.sujet }} ({{ photo.date }})</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

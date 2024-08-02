@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Résultats de recherche</title>
+</head>
+<body>
+    <h1>Résultats de recherche</h1>
+    <ul>
+        {% for photo in photos %}
+            <li><a href="/photos/{{ photo.id }}">{{ photo.sujet }} ({{ photo.date }})</a></li>
+        {% endfor %}
+    </ul>
+    <p><a href="/">Retour à la page d'accueil</a></p>
+</body>
+</html>
