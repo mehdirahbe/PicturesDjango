@@ -1,7 +1,8 @@
+
+/.venv/
 #static files collected-->ignore as they will be recreated by collectstatic
 # exclude everything
 /PicturesDjango/staticfiles/
 
 # exception to the rule for the readme
 !/PicturesDjango/staticfiles/readme.txt
-
