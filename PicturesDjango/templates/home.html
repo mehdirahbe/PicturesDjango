@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Mes Photos</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block content %}
+<div class="form-group">
     <h1>Mes Photos</h1>
         {% regroup photos by sujet as photo_groups %}
         <ul>
@@ -17,5 +17,5 @@
             </li>
           {% endfor %}
         </ul>
-</body>
-</html>
+  </div>
+{% endblock %}

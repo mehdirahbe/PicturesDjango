@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Résultats de recherche</title>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block content %}
+<div class="form-group">
     <h1>Résultats de recherche</h1>
     <ul>
         {% for photo in photos %}
@@ -11,5 +11,5 @@
         {% endfor %}
     </ul>
     <p><a href="/">Retour à la page d'accueil</a></p>
-</body>
-</html>
+  </div>
+{% endblock %}

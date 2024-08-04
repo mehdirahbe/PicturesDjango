@@ -11,9 +11,9 @@ from .models import PhotoModel
 
 
 def home(request):
-    return render(request, 'test.html')
-    '''photos = PhotoModel.objects.all()
-    return render(request, 'home.html', {'photos': photos})'''
+    #return render(request, 'test.html')
+    photos = PhotoModel.objects.all()
+    return render(request, 'home.html', {'photos': photos})
 
 
 def search(request):
