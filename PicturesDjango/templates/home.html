@@ -5,10 +5,17 @@
 </head>
 <body>
     <h1>Mes Photos</h1>
-    <ul>
-        {% for photo in photos %}
-            <li><a href="/photos/{{ photo.id }}">{{ photo.sujet }} ({{ photo.date }})</a></li>
-        {% endfor %}
-    </ul>
+        {% regroup photos by sujet as photo_groups %}
+        <ul>
+          {% for group in photo_groups %}
+            <li>{{ group.grouper }}
+              <ul>
+                {% for photo in group.list %}
+                  <li>{{ photo.sujet }}</li>
+                {% endfor %}
+              </ul>
+            </li>
+          {% endfor %}
+        </ul>
 </body>
 </html>

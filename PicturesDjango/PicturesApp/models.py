@@ -10,7 +10,7 @@ python manage.py migrate
 
 
 # Create your models here.
-class Photo(models.Model):
+class PhotoModel(models.Model):
     sujet = models.CharField(max_length=100)
     date = models.CharField(max_length=100)
     boite = models.CharField(max_length=10)

@@ -1,0 +1,63 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>{% block title %}My pictures{% endblock %}</title>
+    <meta name="author" content="Mehdi Rahman">
+    <meta name="date" content="2024-08-01T23:23:16+0200">
+    <meta name="keywords" content="My pictures">
+    <meta name="description" content="My pictures is a free web site Python/django libre to display a hierarchical view of your pictures ">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8">
+    <meta charset="UTF-8">
+    <!--use bootstrap for nicer look. Good idea from David.
+    See for details: https://getbootstrap.com/docs/4.5/getting-started/introduction/
+    Using static local version works in 5 ms instead of up to 900 on stackpath.bootstrapcdn.com
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+    To save bandwith, https://purifycss.online/# was used to keep only what is usefull
+    thus save 81 % of size without side effects from what I see
+    -->
+    <link rel="stylesheet" href="{% static "bootstrap.min.css" %}"  crossorigin="anonymous">
+    <style>
+        body {
+            background: #f5f8ff
+        }
+        {% block cssstyle %}
+        {% endblock %}
+
+    </style>
+</head>
+
+<body>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    <!--See above
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+
+    I discover that using async is a bad idea for jquery and dependent scripts
+    as load order is important (tab and combo did not work  to workanymore)
+    defer must also be removed to have combo
+    -->
+<script src="{% static "jquery-3.5.1.slim.min.js" %}"  crossorigin="anonymous"></script>
+<script src="{% static "popper.min.js" %}"  crossorigin="anonymous"></script>
+<script src="{% static "bootstrap.min.js" %}"  crossorigin="anonymous"></script>
+<!--this comes from https://web.dev/codelab-use-lazysizes-to-lazyload-images/,
+proposed by chrome when doing tests on the page
+Original is https://raw.githubusercontent.com/aFarkas/lazysizes/gh-pages/lazysizes.min.js
+-->
+  <script src="{% static "lazysizes.min.js" %}" async defer></script>
+
+
+        {% block javascript %}
+        {% endblock %}
+</body>
+
+</html>
