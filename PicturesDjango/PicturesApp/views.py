@@ -23,9 +23,10 @@ def search(request):
     return render(request, 'search_results.html', {'photos': photos})
 
 
+'''Return an image based on its primary key and the desired size'''
 def photo_Jpeg(request, photo_id, size):
     try:
-        photo = PhotoModel.objects.get(pkey=photo_id)
+        photo = PhotoModel.objects.get(pkey=photo_id)#1 record
         #generate path
         Jpegpath = os.path.join('/home/mehdi/Images', photo.premier_niveau)
         Jpegpath = os.path.join(Jpegpath, photo.second_niveau)
@@ -38,9 +39,20 @@ def photo_Jpeg(request, photo_id, size):
     except:
         raise Http404("Image not found")
 
+'''Return a page with an image based on its primary key. Use big size
+Display location/comments related to the image'''
 def photoDetail(request, photo_id):
     try:
-        photo = PhotoModel.objects.get(pkey=photo_id)
+        photo = PhotoModel.objects.get(pkey=photo_id)#1 record
         return render(request, 'photo_detail.html', {'photoRec': photo})
     except:
         raise Http404("Record not found")
+
+'''Displays a contact sheet with all pictures related to a subject.'''
+def contactsSheet(request, desiredsubject):
+    try:
+        print("contactsSheet: "+desiredsubject)
+        allphotos = PhotoModel.objects.filter(sujet=desiredsubject) #Many records
+        return render(request, 'contactsSheet.html', {'photoRecs': allphotos})
+    except:
+        raise Http404("Subject not found")

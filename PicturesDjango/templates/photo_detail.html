@@ -10,11 +10,11 @@
       <h1>{{ photoRec.sujet }}</h1>
     </div>
     <div class="col-md-6">
-      <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photo.sujet_dias }}" class="img-fluid" style="max-width: 100%; height: auto;">
+      <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid" style="max-width: 100%; height: auto;">
     </div>
     <div class="col-md-6">
       <p><strong>{{ photoRec.date }}</strong></p>
-      <p>{{ photoRec.sujet_dias }}</p>
+      <p>{{ photoRec.sujet_dias|capfirst }}</p>
       <p>{{ photoRec.commentaire }}</p>
       <ul>
         {% if photoRec.boite %}

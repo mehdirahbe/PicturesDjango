@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h2>{{ photoRecs.0.sujet }}</h2>
+      <p><strong>{{ photoRecs.0.date }}</strong></p>
+    </div>
+  </div>
+  <div class="row">
+    {% for photo in photoRecs %}
+      <div class="col-md-4 mb-2">
+        <a href="{% url 'photoDetail' photo.pkey %}">
+          <img src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
+               alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid" data-toggle="tooltip" data-placement="top" title="{{ photo.sujet_dias|capfirst }}">
+        </a>
+        <p>{{ photo.sujet_dias|capfirst|truncatechars:20 }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+  .col-md-4 {
+    margin-right: 10px;
+  }
+  .col-md-4:last-child {
+    margin-right: 0;
+  }
+</style>
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+  $(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+{% endblock %}
