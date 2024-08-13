@@ -48,11 +48,10 @@ def photoDetail(request, photo_id):
     except:
         raise Http404("Record not found")
 
-'''Displays a contact sheet with all pictures related to a subject.'''
-def contactsSheet(request, desiredsubject):
+'''Displays a contact sheet with all pictures related to a subject, via its MD5.'''
+def contactsSheet(request, desiredsubjectMD5):
     try:
-        print("contactsSheet: "+desiredsubject)
-        allphotos = PhotoModel.objects.filter(sujet=desiredsubject) #Many records
+        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5) #Many records
         return render(request, 'contactsSheet.html', {'photoRecs': allphotos})
     except:
         raise Http404("Subject not found")

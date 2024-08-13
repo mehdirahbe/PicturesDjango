@@ -1,4 +1,5 @@
 from django.db import models
+import hashlib
 
 '''When models are changed,
 Create migrations: Run the following command to create database migrations:
@@ -38,10 +39,18 @@ class PhotoModel(models.Model):
     nom_fichier_jpeg = models.CharField(max_length=100, blank=True, null=True)
     #primary key in the table
     pkey = models.AutoField(primary_key=True, null=False, db_index=True)
+    #md5 hash of the subject, which can easily be passed in an URL
+    checksum = models.CharField(max_length=32, db_index=True)
+
+    #save record, overloaded to compute MD5 hash of the subject
+    def save(self, *args, **kwargs):
+        self.checksum = hashlib.md5(self.sujet.encode(),usedforsecurity=False).hexdigest()
+        super().save(*args, **kwargs)
 
     class Meta:
         indexes = [
             models.Index(fields=['premier_niveau', 'second_niveau', 'troisieme_niveau']),
         ]
+
     def __str__(self):
         return f"{self.sujet} ({self.date})"
