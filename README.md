@@ -2,19 +2,15 @@
 
 
 How to:
-1) To add a new link, you have to adapt urls.py, views.py (to serve it) and carstatus.html (to display the link). See for example sentry or door lock.
-
-2) If you want to display an additional information on the car, you probably only have to adapt carstatus.html, except if it is a computed value (such as battery degradattion) where you will also have to adapt views.py to compute the value and put it in the context passed to rendering.
-
-3) Change look: adapt CSS in base.html
+Change look: adapt CSS in base.html
 
 For developpers, how to run site locally:
 1) Install python, django and mandatory modules (see requirements.txt) 
-2) Run python3 manage.py migrate (configure postgress db first, see settings.py)
-3) Then python3 manage.py createsuperuser (optional)
-4) Then python3 manage.py collectstatic
-5) Check that all is fine: python3 manage.py test
-6) Run the site with: python3 manage.py runserver
+2) Run python manage.py migrate (configure postgress db first, see settings.py)
+3) Then python manage.py createsuperuser (optional)
+4) Then python manage.py collectstatic
+5) Check that all is fine: python manage.py test
+6) Run the site with: python manage.py runserver
 
 For venv,
 python3 -m venv .venv
@@ -45,4 +41,4 @@ Source will be in subdir. From there, crete the app:
 python manage.py startapp PicturesApp
 
 To run it, it is:
-python manage.py
+python manage.py runserver

@@ -3,9 +3,41 @@
 
 
 {% block content %}
-<div class="form-group">
-    <h1>{{ photo.sujet }} ({{ photo.date }})</h1>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h1>{{ photoRec.sujet }}</h1>
+    </div>
+    <div class="col-md-6">
+      <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photo.sujet_dias }}" class="img-fluid" style="max-width: 100%; height: auto;">
+    </div>
+    <div class="col-md-6">
+      <p><strong>{{ photoRec.date }}</strong></p>
+      <p>{{ photoRec.sujet_dias }}</p>
+      <p>{{ photoRec.commentaire }}</p>
+      <ul>
+        {% if photoRec.boite %}
+          <li>Boîte: {{ photoRec.boite }}</li>
+        {% endif %}
+        {% if photoRec.rangee %}
+          <li>Range: {{ photoRec.rangee }}</li>
+        {% endif %}
+        {% if photoRec.numero %}
+          <li>Numéro: {{ photoRec.numero }}</li>
+        {% endif %}
+        <li>Niveau 1: {{ photoRec.premier_niveau }}</li>
+        <li>Niveau 2: {{ photoRec.second_niveau }}</li>
+        {% if photoRec.troisieme_niveau %}
+          <li>Niveau 3: {{ photoRec.troisieme_niveau }}</li>
+        {% endif %}
+        {% if photoRec.nom_fichier_jpeg %}
+          <li>Nom du fichier JPEG: {{ photoRec.nom_fichier_jpeg }}</li>
+        {% endif %}
+      </ul>    </div>
   </div>
+</div>
+
 {% endblock %}
 
 

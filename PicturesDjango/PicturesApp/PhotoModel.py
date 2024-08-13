@@ -11,10 +11,10 @@ python manage.py migrate
 
 # Create your models here.
 class PhotoModel(models.Model):
-    sujet = models.CharField(max_length=100)
+    sujet = models.CharField(max_length=100, db_index=True)
     date = models.CharField(max_length=100)
     #for slides phycally in boxes
-    boite = models.CharField(max_length=10, blank=True,null=True)
+    boite = models.CharField(max_length=10, blank=True, null=True, db_index=True)
     rangee = models.IntegerField(null=True)
     numero = models.IntegerField(null=True)
     # specific comment about the picture
@@ -28,14 +28,20 @@ class PhotoModel(models.Model):
     #generic comment about the place
     commentaire = models.TextField()
     #true is from a digital camera
-    camera_digitale = models.BooleanField()
+    camera_digitale = models.BooleanField(db_index=True)
     #directory where pictures are stores, first level
-    premier_niveau = models.CharField(max_length=100)
+    premier_niveau = models.CharField(max_length=100, db_index=True)
     # directory where pictures are stores, second level
     second_niveau = models.CharField(max_length=100)
     # directory where pictures are stores, third level (may be unused)
-    troisieme_niveau = models.CharField(max_length=100, blank=True,null=True)
+    troisieme_niveau = models.CharField(max_length=100, blank=True, null=True)
     nom_fichier_jpeg = models.CharField(max_length=100, blank=True, null=True)
+    #primary key in the table
+    pkey = models.AutoField(primary_key=True, null=False, db_index=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['premier_niveau', 'second_niveau', 'troisieme_niveau']),
+        ]
     def __str__(self):
         return f"{self.sujet} ({self.date})"

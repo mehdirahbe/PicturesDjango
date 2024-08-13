@@ -78,7 +78,8 @@ class Command(BaseCommand):
     help = (
         'Convert my very legacy format from the nineties where db was composed of nul terminated C strings, '
         'in western european.'
-        'Need the db file, ie  /home/mehdi/Images/dbase/SQLBASE/Dias.bdd')
+        'Need the db file, ie  /home/mehdi/Images/dbase/SQLBASE/Dias.bdd'
+        'So syntax is python manage.py FillFromLegacyCppDb --DiasbddPath /home/mehdi/Images/dbase/SQLBASE/Dias.bdd')
 
 
     def add_arguments(self, parser):
