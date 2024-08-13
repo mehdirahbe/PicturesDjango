@@ -7,7 +7,7 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render
 from django.template import loader
 from django.shortcuts import render
-from .models import PhotoModel
+from .PhotoModel import PhotoModel
 
 
 def home(request):
