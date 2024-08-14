@@ -14,8 +14,11 @@ from django.db.models import Q
 from django.db.models import Count
 
 '''Home page, display first level'''
+
+
 def home(request):
-    photo_niveaux = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).values_list('premier_niveau', flat=True).annotate(count=Count('pkey')).order_by(
+    photo_niveaux = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).values_list(
+        'premier_niveau', flat=True).annotate(count=Count('pkey')).order_by(
         'premier_niveau')
     paginator = Paginator(photo_niveaux, 50)  # 50 éléments par page
 
@@ -26,14 +29,32 @@ def home(request):
         'page_obj': page_obj
     }
     return render(request, 'home.html', context)
-    #return render(request, 'home.html', {'levels': photo_niveaux})
 
-'''Display second level'''
-def DisplaySecondLevel(request,firstLevel):
-    allphotos = PhotoModel.objects.filter(premier_niveau=firstLevel)  # Many records
-    photo_niveaux = allphotos.values_list('second_niveau', flat=True).annotate(count=Count('pkey')).order_by(
-        'second_niveau')
-    return render(request, 'secondlevel.html', {'levels': photo_niveaux})
+
+'''Display second level (and third if there is one). Links go to the contact sheet to display the related pictures'''
+def DisplaySecondLevel(request, firstLevel):
+    # Filtrer les enregistrements basés sur le premier niveau
+    allphotos = PhotoModel.objects.filter(premier_niveau=firstLevel).filter(
+        Q(second_niveau__isnull=False) & ~Q(second_niveau=''))
+
+    # Récupérer les valeurs distinctes du second niveau avec le checksum
+    photo_niveaux = (
+        allphotos.values_list('second_niveau', 'troisieme_niveau', 'checksum','sujet') #order is important, referenced in the html as .0 to .3
+        .distinct()
+        .annotate(count=Count('pkey'))
+        .order_by('sujet')
+    )
+
+    # Pagination
+    paginator = Paginator(photo_niveaux, 50)  # 50 éléments par page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj
+    }
+    return render(request, 'secondlevel.html', context)
+
 
 def search(request):
     query = request.GET.get('q')
@@ -42,9 +63,11 @@ def search(request):
 
 
 '''Return an image based on its primary key and the desired size'''
+
+
 def photo_Jpeg(request, photo_id, size):
     try:
-        photo = PhotoModel.objects.get(pkey=photo_id)#1 record
+        photo = PhotoModel.objects.get(pkey=photo_id)  #1 record
         #generate path
         Jpegpath = os.path.join('/home/mehdi/Images', photo.premier_niveau)
         Jpegpath = os.path.join(Jpegpath, photo.second_niveau)
@@ -57,19 +80,25 @@ def photo_Jpeg(request, photo_id, size):
     except:
         raise Http404("Image not found")
 
+
 '''Return a page with an image based on its primary key. Use big size
 Display location/comments related to the image'''
+
+
 def photoDetail(request, photo_id):
     try:
-        photo = PhotoModel.objects.get(pkey=photo_id)#1 record
+        photo = PhotoModel.objects.get(pkey=photo_id)  #1 record
         return render(request, 'photo_detail.html', {'photoRec': photo})
     except:
         raise Http404("Record not found")
 
+
 '''Displays a contact sheet with all pictures related to a subject, via its MD5.'''
+
+
 def contactsSheet(request, desiredsubjectMD5):
     try:
-        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5) #Many records
+        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)  #Many records
         return render(request, 'contactsSheet.html', {'photoRecs': allphotos})
     except:
         raise Http404("Subject not found")
