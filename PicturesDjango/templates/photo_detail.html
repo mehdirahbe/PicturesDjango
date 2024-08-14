@@ -3,16 +3,21 @@
 
 
 {% block content %}
+{% load custom_filters %}
 
 <div class="container">
   <div class="row">
-    <div class="col-md-12">
-      <h1>{{ photoRec.sujet }}</h1>
+    <div class="col-md-auto">
+      <h1>{{ photoRec.sujet|proper_case }}</h1>
     </div>
-    <div class="col-md-6">
+    </div>
+  <div class="row">
+    <div class="col-md-auto">
       <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid" style="max-width: 100%; height: auto;">
     </div>
-    <div class="col-md-6">
+    </div>
+    <div class="row">
+    <div class="col-md-auto">
       <p><strong>{{ photoRec.date }}</strong></p>
       <p>{{ photoRec.sujet_dias|capfirst }}</p>
       <p>{{ photoRec.commentaire }}</p>

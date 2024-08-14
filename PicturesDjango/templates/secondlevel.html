@@ -13,9 +13,9 @@
       <a href="{% url 'ContactsSheet' desiredsubjectMD5=level.2 %}"
          class="list-group-item list-group-item-action list-group-item-dark">
         {% if level.1 %}
-        {{ level.0|capfirst|replace_underscore }} {{ level.3|capfirst }}
+        {{ level.0|capfirst|replace_underscore }} {{ level.3|proper_case }}
     {% else %}
-        {{ level.3|capfirst }}
+        {{ level.3|proper_case }}
     {% endif %}
       </a>
     {% endfor %}

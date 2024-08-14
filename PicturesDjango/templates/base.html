@@ -34,7 +34,7 @@
         }
 
         .navbar, .card {
-          background-color: #3a3f44;
+          background-color: #343a40;
           color: #ffffff;
         }
 
@@ -98,6 +98,11 @@
 </head>
 
 <body>
+    <!-- Ajout du lien vers la racine -->
+   <nav class="navbar navbar-expand-lg navbar-dark">
+       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <!-- Tu peux ajouter d'autres éléments de navigation ici -->
+   </nav>
     <main>
         {% block content %}
         {% endblock %}
