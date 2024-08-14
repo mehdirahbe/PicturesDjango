@@ -101,6 +101,7 @@
     <!-- Ajout du lien vers la racine -->
    <nav class="navbar navbar-expand-lg navbar-dark">
        <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
        <!-- Tu peux ajouter d'autres éléments de navigation ici -->
    </nav>
     <main>
@@ -122,6 +123,11 @@ Original is https://raw.githubusercontent.com/aFarkas/lazysizes/gh-pages/lazysiz
 -->
   <script src="{% static "lazysizes.min.js" %}" async defer></script>
 
+    <script>
+function goBack() {
+    window.history.back();
+}
+</script>
 
         {% block javascript %}
         {% endblock %}
