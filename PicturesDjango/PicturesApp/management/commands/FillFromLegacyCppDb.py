@@ -3,15 +3,12 @@ import os
 from django.core.management.base import BaseCommand
 from PicturesApp.PhotoModel import PhotoModel
 
-'''Import old db
-Nightmarres found:
-i) in some cases, there is a jpeg but file name is not set, it must be completed in an incremental way when agrandi is true,
-starting at 001.jpg, with this formatting nom_fichier_jpeg = f"{the_number:03d}.jpg"
-2) in some cases,  directories are not given. What we have is a batch named preparehtml.bat which internally reference the subject.
-So by having batch location for a given subject, we can find the directories.
-3) agrandi can very well means paper version, but not necessarily a jpeg version. So if camera_digitale is not set, the batch
-presence is requiered to be sure that pictures does indeed really exists.
-'''
+'''Import old db Nightmares found: i) in some cases, there is a jpeg but file name is not set, it must be completed 
+in an incremental way when agrandi is true, starting at 001.jpg, with this formatting nom_fichier_jpeg = f"{
+the_number:03d}.jpg" 2) in some cases,  directories are not given. What we have is a batch named preparehtml.bat 
+which internally reference the subject. So by having batch location for a given subject, we can find the directories. 
+3) agrandi can very well means paper version, but not necessarily a jpeg version. So if camera_digitale is not set, 
+the batch presence is required to be sure that pictures does indeed really exists.'''
 
 
 def scan_for_batches(root_dir):
@@ -85,6 +82,10 @@ def read_binaire_file(filename):
             second_niveau = read_null_terminated_string(f)
             troisieme_niveau = read_null_terminated_string(f)
             nom_fichier_jpeg = read_null_terminated_string(f)
+
+            #typo correction
+            if (premier_niveau=='colleges_amis'):
+                premier_niveau='collegues_amis'
 
             #fill missing directories and jpeg name, see comment at top of this file
             if not nom_fichier_jpeg and agrandi:
