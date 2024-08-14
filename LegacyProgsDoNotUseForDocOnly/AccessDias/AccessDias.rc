@@ -1,0 +1,385 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// French (Belgium) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_FRB)
+#ifdef _WIN32
+LANGUAGE LANG_FRENCH, SUBLANG_FRENCH_BELGIAN
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#include ""res\\AccessDias.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "\r\n"
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "#include ""l.fra\\afxres.rc""  // Standard components\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\AccessDias.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ACCESSDIAS_DIALOG DIALOG  0, 0, 290, 257
+STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Dias"
+MENU IDR_MENUDIAS
+FONT 10, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Dias",IDC_STATIC,8,4,277,220
+    LTEXT           "Sujet",IDC_STATIC,12,16,48,8
+    EDITTEXT        IDC_SUJET,64,12,216,12,ES_AUTOHSCROLL
+    LTEXT           "Date",IDC_STATIC,12,32,48,8
+    EDITTEXT        IDC_DATE,64,28,216,12,ES_AUTOHSCROLL
+    LTEXT           "Boîte",IDC_STATIC,12,48,48,8
+    EDITTEXT        IDC_BOITE,64,44,32,12,ES_AUTOHSCROLL
+    LTEXT           "Rangée",IDC_STATIC,100,48,48,8
+    EDITTEXT        IDC_RANGEE,152,44,32,12,ES_AUTOHSCROLL
+    LTEXT           "Numéro",IDC_STATIC,196,48,39,8
+    EDITTEXT        IDC_NUMERO,240,44,40,12,ES_AUTOHSCROLL
+    CONTROL         "Caméra digitale",IDC_CAMERADIGITALE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,65,60,10
+    LTEXT           "Prem. niveau",IDC_STATIC,75,65,40,8
+    EDITTEXT        IDC_PREMIERNIVEAU,120,60,45,14,ES_AUTOHSCROLL
+    LTEXT           "Sec. niveau",IDC_STATIC,170,65,35,8
+    EDITTEXT        IDC_SECONDNIVEAU,210,60,70,14,ES_AUTOHSCROLL
+    LTEXT           "Trois. niveau",IDC_STATIC,75,85,40,8
+    EDITTEXT        IDC_TROISIEMENIVEAU,120,80,45,14,ES_AUTOHSCROLL
+    LTEXT           "Sujet dias",IDC_STATIC,10,117,48,8
+    EDITTEXT        IDC_SUJETDIAS,62,113,216,28,ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL
+    CONTROL         "Agrandi",IDC_AGRANDI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,143,60,12
+    CONTROL         "Classé",IDC_CLASSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,114,143,60,12
+    CONTROL         "Vérifié",IDC_VERIFIE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,218,143,60,12
+    LTEXT           "Commentaire",IDC_STATIC,10,159,48,8
+    EDITTEXT        IDC_COMMENTAIRE,59,160,216,44,ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL
+    LTEXT           "Fiche:",IDC_STATIC,22,207,28,8
+    LTEXT           "",IDC_NOFICHE,56,207,40,8
+    LTEXT           "Total:",IDC_STATIC,106,207,24,8
+    LTEXT           "",IDC_TOTAL,128,208,40,8
+    PUSHBUTTON      "Recule",ID_DPLACEMENTS_RECULER,20,233,48,16
+    PUSHBUTTON      "Avance",ID_DPLACEMENTS_AVANCER,87,233,48,16
+    PUSHBUTTON      "Début",ID_DPLACEMENTS_DBUT,154,233,48,16
+    PUSHBUTTON      "Fin",ID_DPLACEMENTS_FIN,221,233,48,16
+    EDITTEXT        IDC_NOMFICHIER,210,80,70,14,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Nom fichier",IDC_STATIC,170,80,38,8
+    PUSHBUTTON      "Renommer",ID_RENOMMER_FICHIER,211,97,50,14
+END
+
+IDD_ALLERA DIALOG  0, 0, 186, 45
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Aller à"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,130,6,50,14
+    PUSHBUTTON      "Annuler",IDCANCEL,130,23,50,14
+    GROUPBOX        "Fiche n°:",IDC_STATIC,8,4,108,32
+    EDITTEXT        IDC_NOFICHE,16,16,88,12,ES_AUTOHSCROLL
+END
+
+IDD_RECHERCHE DIALOG  0, 0, 256, 117
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Recherche"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,200,8,50,14
+    PUSHBUTTON      "Annuler",IDCANCEL,200,25,50,14
+    GROUPBOX        "Champ",IDC_STATIC,8,4,180,108
+    COMBOBOX        IDC_LISTECHAMPS1,16,16,164,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Valeur 1:",IDC_STATIC,16,32,32,8
+    EDITTEXT        IDC_VALEUR1,52,32,128,12,ES_UPPERCASE | ES_AUTOHSCROLL
+    COMBOBOX        IDC_LISTECHAMPS2,16,48,164,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Valeur 2:",IDC_STATIC,16,64,32,8
+    EDITTEXT        IDC_VALEUR2,52,64,128,12,ES_UPPERCASE | ES_AUTOHSCROLL
+    COMBOBOX        IDC_LISTECHAMPS3,16,80,164,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Valeur 3:",IDC_STATIC,16,96,32,8
+    EDITTEXT        IDC_VALEUR3,52,96,128,12,ES_UPPERCASE | ES_AUTOHSCROLL
+END
+
+IDD_RAPPORT DIALOG  0, 0, 256, 153
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Rapport"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "Champ",IDC_STATIC,8,4,180,108
+    COMBOBOX        IDC_LISTECHAMPS1,16,16,164,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Valeur 1:",IDC_STATIC,16,32,32,8
+    EDITTEXT        IDC_VALEUR1,52,32,128,12,ES_UPPERCASE | ES_AUTOHSCROLL
+    COMBOBOX        IDC_LISTECHAMPS2,16,48,164,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Valeur 2:",IDC_STATIC,16,64,32,8
+    EDITTEXT        IDC_VALEUR2,52,64,128,12,ES_UPPERCASE | ES_AUTOHSCROLL
+    COMBOBOX        IDC_LISTECHAMPS3,16,80,164,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Valeur 3:",IDC_STATIC,16,96,32,8
+    EDITTEXT        IDC_VALEUR3,52,96,128,12,ES_UPPERCASE | ES_AUTOHSCROLL
+    GROUPBOX        "Présentation",IDC_STATIC,8,120,180,24
+    CONTROL         "Rapport",IDC_RAPPORT,"Button",BS_AUTORADIOBUTTON,16,128,44,12
+    CONTROL         "Etiquettes",IDC_ETIQUETTES,"Button",BS_AUTORADIOBUTTON,78,128,44,12
+    CONTROL         "Compte",IDC_COUNT,"Button",BS_AUTORADIOBUTTON,140,128,44,12
+    DEFPUSHBUTTON   "OK",IDOK,200,8,50,14
+    PUSHBUTTON      "Annuler",IDCANCEL,200,25,50,14
+END
+
+IDD_CRITERETRI DIALOG  0, 0, 186, 41
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Critère de tri"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+    GROUPBOX        "Champs",IDC_STATIC,8,4,116,32
+    COMBOBOX        IDC_CRITERETRI,12,16,108,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_NEW_JPEG_SERIE DIALOG  0, 0, 344, 128
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Importe les images jpeg"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,117,110,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,177,110,50,14
+    LTEXT           "Sujet",IDC_STATIC,5,10,60,10
+    EDITTEXT        IDC_SUJET,70,10,270,15,ES_AUTOHSCROLL
+    LTEXT           "Date",IDC_STATIC,5,30,60,10
+    EDITTEXT        IDC_DATE,70,30,270,15,ES_AUTOHSCROLL
+    LTEXT           "Commentaire",IDC_STATIC,5,50,60,10
+    EDITTEXT        IDC_COMMENTAIRE,70,50,270,55,ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL
+END
+
+IDD_GLG_RENOMMER_IMAGE DIALOG  0, 0, 187, 49
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Renommer image"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,130,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,130,24,50,14
+    EDITTEXT        IDC_EDIT1,7,21,114,14,ES_AUTOHSCROLL
+    LTEXT           "Nouveau nom",IDC_STATIC,7,7,116,8
+END
+
+IDD_DLG_UPDATECOMMENT DIALOGEX 0, 0, 487, 94
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,430,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,430,24,50,14
+    EDITTEXT        IDC_NEWCOMMENT,7,7,414,80,ES_AUTOHSCROLL
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "Application MFC ACCESSDIAS"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "ACCESSDIAS"
+            VALUE "LegalCopyright", "Copyright © 1995"
+            VALUE "OriginalFilename", "ACCESSDIAS.EXE"
+            VALUE "ProductName", "Application ACCESSDIAS"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENUDIAS MENU 
+BEGIN
+    POPUP "&Fichier"
+    BEGIN
+        MENUITEM "&Charger",                    ID_FICHIER_CHARGER
+        MENUITEM "&Sauver",                     ID_FICHIER_SAUVER
+        MENUITEM "Repertoire Dias",             ID_FICHIER_REPERTOIREDIAS
+        MENUITEM SEPARATOR
+        MENUITEM "Importe fichier &texte...",   ID_FICHIER_IMPORTEFICHIERTEXTE
+        MENUITEM "&Fusionner...",               ID_FICHIER_FUSIONNER
+        MENUITEM SEPARATOR
+        MENUITEM "&Quitter",                    ID_FICHIER_QUITTER
+    END
+    POPUP "&Déplacements"
+    BEGIN
+        MENUITEM "&Recule",                     ID_DPLACEMENTS_RECULER
+        MENUITEM "&Avance",                     ID_DPLACEMENTS_AVANCER
+        MENUITEM SEPARATOR
+        MENUITEM "&Début",                      ID_DPLACEMENTS_DBUT
+        MENUITEM "&Fin",                        ID_DPLACEMENTS_FIN
+        MENUITEM SEPARATOR
+        MENUITEM "A&ller à...",                 ID_DPLACEMENTS_ALLER
+    END
+    POPUP "&Manipulation"
+    BEGIN
+        MENUITEM "Insérer",                     ID_MANIPULATION_INSERER
+        MENUITEM "Efface",                      ID_MANIPULATION_EFFACE
+        MENUITEM "Efface les fiches vides",     ID_EFFACE_FICHE_VIDES
+        MENUITEM "Efface en fonction d'un critère...", ID_EFFACE_CRITERE
+        MENUITEM "Recherche",                   ID_MANIPULATION_RECHERCHE
+        MENUITEM "Trier...",                    ID_MANIPULATION_TRIER
+        MENUITEM SEPARATOR
+        MENUITEM "Reporte le contenu",          ID_MANIPULATION_REPORTELECONTENU, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Rapport",                     ID_MANIPULATION_RAPPORT
+        MENUITEM "Met à jour le commentaire",   ID_MANIPULATION_METAJOUR_COMMENTAIRE
+    END
+    POPUP "&Outils HTML"
+    BEGIN
+        MENUITEM "Prépare les fiche à partir des noms de fichiers jpeg", ID_OUTILS_PREPARE_ENTREES_JPEGS
+        MENUITEM "Génère les jpeg réduits",     ID_OUTILS_GENERE_JPEGS
+        MENUITEM "Crée les commentaires HTML",  ID_OUTILS_CREE_COMMENT_HTML
+        MENUITEM SEPARATOR
+        MENUITEM "Re-crée tous les commentaires", ID_OUTILS_RECREE_TOUT_LES_COMMENTAIRES
+        MENUITEM "Complète les entrées",        ID_OUTILS_COMPLETE_ENTREES_JPEGS
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CRITERETRI, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 34
+    END
+
+    IDD_NEW_JPEG_SERIE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 337
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 121
+    END
+
+    IDD_GLG_RENOMMER_IMAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 42
+    END
+
+    IDD_DLG_UPDATECOMMENT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 480
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "MAJ"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "DEF"
+    ID_INDICATOR_OVR        "RFT"
+    ID_INDICATOR_REC        "ENR"
+END
+
+#endif    // French (Belgium) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#include "res\AccessDias.rc2"  // non-Microsoft Visual C++ edited resources
+
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+#include "l.fra\afxres.rc"  // Standard components
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
