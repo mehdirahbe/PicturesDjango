@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block content %}
+                {% for level in levels %}
+                  {{ level }}
+                {% endfor %}
+
+{% endblock %}

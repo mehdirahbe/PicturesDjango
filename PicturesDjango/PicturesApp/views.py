@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render
 
 # Create your views here.
@@ -9,13 +10,30 @@ from django.template import loader
 import os
 from django.shortcuts import render
 from .PhotoModel import PhotoModel
+from django.db.models import Q
+from django.db.models import Count
 
-
+'''Home page, display first level'''
 def home(request):
-    #return render(request, 'test.html')
-    photos = PhotoModel.objects.all()
-    return render(request, 'home.html', {'photos': photos})
+    photo_niveaux = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).values_list('premier_niveau', flat=True).annotate(count=Count('pkey')).order_by(
+        'premier_niveau')
+    paginator = Paginator(photo_niveaux, 50)  # 50 éléments par page
 
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj
+    }
+    return render(request, 'home.html', context)
+    #return render(request, 'home.html', {'levels': photo_niveaux})
+
+'''Display second level'''
+def DisplaySecondLevel(request,firstLevel):
+    allphotos = PhotoModel.objects.filter(premier_niveau=firstLevel)  # Many records
+    photo_niveaux = allphotos.values_list('second_niveau', flat=True).annotate(count=Count('pkey')).order_by(
+        'second_niveau')
+    return render(request, 'secondlevel.html', {'levels': photo_niveaux})
 
 def search(request):
     query = request.GET.get('q')
