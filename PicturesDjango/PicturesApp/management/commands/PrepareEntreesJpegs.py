@@ -15,29 +15,36 @@ def process_images(dias_dir, jpeg_dir,subject, date, commentaire):
     if len(dir_parts) > 3:
         raise ValueError("Le niveau max de sous-répertoires est de trois")
 
-    # Lister les fichiers JPG
+    # Lister et trier les fichiers JPG
+    jpg_files = []
     for root, _, files in os.walk(jpeg_dir):
         for file in files:
             if file.lower().endswith('.jpg'):
-                # Créer un nouveau record
-                photo = PhotoModel(
-                    sujet=subject,
-                    date=date,
-                    boite='',  # À compléter si nécessaire
-                    rangee=None,  # À compléter si nécessaire
-                    numero=None,  # À compléter si nécessaire
-                    sujet_dias=subject,  # ou un commentaire spécifique
-                    agrandi=True,
-                    classe=False,  # À compléter si nécessaire
-                    verifie=False,  # À compléter si nécessaire
-                    commentaire=commentaire,
-                    camera_digitale=True,
-                    premier_niveau=dir_parts[0] if len(dir_parts) > 0 else '',
-                    second_niveau=dir_parts[1] if len(dir_parts) > 1 else '',
-                    troisieme_niveau=dir_parts[2] if len(dir_parts) > 2 else '',
-                    nom_fichier_jpeg=file
-                )
-                photo.save()
+                jpg_files.append(file)
+
+    # Trier les fichiers par nom
+    jpg_files.sort()
+
+    for file in jpg_files:
+        # Créer un nouveau record
+        photo = PhotoModel(
+            sujet=subject,
+            date=date,
+            boite='',  # À compléter si nécessaire
+            rangee=None,  # À compléter si nécessaire
+            numero=None,  # À compléter si nécessaire
+            sujet_dias='',  # ou un commentaire spécifique
+            agrandi=True,
+            classe=False,  # À compléter si nécessaire
+            verifie=False,  # À compléter si nécessaire
+            commentaire=commentaire,
+            camera_digitale=True,
+            premier_niveau=dir_parts[0] if len(dir_parts) > 0 else '',
+            second_niveau=dir_parts[1] if len(dir_parts) > 1 else '',
+            troisieme_niveau=dir_parts[2] if len(dir_parts) > 2 else '',
+            nom_fichier_jpeg=file
+        )
+        photo.save()
 
 class Command(BaseCommand):
     help = (
