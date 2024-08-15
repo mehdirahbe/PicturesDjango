@@ -5,6 +5,12 @@
 {% block content %}
 {% load custom_filters %}
 
+   <nav class="navbar navbar-expand-lg navbar-dark">
+       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
+     <a class="navbar-brand" href="{% url 'photo_gallery' desiredsubjectMD5 %}">Gallerie</a>
+   </nav>
+
 <div class="container">
   <div class="row">
     <div class="col-md-12">

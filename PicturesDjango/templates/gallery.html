@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block content %}
+{% load custom_filters %}
+
+   <nav class="navbar navbar-expand-lg navbar-dark">
+       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
+       <a class="navbar-brand" href="{% url 'ContactsSheet' desiredsubjectMD5 %}">Page contact</a>
+   </nav>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+  </div>
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+      <div class="photo-viewer text-center position-relative">
+        {% if photos.has_previous %}
+          <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.previous_page_number }}" class="prev-btn"><</a>
+        {% endif %}
+        <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid rounded">
+        <div class="col-md-auto">
+          <p class="mt-2 text-white"><strong>{{ photo.date }}</strong></p>
+          <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst }}</p>
+          <p class="mt-2 text-white">{{ photo.commentaire }}</p>
+          </div>
+        <div class="col-md-auto text-start">
+          {% if photo.boite %}
+            <p class="mt-2 text-white">Boîte: {{ photo.boite }}</p>
+          {% endif %}
+          {% if photo.rangee %}
+            <p class="mt-2 text-white">Range: {{ photo.rangee }}</p>
+          {% endif %}
+          {% if photo.numero %}
+            <p class="mt-2 text-white">Numéro: {{ photo.numero }}</p>
+          {% endif %}
+          <p class="mt-2 text-white">Niveau 1: {{ photo.premier_niveau }}</p>
+          <p class="mt-2 text-white">Niveau 2: {{ photo.second_niveau }}</p>
+          {% if photo.troisieme_niveau %}
+            <p class="mt-2 text-white">Niveau 3: {{ photo.troisieme_niveau }}</p>
+          {% endif %}
+          {% if photo.nom_fichier_jpeg %}
+            <p class="mt-2 text-white">Nom du fichier JPEG: {{ photo.nom_fichier_jpeg }}</p>
+          {% endif %}
+          </div>
+
+
+
+        {% if photos.has_next %}
+          <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.next_page_number }}" class="next-btn">></a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.photo-viewer {
+  position: relative;
+  padding: 20px;
+  border-radius: 10px;
+  overflow: hidden; /* Pour s'assurer que les boutons ne dépassent pas du conteneur */
+}
+
+.photo-viewer img {
+  z-index: 2; /* L'image est au-dessus des boutons */
+  position: relative; /* Pour que z-index fonctionne */
+}
+
+.prev-btn, .next-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 24px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  z-index: 1; /* Les boutons sont en dessous de l'image */
+}
+
+.prev-btn {
+  left: -10px; /* Décalage à gauche pour ne pas être sur l'image */
+}
+
+.next-btn {
+  right: -10px; /* Décalage à droite pour ne pas être sur l'image */
+}
+
+.prev-btn:hover, .next-btn:hover {
+  opacity: 1;
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+  $(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+  });
+</script>
+{% endblock %}

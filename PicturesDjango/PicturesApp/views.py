@@ -96,9 +96,32 @@ def photoDetail(request, photo_id):
 '''Displays a contact sheet with all pictures related to a subject, via its MD5.'''
 
 
+'''Display all pictures with the required subject as  a contact sheet'''
 def contactsSheet(request, desiredsubjectMD5):
     try:
         allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)  #Many records
-        return render(request, 'contactsSheet.html', {'photoRecs': allphotos})
+        return render(request, 'contactsSheet.html', {'photoRecs': allphotos,'desiredsubjectMD5':desiredsubjectMD5})
+    except:
+        raise Http404("Subject not found")
+
+'''Display all pictures with the required subject as a gallery'''
+
+def Gallery(request, desiredsubjectMD5):
+    try:
+        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True) #Many records
+        paginator = Paginator(allphotos, 1)  # 1 photo par page pour la navigation
+        page_number = request.GET.get('page')
+        photos_page = paginator.get_page(page_number)
+
+        if photos_page:
+            photo = photos_page[0]  # La photo actuelle
+        else:
+            photo = None  # Si aucune photo n'est trouvée
+
+        return render(request, 'gallery.html', {
+            'photo': photo,
+            'photos': photos_page,
+            'desiredsubjectMD5': desiredsubjectMD5
+        })
     except:
         raise Http404("Subject not found")

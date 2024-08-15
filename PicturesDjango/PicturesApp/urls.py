@@ -8,4 +8,7 @@ urlpatterns = [
     path('photo/<int:photo_id>/<str:size>', views.photo_Jpeg, name='photo_Jpeg'),
     path('photoDetail/<int:photo_id>', views.photoDetail, name='photoDetail'),
     path('ContactsSheet/<str:desiredsubjectMD5>', views.contactsSheet, name='ContactsSheet'),
+    path('Gallery/<str:desiredsubjectMD5>/', views.Gallery, name='photo_gallery'),
+    path('Gallery/<str:desiredsubjectMD5>/page/<int:page>/', views.Gallery, name='photo_gallery'),
+
 ]
