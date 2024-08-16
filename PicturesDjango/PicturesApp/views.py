@@ -12,8 +12,8 @@ from django.shortcuts import render
 from .PhotoModel import PhotoModel
 from django.db.models import Q
 from django.db.models import Count
-
 from PicturesDjango import settings
+from unidecode import unidecode
 
 '''Home page, display first level'''
 
@@ -56,12 +56,6 @@ def DisplaySecondLevel(request, firstLevel):
         'page_obj': page_obj
     }
     return render(request, 'secondlevel.html', context)
-
-
-def search(request):
-    query = request.GET.get('q')
-    photos = PhotoModel.objects.filter(sujet__icontains=query)
-    return render(request, 'search_results.html', {'photos': photos})
 
 
 '''Return an image based on its primary key and the desired size'''
@@ -127,3 +121,50 @@ def Gallery(request, desiredsubjectMD5):
         })
     except:
         raise Http404("Subject not found")
+
+
+
+
+
+
+
+'''Display all pictures with the search term as  a contact sheet'''
+def contactsSheetBySearch(request, search_term):
+    try:
+        search_term_normalized = unidecode(search_term)
+        allphotos = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).filter(
+            Q(sujet_dias__icontains=search_term) |
+            Q(sujet_dias__icontains=search_term_normalized) |
+            Q(commentaire__icontains=search_term) |
+            Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True)  #Many records
+        return render(request, 'contactsSheetBySearch.html', {'photoRecs': allphotos,'search_term':search_term})
+    except:
+        raise Http404("Subject not found")
+
+'''Display all pictures with the search term as a gallery'''
+
+def GalleryBySearch(request, search_term):
+    try:
+        search_term_normalized = unidecode(search_term)
+        allphotos = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).filter(
+            Q(sujet_dias__icontains=search_term) |
+            Q(sujet_dias__icontains=search_term_normalized) |
+            Q(commentaire__icontains=search_term) |
+            Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True)  #Many records
+        paginator = Paginator(allphotos, 1)  # 1 photo par page pour la navigation
+        page_number = request.GET.get('page')
+        photos_page = paginator.get_page(page_number)
+
+        if photos_page:
+            photo = photos_page[0]  # La photo actuelle
+        else:
+            photo = None  # Si aucune photo n'est trouvée
+
+        return render(request, 'galleryBySearch.html', {
+            'photo': photo,
+            'photos': photos_page,
+            'search_term': search_term
+        })
+    except:
+        raise Http404("Subject not found")
+

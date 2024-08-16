@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block content %}
+{% load custom_filters %}
+
+   <nav class="navbar navbar-expand-lg navbar-dark">
+       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
+       <a class="navbar-brand" href="{% url 'ContactsSheetBySearch' search_term %}">Page contact</a>
+   </nav>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+  </div>
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+      <div class="photo-viewer text-center position-relative">
+        {% if photos.has_previous %}
+          <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
+        {% endif %}
+        <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid rounded" id="photo-img">
+        <div class="col-md-auto">
+          <p class="mt-2 text-white"><strong>{{ photo.date }}</strong></p>
+          <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst }}</p>
+          <p class="mt-2 text-white">{{ photo.commentaire }}</p>
+        </div>
+        <div class="col-md-auto text-start">
+          {% if photo.boite %}
+            <p class="mt-2 text-white">Boîte: {{ photo.boite }}</p>
+          {% endif %}
+          {% if photo.rangee %}
+            <p class="mt-2 text-white">Range: {{ photo.rangee }}</p>
+          {% endif %}
+          {% if photo.numero %}
+            <p class="mt-2 text-white">Numéro: {{ photo.numero }}</p>
+          {% endif %}
+          <p class="mt-2 text-white">Niveau 1: {{ photo.premier_niveau }}</p>
+          <p class="mt-2 text-white">Niveau 2: {{ photo.second_niveau }}</p>
+          {% if photo.troisieme_niveau %}
+            <p class="mt-2 text-white">Niveau 3: {{ photo.troisieme_niveau }}</p>
+          {% endif %}
+          {% if photo.nom_fichier_jpeg %}
+            <p class="mt-2 text-white">Nom du fichier JPEG: {{ photo.nom_fichier_jpeg }}</p>
+          {% endif %}
+        </div>
+        {% if photos.has_next %}
+          <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+<style>
+.photo-viewer {
+  position: relative;
+  padding: 20px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.photo-viewer img {
+  z-index: 2;
+  position: relative;
+}
+
+.prev-btn, .next-btn {
+  position: absolute;
+  top: 100px; /* Don't even think to move */
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 50%;
+  text-decoration: none;
+  font-size: 24px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  z-index: 3; /* Au-dessus de l'image */
+}
+
+.prev-btn {
+  left: 10px; /* Position fixe à gauche */
+}
+
+.next-btn {
+  right: 10px; /* Position fixe à droite */
+}
+
+.prev-btn:hover, .next-btn:hover {
+  opacity: 1;
+}
+</style>
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'ArrowLeft' && prevBtn) {
+      event.preventDefault();
+      prevBtn.click();
+    } else if (event.key === 'ArrowRight' && nextBtn) {
+      event.preventDefault();
+      nextBtn.click();
+    }
+  });
+});
+</script>
+{% endblock %}

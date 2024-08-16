@@ -19,7 +19,7 @@ class PhotoModel(models.Model):
     rangee = models.IntegerField(null=True)
     numero = models.IntegerField(null=True)
     # specific comment about the picture
-    sujet_dias = models.TextField()
+    sujet_dias = models.TextField(db_index=True)
     # for slides, if a paper versions exists
     agrandi = models.BooleanField()
     # for slides, don't remember
@@ -27,7 +27,7 @@ class PhotoModel(models.Model):
     # for slides, don't remember
     verifie = models.BooleanField()
     #generic comment about the place
-    commentaire = models.TextField()
+    commentaire = models.TextField(db_index=True)
     #true is from a digital camera
     camera_digitale = models.BooleanField(db_index=True)
     #directory where pictures are stores, first level
@@ -49,7 +49,9 @@ class PhotoModel(models.Model):
 
     class Meta:
         indexes = [
+            #Index with more than 1 field
             models.Index(fields=['premier_niveau', 'second_niveau', 'troisieme_niveau']),
+            models.Index(fields=['sujet_dias', 'commentaire']),
         ]
 
     def __str__(self):
