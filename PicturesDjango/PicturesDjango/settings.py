@@ -82,7 +82,8 @@ WSGI_APPLICATION = 'PicturesDjango.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        #far easier for updates between machine and backups to have the db describing the images next to the images
+        'NAME': os.path.join(IMAGES_PATH,'db.sqlite3'),
     }
 }
 
