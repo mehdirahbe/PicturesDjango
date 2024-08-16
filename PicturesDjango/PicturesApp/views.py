@@ -1,5 +1,5 @@
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 # Create your views here.
 import django
@@ -14,6 +14,18 @@ from django.db.models import Q
 from django.db.models import Count
 from PicturesDjango import settings
 from unidecode import unidecode
+from .forms import SearchForm
+
+'''Display search form with select word to search in comments'''
+def search_form(request):
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+        if form.is_valid():
+            search_term = form.cleaned_data['search_term']
+            return redirect('ContactsSheetBySearch', search_term=search_term)
+    else:
+        form = SearchForm()
+    return render(request, 'search_form.html', {'form': form})
 
 '''Home page, display first level'''
 

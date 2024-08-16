@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block content %}
+{% load custom_filters %}
+
+   <nav class="navbar navbar-expand-lg navbar-dark">
+       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
+   </nav>
+
+    <form method="post" class="form-inline">
+        {% csrf_token %}
+        Veuillez entrez un mot à rechercher:
+        <div class="form-group mb-2">
+            {{ form.search_term }}
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Rechercher</button>
+    </form>
+
+    <style>
+        .form-control, .btn {
+            background-color: #495057;
+            border: 1px solid #ced4da;
+        }
+    </style>
+
+{% endblock %}

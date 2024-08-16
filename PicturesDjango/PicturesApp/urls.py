@@ -15,4 +15,7 @@ urlpatterns = [
     path('ContactsSheetBySearch/<str:search_term>/', views.contactsSheetBySearch, name='ContactsSheetBySearch'),
     path('GalleryBySearch/<str:search_term>/', views.GalleryBySearch, name='photo_galleryBySearch'),
     path('GalleryBySearch/<str:search_term>/page/<int:page>/', views.GalleryBySearch, name='photo_galleryBySearch'),
+
+    #search form
+    path('search/', views.search_form, name='search_form'),
 ]
