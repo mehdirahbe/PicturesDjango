@@ -42,3 +42,7 @@ python manage.py startapp PicturesApp
 
 To run it, it is:
 python manage.py runserver
+
+Images path can be precised like this:
+Créez un fichier nommé .env dans le répertoire racine de votre projet Django, à côté de manage.py. Le contenu de ce fichier sera :
+IMAGES_PATH=/home/mehdi/Images

@@ -13,6 +13,8 @@ from .PhotoModel import PhotoModel
 from django.db.models import Q
 from django.db.models import Count
 
+from PicturesDjango import settings
+
 '''Home page, display first level'''
 
 
@@ -20,7 +22,7 @@ def home(request):
     photo_niveaux = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).values_list(
         'premier_niveau', flat=True).annotate(count=Count('pkey')).order_by(
         'premier_niveau')
-    paginator = Paginator(photo_niveaux, 50)  # 50 éléments par page
+    paginator = Paginator(photo_niveaux, 100)  # 100 éléments par page
 
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -46,7 +48,7 @@ def DisplaySecondLevel(request, firstLevel):
     )
 
     # Pagination
-    paginator = Paginator(photo_niveaux, 50)  # 50 éléments par page
+    paginator = Paginator(photo_niveaux, 100)  # 100 éléments par page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -69,7 +71,7 @@ def photo_Jpeg(request, photo_id, size):
     try:
         photo = PhotoModel.objects.get(pkey=photo_id)  #1 record
         #generate path
-        Jpegpath = os.path.join('/home/mehdi/Images', photo.premier_niveau)
+        Jpegpath = os.path.join(settings.IMAGES_PATH, photo.premier_niveau)
         Jpegpath = os.path.join(Jpegpath, photo.second_niveau)
         Jpegpath = os.path.join(Jpegpath, photo.troisieme_niveau)
         Jpegpath = os.path.join(Jpegpath, size)
