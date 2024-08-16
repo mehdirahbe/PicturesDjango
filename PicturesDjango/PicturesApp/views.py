@@ -67,7 +67,8 @@ def photo_Jpeg(request, photo_id, size):
         #generate path
         Jpegpath = os.path.join(settings.IMAGES_PATH, photo.premier_niveau)
         Jpegpath = os.path.join(Jpegpath, photo.second_niveau)
-        Jpegpath = os.path.join(Jpegpath, photo.troisieme_niveau)
+        if photo.troisieme_niveau: #not required, can be none
+            Jpegpath = os.path.join(Jpegpath, photo.troisieme_niveau)
         Jpegpath = os.path.join(Jpegpath, size)
         Jpegpath = os.path.join(Jpegpath, photo.nom_fichier_jpeg)
         with open(Jpegpath, 'rb') as f:
