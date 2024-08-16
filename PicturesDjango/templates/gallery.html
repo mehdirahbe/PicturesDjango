@@ -18,14 +18,14 @@
     <div class="col-md-10">
       <div class="photo-viewer text-center position-relative">
         {% if photos.has_previous %}
-          <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.previous_page_number }}" class="prev-btn"><</a>
+          <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
         {% endif %}
-        <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid rounded">
+        <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid rounded" id="photo-img">
         <div class="col-md-auto">
           <p class="mt-2 text-white"><strong>{{ photo.date }}</strong></p>
           <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst }}</p>
           <p class="mt-2 text-white">{{ photo.commentaire }}</p>
-          </div>
+        </div>
         <div class="col-md-auto text-start">
           {% if photo.boite %}
             <p class="mt-2 text-white">Boîte: {{ photo.boite }}</p>
@@ -44,34 +44,29 @@
           {% if photo.nom_fichier_jpeg %}
             <p class="mt-2 text-white">Nom du fichier JPEG: {{ photo.nom_fichier_jpeg }}</p>
           {% endif %}
-          </div>
-
-
-
+        </div>
         {% if photos.has_next %}
-          <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.next_page_number }}" class="next-btn">></a>
+          <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
         {% endif %}
       </div>
     </div>
   </div>
-</div>
-
 <style>
 .photo-viewer {
   position: relative;
   padding: 20px;
   border-radius: 10px;
-  overflow: hidden; /* Pour s'assurer que les boutons ne dépassent pas du conteneur */
+  overflow: hidden;
 }
 
 .photo-viewer img {
-  z-index: 2; /* L'image est au-dessus des boutons */
-  position: relative; /* Pour que z-index fonctionne */
+  z-index: 2;
+  position: relative;
 }
 
 .prev-btn, .next-btn {
   position: absolute;
-  top: 50%;
+  top: 100px; /* Don't even think to move */
   transform: translateY(-50%);
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
@@ -81,21 +76,20 @@
   font-size: 24px;
   opacity: 0.7;
   transition: opacity 0.3s ease;
-  z-index: 1; /* Les boutons sont en dessous de l'image */
+  z-index: 3; /* Au-dessus de l'image */
 }
 
 .prev-btn {
-  left: -10px; /* Décalage à gauche pour ne pas être sur l'image */
+  left: 10px; /* Position fixe à gauche */
 }
 
 .next-btn {
-  right: -10px; /* Décalage à droite pour ne pas être sur l'image */
+  right: 10px; /* Position fixe à droite */
 }
 
 .prev-btn:hover, .next-btn:hover {
   opacity: 1;
 }
-
 </style>
 
 {% endblock %}
@@ -103,8 +97,19 @@
 
 {% block javascript %}
 <script>
-  $(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();
+document.addEventListener('DOMContentLoaded', function() {
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'ArrowLeft' && prevBtn) {
+      event.preventDefault();
+      prevBtn.click();
+    } else if (event.key === 'ArrowRight' && nextBtn) {
+      event.preventDefault();
+      nextBtn.click();
+    }
   });
+});
 </script>
 {% endblock %}
