@@ -152,3 +152,7 @@ dmypy.json
 # Database
 *.sqlite3
 sendgrid.env
+
+#IntelliJ IDEA
+.idea/
+*.iml
