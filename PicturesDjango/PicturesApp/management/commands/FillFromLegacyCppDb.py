@@ -139,7 +139,11 @@ class Command(BaseCommand):
         parser.add_argument('--DiasbddPath', type=str, help='Required, ie /home/mehdi/Images/dbase/SQLBASE/Dias.bdd')
 
     def handle(self, *args, **options):
+        print("Never execute this anymore as hundreds of not yet treated pictures has been added in the new db")
+        return
+        '''
         filename = options["DiasbddPath"]
         photos = read_binaire_file(filename)
         save_photos_to_db(photos)
         return
+        '''
