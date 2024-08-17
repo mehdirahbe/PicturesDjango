@@ -1,7 +1,8 @@
 import os
 from django.core.management.base import BaseCommand
 from PicturesApp.PhotoModel import PhotoModel
-from django.core.files.base import ContentFile
+from PicturesDjango import settings
+
 
 def process_images(dias_dir, jpeg_dir,subject, date, commentaire):
     scans_dir = os.path.join(dias_dir, 'scans')
@@ -61,11 +62,37 @@ class Command(BaseCommand):
                             help='Required, generic comment of the pictures serie, provide additional information on places visited, persons,...')
 
     def handle(self, *args, **options):
-        dias_dir = '/home/mehdi/Images'
+        dias_dir = settings.IMAGES_PATH
+
         jpeg_dir = options["jpegsdirectory"]
+        if jpeg_dir is None:
+            print("Required arg jpegsdirectory missing")
+            return
+
         subject = options["subject"]
+        if subject is None:
+            print("Required arg subject missing")
+            return
+
         date = options["date"]
+        if date is None:
+            print("Required args date missing")
+            return
+
         commentaire = options["comment"]
+        if commentaire is None:
+            print("Required args comment missing")
+            return
+
+        print("Will run PrepareEntreesJpegs")
+        print("jpeg_dir is: "+jpeg_dir)
+        print("subject is: " + subject)
+        print("date is: " + date)
+        print("commentaire is: " + commentaire)
+
+        #uncomment for a dry run
+        #return
+
         process_images(dias_dir,jpeg_dir, subject, date, commentaire)
         return
 

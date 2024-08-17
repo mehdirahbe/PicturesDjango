@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+
+{% block content %}
+{% load custom_filters %}
+
+   <nav class="navbar navbar-expand-lg navbar-dark">
+       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
+   </nav>
+
+    <form method="post" class="form-inline">
+        {% csrf_token %}
+        Veuillez entrez les infos sur le dossier d'images:
+        <div class="form-group mb-2">
+            {{ form.as_p }}
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Lancer l'import et redimentionnement'</button>
+
+    </form>
+
+    <style>
+        .form-control, .btn {
+            background-color: #495057;
+            border: 1px solid #ced4da;
+        }
+    </style>
+
+{% endblock %}

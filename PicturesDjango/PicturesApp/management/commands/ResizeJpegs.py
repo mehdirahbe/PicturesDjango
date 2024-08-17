@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 import os
 from PIL import Image, ExifTags
+from PicturesDjango import settings
 
 
 def get_image_orientation(img):
@@ -99,18 +100,17 @@ class Command(BaseCommand):
             'Created by chatgpt to which I did ask to convert my c# script, itself a rewrite of a C program using imagemagick (which was'
             'paintfully slow)'
             'To test with something small:'
-            'python manage.py ResizeJpegs --seriesdestdirectory=Corentin/2019 --diasrootdir=/home/mehdi/Images')
+            'python manage.py ResizeJpegs --seriesdestdirectory=Corentin/2019')
 
     def add_arguments(self, parser):
         parser.add_argument('--seriesdestdirectory', type=str, help='Required, ie voyages/amsterdam_TreldeNaes_Hoganas_2024')
-        parser.add_argument('--diasrootdir', type=str, help='Required, ie /home/mehdi/Images')
 
     def handle(self, *args, **options):
         print(options)
         l_b_from300d = True
 
         sz_scanned_tifs_dir = None
-        sz_dias_root_dir = options['diasrootdir']
+        sz_dias_root_dir = settings.IMAGES_PATH
         sz_series_dest_dir = options['seriesdestdirectory']
         if sz_dias_root_dir is None or sz_series_dest_dir is None:
             print("Required args missing")
@@ -121,6 +121,16 @@ class Command(BaseCommand):
         l_sz_contact_sheet = os.path.join(l_sz_root_serie, "contactsheet")
         l_sz_view = os.path.join(l_sz_root_serie, "view")
         l_sz_jpg_scans = os.path.join(sz_dias_root_dir, "scans", sz_series_dest_dir)
+
+        print("Will run ResizeJpegs")
+        print("l_sz_root_serie is: "+l_sz_root_serie)
+        print("l_sz_big is: " + l_sz_big)
+        print("l_sz_contact_sheet is: " + l_sz_contact_sheet)
+        print("l_sz_view is: " + l_sz_view)
+        print("l_sz_jpg_scans is: " + l_sz_jpg_scans)
+
+        #uncomment for a dry run
+        #return
 
         os.makedirs(l_sz_root_serie, exist_ok=True)
         os.makedirs(l_sz_big, exist_ok=True)

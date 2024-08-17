@@ -1,12 +1,9 @@
+import hashlib
+
+from django.core.management import call_command
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
-
-# Create your views here.
-import django
-from django.db.models import Max, Min, Avg
 from django.http import HttpResponse, HttpResponseNotFound, Http404
-from django.shortcuts import render
-from django.template import loader
 import os
 from django.shortcuts import render
 from .PhotoModel import PhotoModel
@@ -14,9 +11,11 @@ from django.db.models import Q
 from django.db.models import Count
 from PicturesDjango import settings
 from unidecode import unidecode
-from .forms import SearchForm
+from .forms import SearchForm, InsertNewPicturesForm
 
 '''Display search form with select word to search in comments'''
+
+
 def search_form(request):
     if request.method == 'POST':
         form = SearchForm(request.POST)
@@ -26,6 +25,7 @@ def search_form(request):
     else:
         form = SearchForm()
     return render(request, 'search_form.html', {'form': form})
+
 
 '''Home page, display first level'''
 
@@ -46,6 +46,8 @@ def home(request):
 
 
 '''Display second level (and third if there is one). Links go to the contact sheet to display the related pictures'''
+
+
 def DisplaySecondLevel(request, firstLevel):
     # Filtrer les enregistrements basés sur le premier niveau
     allphotos = PhotoModel.objects.filter(premier_niveau=firstLevel).filter(
@@ -53,7 +55,8 @@ def DisplaySecondLevel(request, firstLevel):
 
     # Récupérer les valeurs distinctes du second niveau avec le checksum
     photo_niveaux = (
-        allphotos.values_list('second_niveau', 'troisieme_niveau', 'checksum','sujet') #order is important, referenced in the html as .0 to .3
+        allphotos.values_list('second_niveau', 'troisieme_niveau', 'checksum',
+                              'sujet')  #order is important, referenced in the html as .0 to .3
         .distinct()
         .annotate(count=Count('pkey'))
         .order_by('sujet')
@@ -79,7 +82,7 @@ def photo_Jpeg(request, photo_id, size):
         #generate path
         Jpegpath = os.path.join(settings.IMAGES_PATH, photo.premier_niveau)
         Jpegpath = os.path.join(Jpegpath, photo.second_niveau)
-        if photo.troisieme_niveau: #not required, can be none
+        if photo.troisieme_niveau:  #not required, can be none
             Jpegpath = os.path.join(Jpegpath, photo.troisieme_niveau)
         Jpegpath = os.path.join(Jpegpath, size)
         Jpegpath = os.path.join(Jpegpath, photo.nom_fichier_jpeg)
@@ -104,20 +107,23 @@ def photoDetail(request, photo_id):
 
 '''Displays a contact sheet with all pictures related to a subject, via its MD5.'''
 
-
 '''Display all pictures with the required subject as  a contact sheet'''
+
+
 def contactsSheet(request, desiredsubjectMD5):
     try:
         allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)  #Many records
-        return render(request, 'contactsSheet.html', {'photoRecs': allphotos,'desiredsubjectMD5':desiredsubjectMD5})
+        return render(request, 'contactsSheet.html', {'photoRecs': allphotos, 'desiredsubjectMD5': desiredsubjectMD5})
     except:
         raise Http404("Subject not found")
 
+
 '''Display all pictures with the required subject as a gallery'''
+
 
 def Gallery(request, desiredsubjectMD5):
     try:
-        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True) #Many records
+        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)  #Many records
         paginator = Paginator(allphotos, 1)  # 1 photo par page pour la navigation
         page_number = request.GET.get('page')
         photos_page = paginator.get_page(page_number)
@@ -136,12 +142,9 @@ def Gallery(request, desiredsubjectMD5):
         raise Http404("Subject not found")
 
 
-
-
-
-
-
 '''Display all pictures with the search term as  a contact sheet'''
+
+
 def contactsSheetBySearch(request, search_term):
     try:
         search_term_normalized = unidecode(search_term)
@@ -150,11 +153,13 @@ def contactsSheetBySearch(request, search_term):
             Q(sujet_dias__icontains=search_term_normalized) |
             Q(commentaire__icontains=search_term) |
             Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True)  #Many records
-        return render(request, 'contactsSheetBySearch.html', {'photoRecs': allphotos,'search_term':search_term})
+        return render(request, 'contactsSheetBySearch.html', {'photoRecs': allphotos, 'search_term': search_term})
     except:
         raise Http404("Subject not found")
 
+
 '''Display all pictures with the search term as a gallery'''
+
 
 def GalleryBySearch(request, search_term):
     try:
@@ -181,3 +186,38 @@ def GalleryBySearch(request, search_term):
     except:
         raise Http404("Subject not found")
 
+
+'''Execute the commands to resize jpegs & add the corresponding entries in the DB'''
+
+
+def InsertNewPictures(request):
+    if request.method == 'POST':
+        # Assumons que vous avez un formulaire qui collecte ces données
+        jpegsdirectory = request.POST.get('jpegsdirectory')
+        subject = request.POST.get('subject')
+        date = request.POST.get('date')
+        comment = request.POST.get('comment')
+
+        # Calcul du --seriesdestdirectory
+        base_path = os.path.join(settings.IMAGES_PATH, "scans")
+        if jpegsdirectory.startswith(base_path):
+            seriesdestdirectory = jpegsdirectory[len(base_path):].strip(os.sep)
+        else:
+            # Gérer le cas où le chemin ne commence pas par le base_path attendu
+            raise Http404("Le chemin des jpegs n\'est pas valide.")
+
+        # Appel de la première commande
+        call_command('PrepareEntreesJpegs',
+                     jpegsdirectory=jpegsdirectory,
+                     subject=subject,
+                     date=date,
+                     comment=comment)
+
+        # Appel de la deuxième commande avec l'argument dérivé
+        call_command('ResizeJpegs', seriesdestdirectory=seriesdestdirectory)
+
+        # Redirect to the contact sheet of added images
+        return redirect('ContactsSheet', hashlib.md5(subject.encode(), usedforsecurity=False).hexdigest())
+    else:
+        # Affichage du formulaire
+        return render(request, 'InsertNewPictures.html', {'form': InsertNewPicturesForm()})
