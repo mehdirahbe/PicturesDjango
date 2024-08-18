@@ -15,12 +15,10 @@ from .forms import SearchForm, InsertNewPicturesForm
 
 #Return link to google maps if we have coordinates or none
 def GetLinkToGoogleMaps(photo):
-    print("GetLinkToGoogleMaps")
     if photo is None:
         return None
     if photo.latitude is not None and photo.longitude is not None:
         link="https://www.google.com/maps/search/?api=1&query=" + str(photo.latitude) + ',' + str(photo.longitude)
-        print(link)
         return link
     return None
 
