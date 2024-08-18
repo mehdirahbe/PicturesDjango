@@ -13,6 +13,18 @@ from PicturesDjango import settings
 from unidecode import unidecode
 from .forms import SearchForm, InsertNewPicturesForm
 
+#Return link to google maps if we have coordinates or none
+def GetLinkToGoogleMaps(photo):
+    print("GetLinkToGoogleMaps")
+    if photo is None:
+        return None
+    if photo.latitude is not None and photo.longitude is not None:
+        link="https://www.google.com/maps/search/?api=1&query=" + str(photo.latitude) + ',' + str(photo.longitude)
+        print(link)
+        return link
+    return None
+
+
 '''Display search form with select word to search in comments'''
 
 
@@ -100,7 +112,7 @@ Display location/comments related to the image'''
 def photoDetail(request, photo_id):
     try:
         photo = PhotoModel.objects.get(pkey=photo_id)  #1 record
-        return render(request, 'photo_detail.html', {'photoRec': photo})
+        return render(request, 'photo_detail.html', {'photoRec': photo,"linktogooglemaps":GetLinkToGoogleMaps(photo)})
     except:
         raise Http404("Record not found")
 
@@ -136,7 +148,8 @@ def Gallery(request, desiredsubjectMD5):
         return render(request, 'gallery.html', {
             'photo': photo,
             'photos': photos_page,
-            'desiredsubjectMD5': desiredsubjectMD5
+            'desiredsubjectMD5': desiredsubjectMD5,
+             "linktogooglemaps":GetLinkToGoogleMaps(photo)
         })
     except:
         raise Http404("Subject not found")
@@ -181,7 +194,8 @@ def GalleryBySearch(request, search_term):
         return render(request, 'galleryBySearch.html', {
             'photo': photo,
             'photos': photos_page,
-            'search_term': search_term
+            'search_term': search_term,
+            "linktogooglemaps": GetLinkToGoogleMaps(photo)
         })
     except:
         raise Http404("Subject not found")

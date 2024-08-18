@@ -44,6 +44,9 @@
         {% if photoRec.nom_fichier_jpeg %}
           <li>Nom du fichier JPEG: {{ photoRec.nom_fichier_jpeg }}</li>
         {% endif %}
+        {% if linktogooglemaps %}
+          <a href="{{linktogooglemaps}}" rel="noopener noreferrer" target="_blank">Voir dans maps</a>
+        {% endif %}
       </ul>    </div>
   </div>
 </div>

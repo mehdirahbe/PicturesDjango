@@ -44,6 +44,9 @@
           {% if photo.nom_fichier_jpeg %}
             <p class="mt-2 text-white">Nom du fichier JPEG: {{ photo.nom_fichier_jpeg }}</p>
           {% endif %}
+          {% if linktogooglemaps %}
+            <a href="{{linktogooglemaps}}" rel="noopener noreferrer" target="_blank">Voir dans maps</a>
+          {% endif %}
         </div>
         {% if photos.has_next %}
           <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
