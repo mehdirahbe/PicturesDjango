@@ -41,6 +41,9 @@ class PhotoModel(models.Model):
     pkey = models.AutoField(primary_key=True, null=False, db_index=True)
     #md5 hash of the subject, which can easily be passed in an URL
     checksum = models.CharField(max_length=32, db_index=True)
+    #GPS coordinates extracted from EXIF info when available
+    longitude=models.FloatField(null=True)
+    latitude = models.FloatField(null=True)
 
     #save record, overloaded to compute MD5 hash of the subject
     def save(self, *args, **kwargs):

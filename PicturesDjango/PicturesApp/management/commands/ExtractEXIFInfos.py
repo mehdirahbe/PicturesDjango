@@ -8,7 +8,7 @@ from PIL.ExifTags import TAGS
 import requests
 from PicturesApp.PhotoModel import PhotoModel
 from django.db.models import Q
-
+import time
 from PicturesDjango import settings
 
 
@@ -60,7 +60,7 @@ def convert_to_degrees(value):
 
 def gps_to_address(lat, lon):
     url = f'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={lat}&lon={lon}&zoom=12&language=fr'
-    headers = {'User-Agent': 'PicturesDjango/1.0', 'Accept-L': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7'}
+    headers = {'User-Agent': 'PicturesDjango/1.1', 'Accept-L': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7'}
     try:
         response = requests.get(url, headers=headers).json()
         if response:
@@ -89,48 +89,75 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         #loop on all images having a jpeg (or which should have one)
         dias_dir = settings.IMAGES_PATH
-        allphotos = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).filter(agrandi=True)  # Many records
+        allphotos = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).filter(
+            agrandi=True)  # Many records
+        #we have to limit number of calls
+        countCallsReverseGPS = 0
+        countRecUpdated = 0
+        #cache to avoid calls on same address
+        dicoGPSToAddress = {}
 
         for photo in allphotos:
             try:
                 # Image path
-                photo_path = os.path.join(dias_dir,"scans",photo.premier_niveau,photo.second_niveau)
+                photo_path = os.path.join(dias_dir, "scans", photo.premier_niveau, photo.second_niveau)
                 if photo.troisieme_niveau:
                     photo_path = os.path.join(str(photo_path), photo.troisieme_niveau)
                 photo_path = os.path.join(str(photo_path), photo.nom_fichier_jpeg)
 
-                recUpdated=False
+                recUpdated = False
                 exif = get_exif_data(photo_path)
                 if exif is not None:
                     date = extract_date(exif)
                     if date is not None:
                         date_formatee = date.strftime('%d/%m/%Y')
                         if photo.date != date_formatee:
-                            photo.date=date_formatee
+                            photo.date = date_formatee
                             recUpdated = True
-                    '''if not photo.sujet_dias:
-                        lat, lon = get_gps_coordinates(exif)
-                        address = None
-                        if not (lat is None or lon is None):
-                            print(lat, lon)
-                            address = gps_to_address(lat, lon)
-                            if address is not None:
-                                photo.sujet_dias = address
-                                recUpdated = True'''
+                        if photo.longitude is None or not photo.sujet_dias:
+                            lat, lon = get_gps_coordinates(exif)
+                            if lat is not None and lon is not None:
+                                if photo.longitude is None:
+                                    photo.longitude = lon
+                                    photo.latitude = lat
+                                    recUpdated = True
+                                if not photo.sujet_dias:
+                                    #create a key from lat and lon keeping 2 digits, meaning about 1 km précision
+                                    gpsKey = (1000 * int(lat * 100.) + int(lon * 100.))
+                                    if gpsKey in dicoGPSToAddress:
+                                        print("from GPS cache: "+str(gpsKey)+" "+str(dicoGPSToAddress[gpsKey]))
+                                        #OK, save directly what we have
+                                        if dicoGPSToAddress[gpsKey] is not None:
+                                            photo.sujet_dias = dicoGPSToAddress[gpsKey]
+                                            recUpdated = True
+                                    else:
+                                        countCallsReverseGPS = countCallsReverseGPS + 1
+                                        if countCallsReverseGPS < 100:
+                                            '''From grok: La politique d'utilisation 
+                                            de Nominatim recommande explicitement de ne pas dépasser 1 requête par 
+                                            seconde. Cela signifie que vous devez intégrer un délai d'au moins 1 seconde 
+                                            entre chaque appel à l'API.'''
+                                            time.sleep(1.1)
+                                            print("ask reverse for "+ str(lat)+" "+ str(lon))
+                                            address = gps_to_address(lat, lon)
+                                            print("address is "+ str(address))
+                                            #Save in dico
+                                            dicoGPSToAddress[gpsKey] = address
+                                            if address is not None:
+                                                photo.sujet_dias = address
+                                                recUpdated = True
+                                        else:
+                                            print("reverse GPS not done, call count is " + str(countCallsReverseGPS))
 
                 # Sauvegarder le modèle
                 if recUpdated:
+                    countRecUpdated = countRecUpdated + 1
                     photo.save()
 
             except Exception as e:
-                print(f"Erreur lors du traitement de l'image {photo.image}: {e}")
+                print(f"Erreur lors du traitement de l'image  {e}")
 
+        print("number of updated records: " + str(countRecUpdated))
         return
 
-'''For gps, oops, I made a mistake:
-Respecter la Limite de 1 Requête par Seconde : La politique d'utilisation de Nominatim recommande explicitement de ne pas dépasser 1 requête par seconde. Cela signifie que vous devez intégrer un délai d'au moins 1 seconde entre chaque appel à l'API.
-import time 
-time.sleep(1)
 
-Limitation Journalière : Si vous avez beaucoup de requêtes à faire, envisagez de limiter le nombre de requêtes par jour. Par exemple, vous pourriez vous fixer un quota de 1000 requêtes par jour. Voici comment vous pourriez le gérer :
-'''
