@@ -218,18 +218,24 @@ def InsertNewPictures(request):
             # Gérer le cas où le chemin ne commence pas par le base_path attendu
             raise Http404("Le chemin des jpegs n\'est pas valide.")
 
-        # Appel de la première commande
+        # Add entries related to the jpeg in the DB
         call_command('PrepareEntreesJpegs',
                      jpegsdirectory=jpegsdirectory,
                      subject=subject,
                      date=date,
                      comment=comment)
 
-        # Appel de la deuxième commande avec l'argument dérivé
+        # Create big (for screen display) and contactsheet size images
         call_command('ResizeJpegs', seriesdestdirectory=seriesdestdirectory)
 
+        #subject MD5
+        desiredsubjectMD5=hashlib.md5(subject.encode(), usedforsecurity=False).hexdigest()
+
+        # Complete DB from EXIF infos
+        call_command('ExtractEXIFInfos', SubjectMD5=desiredsubjectMD5)
+
         # Redirect to the contact sheet of added images
-        return redirect('ContactsSheet', hashlib.md5(subject.encode(), usedforsecurity=False).hexdigest())
+        return redirect('ContactsSheet', desiredsubjectMD5)
     else:
         # Affichage du formulaire
         return render(request, 'InsertNewPictures.html', {'form': InsertNewPicturesForm()})

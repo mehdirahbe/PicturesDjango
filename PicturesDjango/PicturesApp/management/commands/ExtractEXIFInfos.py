@@ -65,7 +65,8 @@ def gps_to_address(lat, lon):
         response = requests.get(url, headers=headers).json()
         if response:
             address = response.get('address')
-            town = address["town"]
+            addresstype=response.get('addresstype')
+            town = address[addresstype]
             country = address["country"]
 
             if town is not None and country is not None:
@@ -81,15 +82,20 @@ def gps_to_address(lat, lon):
 class Command(BaseCommand):
     help = (
         'Extract EXIF infos from the picture when present'
-        'So syntax is python manage.py ExtractEXIFInfos --todo: will see later for the args')
+        'So syntax is python manage.py ExtractEXIFInfos --SubjectMD5 the MD5 of series subject')
 
     def add_arguments(self, parser):
-        parser.add_argument('--todo', type=str, help='Required, todo')
+        parser.add_argument('--SubjectMD5', type=str, help='Required, MD5 of the subject of the series picture')
 
     def handle(self, *args, **options):
-        #loop on all images having a jpeg (or which should have one)
+        desiredsubjectMD5=options["SubjectMD5"]
+        if desiredsubjectMD5 is None:
+            print("Required arg SubjectMD5 is missing")
+            return
+
+        #loop on all images having a jpeg (or which should have one) and desired subject
         dias_dir = settings.IMAGES_PATH
-        allphotos = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).filter(
+        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).filter(
             agrandi=True)  # Many records
         #we have to limit number of calls
         countCallsReverseGPS = 0
