@@ -1,6 +1,7 @@
 from django import forms
 import os
 from PicturesDjango import settings
+from .PhotoModel import PhotoModel
 
 #Form to ask for a pattern to search. All images having it in comment will then be displayed
 class SearchForm(forms.Form):
@@ -44,3 +45,9 @@ Si la méthode de nettoyage lève une exception ValidationError, cette erreur es
         if not directory.startswith(scansPath):
             raise forms.ValidationError(f"Le dossier doit être sous {scansPath}")
         return directory
+
+#to edit sujet_dias when displaying a picture
+class PhotoSubjectForm(forms.ModelForm):
+    class Meta:
+        model = PhotoModel
+        fields = ['sujet_dias']

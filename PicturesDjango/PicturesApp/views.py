@@ -3,7 +3,7 @@ import hashlib
 from django.core.management import call_command
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseNotFound, Http404
+from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect
 import os
 from django.shortcuts import render
 from .PhotoModel import PhotoModel
@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.db.models import Count
 from PicturesDjango import settings
 from unidecode import unidecode
-from .forms import SearchForm, InsertNewPicturesForm
+from .forms import SearchForm, InsertNewPicturesForm,PhotoSubjectForm
 
 #Return link to google maps if we have coordinates or none
 def GetLinkToGoogleMaps(photo):
@@ -108,11 +108,24 @@ Display location/comments related to the image'''
 
 
 def photoDetail(request, photo_id):
-    try:
-        photo = PhotoModel.objects.get(pkey=photo_id)  #1 record
-        return render(request, 'photo_detail.html', {'photoRec': photo,"linktogooglemaps":GetLinkToGoogleMaps(photo)})
-    except:
-        raise Http404("Record not found")
+    #try:
+    photo = PhotoModel.objects.get(pkey=photo_id)  # 1 record
+    if request.method == 'POST':
+        form = PhotoSubjectForm(request.POST, instance=photo)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(
+                request.path_info)  # Redirige vers la même page pour refléter la mise à jour
+    else:
+        form = PhotoSubjectForm(instance=photo)
+
+    return render(request, 'photo_detail.html', {
+        'photoRec': photo,
+        'linktogooglemaps': GetLinkToGoogleMaps(photo),
+        'subject_form': form
+    })
+    '''except:
+        raise Http404("Record not found")'''
 
 
 '''Displays a contact sheet with all pictures related to a subject, via its MD5.'''

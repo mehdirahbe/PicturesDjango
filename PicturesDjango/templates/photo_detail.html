@@ -47,10 +47,52 @@
         {% if linktogooglemaps %}
           <a href="{{linktogooglemaps}}" rel="noopener noreferrer" target="_blank">Voir dans maps</a>
         {% endif %}
-      </ul>    </div>
+      </ul>
+
+      <button id="edit-subject-btn">Modifier le sujet</button>
+
+        <form id="subject-form" method="post" action="" style="display: none;">
+            {% csrf_token %}
+            {{ subject_form.as_p }}
+            <button type="submit">Ajouter un sujet</button>
+        </form>
+    </div>
   </div>
 </div>
+
+<style>
+#subject-form {
+    color: white; /* Texte en blanc */
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+#subject-form input, #subject-form textarea {
+    background-color: #444; /* Champ d'entrée sombre */
+    color: white; /* Texte dans les champs en blanc */
+    border: 1px solid #666; /* Bordure des champs */
+}
+</style>
 
 {% endblock %}
 
 
+{% block javascript %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var editButton = document.getElementById('edit-subject-btn');
+    var form = document.getElementById('subject-form');
+    var saveButton = form.querySelector('button[type="submit"]');
+
+    editButton.addEventListener('click', function() {
+        form.style.display = 'block';
+    });
+
+    saveButton.addEventListener('click', function() {
+        // Après la soumission du formulaire
+        form.style.display = 'none';
+    });
+});
+</script>
+{% endblock %}
