@@ -11,14 +11,14 @@
    </nav>
 
 <div class="container">
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-auto">
+      <a class="mt-2 text-white" href="{% url 'ContactsSheet' photoRec.checksum %}"><h1>{{ photoRec.sujet|proper_case }}</h1></a>
+      </div>
+  </div>
   <div class="row">
     <div class="col-md-auto">
-      <h1>{{ photoRec.sujet|proper_case }}</h1>
-    </div>
-    </div>
-  <div class="row">
-    <div class="col-md-auto">
-      <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid" style="max-width: 100%; height: auto;">
+      <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photoRec.sujet_dias|capfirst }}" class="img-fluid" style="max-width: 100%; height: auto;">
     </div>
     </div>
     <div class="row">
