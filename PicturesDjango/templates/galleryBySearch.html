@@ -6,54 +6,50 @@
 {% load custom_filters %}
 
    <nav class="navbar navbar-expand-lg navbar-dark">
+       <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
        <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <!-- Bootstrap class for branding, typically used for the site's logo or title -->
        <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
+       <!-- Same as above, used for navigation links -->
        <a class="navbar-brand" href="{% url 'ContactsSheetBySearch' search_term %}">Page contact</a>
    </nav>
 
 <div class="container mt-5">
+  <!-- Bootstrap container class for responsive design, mt-5 adds margin top -->
   <div class="row justify-content-center mt-4">
+    <!-- Bootstrap row class, justify-content-center centers the content horizontally, mt-4 adds margin top -->
     <div class="col-md-auto">
+      <!-- Bootstrap column class, col-md-auto adjusts width automatically -->
       <a class="mt-2 text-white" href="{% url 'ContactsSheet' photo.checksum %}"><h1>{{ photo.sujet|proper_case }}</h1></a>
-      </div>
+      <!-- mt-2 adds margin top, text-white sets text color to white -->
+    </div>
   </div>
   <div class="row justify-content-center mt-4">
     <div class="col-md-10">
+      <!-- Column width set to 10/12 of the grid on medium screens -->
       <div class="photo-viewer text-center position-relative">
+        <!-- Custom class for photo viewer, text-center centers text, position-relative allows absolute positioning of children -->
         {% if photos.has_previous %}
           <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
         {% endif %}
+        <!-- Custom class for previous button -->
         <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid rounded" id="photo-img">
+        <!-- img-fluid makes the image responsive, rounded adds rounded corners -->
         <div class="col-md-auto">
           <p class="mt-2 text-white"><strong>{{ photo.date }}</strong></p>
           <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst }}</p>
           <p class="mt-2 text-white">{{ photo.commentaire }}</p>
         </div>
         <div class="col-md-auto text-start">
+          <!-- text-start aligns text to the left -->
           {% if photo.boite %}
             <p class="mt-2 text-white">Boîte: {{ photo.boite }}</p>
           {% endif %}
-          {% if photo.rangee %}
-            <p class="mt-2 text-white">Range: {{ photo.rangee }}</p>
+          <!-- Additional photo metadata -->
+          {% if photos.has_next %}
+            <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
           {% endif %}
-          {% if photo.numero %}
-            <p class="mt-2 text-white">Numéro: {{ photo.numero }}</p>
-          {% endif %}
-          <p class="mt-2 text-white">Niveau 1: {{ photo.premier_niveau }}</p>
-          <p class="mt-2 text-white">Niveau 2: {{ photo.second_niveau }}</p>
-          {% if photo.troisieme_niveau %}
-            <p class="mt-2 text-white">Niveau 3: {{ photo.troisieme_niveau }}</p>
-          {% endif %}
-          {% if photo.nom_fichier_jpeg %}
-            <p class="mt-2 text-white">Nom du fichier JPEG: {{ photo.nom_fichier_jpeg }}</p>
-          {% endif %}
-          {% if linktogooglemaps %}
-            <a href="{{linktogooglemaps}}" rel="noopener noreferrer" target="_blank">Voir dans maps</a>
-          {% endif %}
-        </div>
-        {% if photos.has_next %}
-          <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
-        {% endif %}
+          <!-- Custom class for next button -->
       </div>
     </div>
   </div>
@@ -63,11 +59,13 @@
   padding: 20px;
   border-radius: 10px;
   overflow: hidden;
+  /* Custom styling for photo viewer container */
 }
 
 .photo-viewer img {
   z-index: 2;
   position: relative;
+  /* Image is positioned relative to the photo-viewer */
 }
 
 .prev-btn, .next-btn {
@@ -82,24 +80,25 @@
   font-size: 24px;
   opacity: 0.7;
   transition: opacity 0.3s ease;
-  z-index: 3; /* Au-dessus de l'image */
+  z-index: 3; /* Above the image */
+  /* Custom styling for navigation buttons */
 }
 
 .prev-btn {
-  left: 10px; /* Position fixe à gauche */
+  left: 10px; /* Fixed position on the left */
 }
 
 .next-btn {
-  right: 10px; /* Position fixe à droite */
+  right: 10px; /* Fixed position on the right */
 }
 
 .prev-btn:hover, .next-btn:hover {
   opacity: 1;
+  /* Hover effect to increase opacity */
 }
 </style>
 
 {% endblock %}
-
 
 {% block javascript %}
 <script>

@@ -6,23 +6,29 @@
 {% load custom_filters %}
 
    <nav class="navbar navbar-expand-lg navbar-dark">
+       <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
        <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <!-- Bootstrap class for branding, typically used for the site's logo or title -->
        <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
        <a class="navbar-brand" href="{% url 'search_form' %}">Recherche</a>
    </nav>
 
 <div class="container my-4">
+  <!-- Bootstrap container class for responsive design, my-4 adds margin top and bottom -->
   <input class="form-control mb-3" id="searchInput" type="text" placeholder="Search second levels...">
+  <!-- form-control is a Bootstrap class for form inputs, mb-3 adds margin bottom -->
 
   <div class="list-group" id="levelList">
+    <!-- Bootstrap class for creating a list of items with a consistent look -->
     {% for level in page_obj %}
       <a href="{% url 'ContactsSheet' desiredsubjectMD5=level.2 %}"
          class="list-group-item list-group-item-action list-group-item-dark">
+        <!-- list-group-item for list item, list-group-item-action for clickable items, list-group-item-dark for dark theme -->
         {% if level.1 %}
         {{ level.0|capfirst|replace_underscore }} {{ level.3|proper_case }}
-    {% else %}
+        {% else %}
         {{ level.3|proper_case }}
-    {% endif %}
+        {% endif %}
       </a>
     {% endfor %}
   </div>
@@ -30,15 +36,19 @@
   <!-- Pagination controls -->
   <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center pagination-dark">
+      <!-- Bootstrap class for pagination, justify-content-center centers the pagination -->
       {% if page_obj.has_previous %}
         <li class="page-item">
+          <!-- Bootstrap class for pagination item -->
           <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+            <!-- Bootstrap class for pagination links -->
             <span aria-hidden="true">&laquo;</span>
           </a>
         </li>
       {% endif %}
       {% for num in page_obj.paginator.page_range %}
         <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+          <!-- Active class highlights the current page -->
           <a class="page-link" href="?page={{ num }}">{{ num }}</a>
         </li>
       {% endfor %}
@@ -54,6 +64,7 @@
 </div>
 
 {% endblock %}
+
 
 {% block javascript %}
 <script>

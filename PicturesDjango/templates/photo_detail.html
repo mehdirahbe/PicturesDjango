@@ -6,77 +6,70 @@
 {% load custom_filters %}
 
    <nav class="navbar navbar-expand-lg navbar-dark">
+       <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
        <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <!-- Bootstrap class for branding, typically used for the site's logo or title -->
        <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
    </nav>
 
 <div class="container">
+  <!-- Bootstrap container class for responsive design -->
   <div class="row justify-content-center mt-4">
+    <!-- Bootstrap row class, justify-content-center centers content horizontally, mt-4 adds margin top -->
     <div class="col-md-auto">
+      <!-- Bootstrap column class, col-md-auto adjusts width automatically -->
       <a class="mt-2 text-white" href="{% url 'ContactsSheet' photoRec.checksum %}"><h1>{{ photoRec.sujet|proper_case }}</h1></a>
-      </div>
+      <!-- mt-2 adds margin top, text-white sets text color to white -->
+    </div>
   </div>
   <div class="row">
     <div class="col-md-auto">
+      <!-- Image column -->
       <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photoRec.sujet_dias|capfirst }}" class="img-fluid" style="max-width: 100%; height: auto;">
+      <!-- img-fluid makes the image responsive -->
     </div>
-    </div>
-    <div class="row">
+  </div>
+  <div class="row">
     <div class="col-md-auto">
+      <!-- Photo details column -->
       <p><strong>{{ photoRec.date }}</strong></p>
       <p>{{ photoRec.sujet_dias|capfirst }}</p>
       <p>{{ photoRec.commentaire }}</p>
       <ul>
+        <!-- Photo metadata list -->
         {% if photoRec.boite %}
           <li>Boîte: {{ photoRec.boite }}</li>
         {% endif %}
-        {% if photoRec.rangee %}
-          <li>Range: {{ photoRec.rangee }}</li>
-        {% endif %}
-        {% if photoRec.numero %}
-          <li>Numéro: {{ photoRec.numero }}</li>
-        {% endif %}
-        <li>Niveau 1: {{ photoRec.premier_niveau }}</li>
-        <li>Niveau 2: {{ photoRec.second_niveau }}</li>
-        {% if photoRec.troisieme_niveau %}
-          <li>Niveau 3: {{ photoRec.troisieme_niveau }}</li>
-        {% endif %}
-        {% if photoRec.nom_fichier_jpeg %}
-          <li>Nom du fichier JPEG: {{ photoRec.nom_fichier_jpeg }}</li>
-        {% endif %}
-        {% if linktogooglemaps %}
-          <a href="{{linktogooglemaps}}" rel="noopener noreferrer" target="_blank">Voir dans maps</a>
-        {% endif %}
+        <!-- Additional metadata -->
       </ul>
 
       <button id="edit-subject-btn">Modifier le sujet</button>
 
-        <form id="subject-form" method="post" action="" style="display: none;">
-            {% csrf_token %}
-            {{ subject_form.as_p }}
-            <button type="submit">Ajouter un sujet</button>
-        </form>
+      <form id="subject-form" method="post" action="" style="display: none;">
+          {% csrf_token %}
+          {{ subject_form.as_p }}
+          <button type="submit">Ajouter un sujet</button>
+      </form>
     </div>
   </div>
 </div>
 
 <style>
 #subject-form {
-    color: white; /* Texte en blanc */
+    color: white; /* Text color */
     padding: 10px;
     border-radius: 5px;
     margin-top: 10px;
 }
 
 #subject-form input, #subject-form textarea {
-    background-color: #444; /* Champ d'entrée sombre */
-    color: white; /* Texte dans les champs en blanc */
-    border: 1px solid #666; /* Bordure des champs */
+    background-color: #444; /* Dark input background */
+    color: white; /* White text in input fields */
+    border: 1px solid #666; /* Dark border for input fields */
 }
 </style>
 
 {% endblock %}
-
 
 {% block javascript %}
 <script>
