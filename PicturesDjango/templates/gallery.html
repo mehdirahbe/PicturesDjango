@@ -1,102 +1,112 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-
 {% block content %}
 {% load custom_filters %}
 
-   <nav class="navbar navbar-expand-lg navbar-dark">
-       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
-       <a class="navbar-brand" href="{% url 'ContactsSheet' desiredsubjectMD5 %}">Page contact</a>
-   </nav>
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <!-- 'navbar' creates a navigation bar. 'navbar-expand-lg' allows the nav to expand across the screen for large screen widths. 'navbar-dark' gives it a dark theme -->
+    <a class="navbar-brand" href="{% url 'home' %}">Home</a>
+    <!-- 'navbar-brand' is used for the site's logo or name -->
+    <a class="navbar-brand" href="#" onclick="goBack(); return false;">Previous</a>
+    <!-- A link to go back with a JavaScript script -->
+    <a class="navbar-brand" href="{% url 'ContactsSheet' desiredsubjectMD5 %}">Contact Page</a>
+</nav>
 
 <div class="container mt-5">
-  <div class="row justify-content-center">
-  </div>
-  <div class="row justify-content-center mt-4">
-    <div class="col-md-10">
-      <div class="photo-viewer text-center position-relative">
-        {% if photos.has_previous %}
-          <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
-        {% endif %}
-        <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid rounded" id="photo-img">
-        <div class="col-md-auto">
-          <p class="mt-2 text-white"><strong>{{ photo.date }}</strong></p>
-          <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst }}</p>
-          <p class="mt-2 text-white">{{ photo.commentaire }}</p>
-        </div>
-        <div class="col-md-auto text-start">
-          {% if photo.boite %}
-            <p class="mt-2 text-white">Boîte: {{ photo.boite }}</p>
-          {% endif %}
-          {% if photo.rangee %}
-            <p class="mt-2 text-white">Range: {{ photo.rangee }}</p>
-          {% endif %}
-          {% if photo.numero %}
-            <p class="mt-2 text-white">Numéro: {{ photo.numero }}</p>
-          {% endif %}
-          <p class="mt-2 text-white">Niveau 1: {{ photo.premier_niveau }}</p>
-          <p class="mt-2 text-white">Niveau 2: {{ photo.second_niveau }}</p>
-          {% if photo.troisieme_niveau %}
-            <p class="mt-2 text-white">Niveau 3: {{ photo.troisieme_niveau }}</p>
-          {% endif %}
-          {% if photo.nom_fichier_jpeg %}
-            <p class="mt-2 text-white">Nom du fichier JPEG: {{ photo.nom_fichier_jpeg }}</p>
-          {% endif %}
-          {% if linktogooglemaps %}
-            <a href="{{linktogooglemaps}}" rel="noopener noreferrer" target="_blank">Voir dans maps</a>
-          {% endif %}
-        </div>
-        {% if photos.has_next %}
-          <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
-        {% endif %}
-      </div>
+    <!-- 'container' creates a centered content area. 'mt-5' adds margin at the top -->
+    <div class="row justify-content-center">
+        <!-- 'row' to organize content in a row. 'justify-content-center' centers the content horizontally -->
     </div>
-  </div>
-<style>
-.photo-viewer {
-  position: relative;
-  padding: 20px;
-  border-radius: 10px;
-  overflow: hidden;
-}
+    <div class="row justify-content-center mt-4">
+        <!-- 'mt-4' adds margin at the top -->
+        <div class="col-md-10">
+            <!-- 'col-md-10' takes up 10 units out of 12 in the grid on medium screens and up -->
+            <div class="photo-viewer text-center position-relative">
+                <!-- 'text-center' centers text, 'position-relative' sets the positioning context for child elements -->
+                {% if photos.has_previous %}
+                    <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
+                    <!-- Previous button for pagination -->
+                {% endif %}
+                <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid rounded" id="photo-img">
+                <!-- 'img-fluid' allows the image to adapt to its container, 'rounded' adds rounded corners -->
+                <div class="col-md-auto">
+                    <p class="mt-2 text-white"><strong>{{ photo.date }}</strong></p>
+                    <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst }}</p>
+                    <p class="mt-2 text-white">{{ photo.commentaire }}</p>
+                </div>
+                <div class="col-md-auto text-start">
+                    {% if photo.boite %}
+                        <p class="mt-2 text-white">Box: {{ photo.boite }}</p>
+                    {% endif %}
+                    {% if photo.rangee %}
+                        <p class="mt-2 text-white">Row: {{ photo.rangee }}</p>
+                    {% endif %}
+                    {% if photo.numero %}
+                        <p class="mt-2 text-white">Number: {{ photo.numero }}</p>
+                    {% endif %}
+                    <p class="mt-2 text-white">Level 1: {{ photo.premier_niveau }}</p>
+                    <p class="mt-2 text-white">Level 2: {{ photo.second_niveau }}</p>
+                    {% if photo.troisieme_niveau %}
+                        <p class="mt-2 text-white">Level 3: {{ photo.troisieme_niveau }}</p>
+                    {% endif %}
+                    {% if photo.nom_fichier_jpeg %}
+                        <p class="mt-2 text-white">JPEG File Name: {{ photo.nom_fichier_jpeg }}</p>
+                    {% endif %}
+                    {% if linktogooglemaps %}
+                        <a href="{{linktogooglemaps}}" rel="noopener noreferrer" target="_blank">View in Maps</a>
+                    {% endif %}
+                </div>
+                {% if photos.has_next %}
+                    <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
+                    <!-- Next button for pagination -->
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <style>
+        .photo-viewer {
+            position: relative;
+            padding: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
 
-.photo-viewer img {
-  z-index: 2;
-  position: relative;
-}
+        .photo-viewer img {
+            z-index: 2;
+            position: relative;
+        }
 
-.prev-btn, .next-btn {
-  position: absolute;
-  top: 100px; /* Don't even think to move */
-  transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 10px 15px;
-  border-radius: 50%;
-  text-decoration: none;
-  font-size: 24px;
-  opacity: 0.7;
-  transition: opacity 0.3s ease;
-  z-index: 3; /* Au-dessus de l'image */
-}
+        .prev-btn, .next-btn {
+            position: absolute;
+            top: 100px; /* Don't even think to move */
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50%;
+            text-decoration: none;
+            font-size: 24px;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+            z-index: 3; /* Above the image */
+        }
 
-.prev-btn {
-  left: 10px; /* Position fixe à gauche */
-}
+        .prev-btn {
+            left: 10px; /* Fixed position on the left */
+        }
 
-.next-btn {
-  right: 10px; /* Position fixe à droite */
-}
+        .next-btn {
+            right: 10px; /* Fixed position on the right */
+        }
 
-.prev-btn:hover, .next-btn:hover {
-  opacity: 1;
-}
-</style>
+        .prev-btn:hover, .next-btn:hover {
+            opacity: 1;
+        }
+    </style>
+</div>
 
 {% endblock %}
-
 
 {% block javascript %}
 <script>

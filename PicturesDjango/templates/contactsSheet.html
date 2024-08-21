@@ -1,52 +1,50 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-
 {% block content %}
 {% load custom_filters %}
 
-   <nav class="navbar navbar-expand-lg navbar-dark">
-       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
-     <a class="navbar-brand" href="{% url 'photo_gallery' desiredsubjectMD5 %}">Gallerie</a>
-   </nav>
+<nav class="navbar navbar-expand-lg navbar-dark">
+    <!-- 'navbar' creates a navigation bar. 'navbar-expand-lg' allows the nav to expand across the screen for large screen widths. 'navbar-dark' gives it a dark theme -->
+    <a class="navbar-brand" href="{% url 'home' %}">Home</a>
+    <!-- 'navbar-brand' is used for the site's logo or name -->
+    <a class="navbar-brand" href="#" onclick="goBack(); return false;">Previous</a>
+    <!-- A link to go back with a JavaScript script -->
+    <a class="navbar-brand" href="{% url 'photo_gallery' desiredsubjectMD5 %}">Gallery</a>
+</nav>
 
 <div class="container">
-  <div class="row">
-    <div class="col-md-12">
-      <h2>{{ photoRecs.0.sujet|proper_case }}</h2>
-      <p><strong>{{ photoRecs.0.date }}</strong></p>
+    <!-- 'container' creates a centered content area -->
+    <div class="row">
+        <!-- 'row' to organize content in a row -->
+        <div class="col-md-12">
+            <!-- 'col-md-12' takes up the full width of the grid -->
+            <h2>{{ photoRecs.0.sujet|proper_case }}</h2>
+            <p><strong>{{ photoRecs.0.date }}</strong></p>
+        </div>
     </div>
-  </div>
-  <div class="row">
-    {% for photo in photoRecs %}
-      <div class="col-md-2 mb-2">
-        <a href="{% url 'photoDetail' photo.pkey %}">
-          <img src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
-               alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid" data-toggle="tooltip" data-placement="top" title="{{ photo.sujet_dias|capfirst }}">
-        </a>
-        <p>{{ photo.sujet_dias|capfirst|truncatechars:20 }}</p>
-      </div>
-    {% endfor %}
-  </div>
+    <div class="row">
+        {% for photo in photoRecs %}
+        <div class="col-md-2 mb-2">
+            <!-- 'col-md-2' takes 2 units out of 12 in the grid. 'mb-2' adds margin at the bottom -->
+            <a href="{% url 'photoDetail' photo.pkey %}">
+                <img src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
+                     alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid" data-toggle="tooltip" data-placement="top" title="{{ photo.sujet_dias|capfirst }}">
+                <!-- 'img-fluid' allows the image to adapt to its container. 'data-toggle="tooltip"' activates the tooltip -->
+            </a>
+            <p>{{ photo.sujet_dias|capfirst|truncatechars:20 }}</p>
+        </div>
+        {% endfor %}
+    </div>
 </div>
-
-<style>
-  .col-md-4 {
-    margin-right: 10px;
-  }
-  .col-md-4:last-child {
-    margin-right: 0;
-  }
-</style>
 
 {% endblock %}
 
-
 {% block javascript %}
 <script>
-  $(document).ready(function(){
-    $('[data-toggle="tooltip"]').tooltip();
-  });
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
 </script>
+<!-- This script initializes tooltips for elements with the 'data-toggle="tooltip"' attribute -->
 {% endblock %}
