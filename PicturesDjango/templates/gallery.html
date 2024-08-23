@@ -6,11 +6,11 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark">
     <!-- 'navbar' creates a navigation bar. 'navbar-expand-lg' allows the nav to expand across the screen for large screen widths. 'navbar-dark' gives it a dark theme -->
-    <a class="navbar-brand" href="{% url 'home' %}">Home</a>
+    <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
     <!-- 'navbar-brand' is used for the site's logo or name -->
-    <a class="navbar-brand" href="#" onclick="goBack(); return false;">Previous</a>
+    <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
     <!-- A link to go back with a JavaScript script -->
-    <a class="navbar-brand" href="{% url 'ContactsSheet' desiredsubjectMD5 %}">Contact Page</a>
+    <a class="navbar-brand" href="{% url 'ContactsSheet' desiredsubjectMD5 %}">{% trans 'Contact Sheet' %}</a>
 </nav>
 
 <div class="container mt-5">

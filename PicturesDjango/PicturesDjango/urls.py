@@ -16,9 +16,31 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.conf.urls.i18n import i18n_patterns
 
+'''For enabling multiple languages in admin panel, we’ll prefer i18n_patterns
+function and modify our root urls.py as shown below:
+The i18n_patterns will automatically prepend the current active language
+code to all URL patterns defined within i18n_patterns(). So, all your admin URLs,
+with the current configuration having zh-cn and en activated, will have URLs as:
+/en/admin/*
+/zh-cn/admin/*'''
 
-urlpatterns = [
+urlpatterns = []
+
+urlpatterns += i18n_patterns(
     path('admin/', admin.site.urls),
+    path('', include('PicturesApp.urls')),
+)
+
+urlpatterns = i18n_patterns(
+    path('admin/', admin.site.urls),
+    # Add your other URL patterns here
+    path('', include('PicturesApp.urls')),
+)
+
+urlpatterns += [
+    path('accounts/', include('django.contrib.auth.urls')),
+    # URL patterns without language prefix
     path('', include('PicturesApp.urls')),
 ]

@@ -7,9 +7,9 @@
 
    <nav class="navbar navbar-expand-lg navbar-dark">
        <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
-       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
        <!-- Bootstrap class for branding, typically used for the site's logo or title -->
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
+       <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
    </nav>
 
 <div class="container">
@@ -43,12 +43,12 @@
         <!-- Additional metadata -->
       </ul>
 
-      <button id="edit-subject-btn">Modifier le sujet</button>
+      <button id="edit-subject-btn">{% trans 'Change subject' %}</button>
 
       <form id="subject-form" method="post" action="" style="display: none;">
           {% csrf_token %}
           {{ subject_form.as_p }}
-          <button type="submit">Ajouter un sujet</button>
+          <button type="submit">{% trans 'Save subject' %}</button>
       </form>
     </div>
   </div>

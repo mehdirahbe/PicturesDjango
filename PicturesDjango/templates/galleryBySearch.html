@@ -7,11 +7,11 @@
 
    <nav class="navbar navbar-expand-lg navbar-dark">
        <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
-       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
        <!-- Bootstrap class for branding, typically used for the site's logo or title -->
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
+       <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
        <!-- Same as above, used for navigation links -->
-       <a class="navbar-brand" href="{% url 'ContactsSheetBySearch' search_term %}">Page contact</a>
+       <a class="navbar-brand" href="{% url 'ContactsSheetBySearch' search_term %}">{% trans 'Contact Sheet' %}</a>
    </nav>
 
 <div class="container mt-5">

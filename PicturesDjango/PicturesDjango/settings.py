@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from decouple import config
+# for translations, from https://www.codementor.io/@curiouslearner/supporting-multiple-languages-in-django-part-1-11xjd2ovik
+from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -49,6 +51,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',#to serve static files
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',#LocaleMiddleware is responsible for determining the user's language preference based on various factors like the URL prefix, cookies, or the Accept-Language header from the browser
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -111,14 +114,41 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
+# Provide a lists of languages which your site supports.
+LANGUAGES = (
+    ('en', _('English')),
+    ('fr', _('Français')),
+)
+
+# translations are generated from marked labels by running this
+# django-admin makemessages -l fr
+# Once translated manually in po file, please run django-admin compilemessages
+# or new translations won't be taken into account
+# see https://docs.djangoproject.com/en/3.0/topics/i18n/translation/
+
+# Internationalization
+# https://docs.djangoproject.com/en/2.2/topics/i18n/
+
+# Set the default language for your site.
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
+# If you set this to False, Django will make some optimizations so as not
+# to load the internationalization machinery. Make sure it is set to
+# True if you want to support localization
 USE_I18N = True
+
+# If you set this to False, Django will not format dates, numbers and
+# calendars according to the current locale.
+USE_L10N = True
 
 USE_TZ = True
 
+# Contains the path list where Django should look into for django.po files for all supported languages
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/

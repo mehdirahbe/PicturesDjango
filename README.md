@@ -49,3 +49,14 @@ IMAGES_PATH=/home/mehdi/Images
 
 To run in local in release:
 gunicorn PicturesDjango.wsgi:application
+
+
+For internationalisation:
+1) Create .po files, you will have to add translations in them: (no need for english as text in html are already english):
+python manage.py makemessages --locale fr
+
+Note: you may need to do first:
+sudo apt install gettext
+
+2) Each time translations are added in po file(s), you have to compile them:
+python manage.py compilemessages

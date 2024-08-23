@@ -7,14 +7,14 @@
 
    <nav class="navbar navbar-expand-lg navbar-dark">
       <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
-      <a class="navbar-brand" href="{% url 'search_form' %}">Recherche</a>
+      <a class="navbar-brand" href="{% url 'search_form' %}">{% trans 'Search' %}</a>
       <!-- Bootstrap class for branding, typically used for the site's logo or title -->
-      <a class="navbar-brand" href="{% url 'insertnewpictures_form' %}">Ajouter nouvelles photos</a>
+      <a class="navbar-brand" href="{% url 'insertnewpictures_form' %}">{% trans 'Add new pictures' %}</a>
    </nav>
 
 <div class="container my-4">
   <!-- Bootstrap container class for responsive design, my-4 adds margin top and bottom -->
-  <input class="form-control mb-3" id="searchInput" type="text" placeholder="Search levels...">
+  <input class="form-control mb-3" id="searchInput" type="text" placeholder="{% trans 'Search levels' %}...">
   <!-- form-control is a Bootstrap class for form inputs, mb-3 adds margin bottom -->
   <div class="list-group" id="levelList">
     <!-- Bootstrap class for creating a list of items with a consistent look -->
@@ -31,6 +31,7 @@
         </div>
       {% endif %}
     {% endfor %}
+  </div>
   </div>
 
   <!-- Pagination controls -->

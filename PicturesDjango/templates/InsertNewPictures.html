@@ -7,21 +7,21 @@
 
    <nav class="navbar navbar-expand-lg navbar-dark">
        <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
-       <a class="navbar-brand" href="{% url 'home' %}">Accueil</a>
+       <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
        <!-- Bootstrap class for branding, typically used for the site's logo or title -->
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">Précédent</a>
+       <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
    </nav>
 
     <form method="post" class="form-inline">
         <!-- Bootstrap class for inline form layout -->
         {% csrf_token %}
-        Veuillez entrez les infos sur le dossier d'images:
+        {% trans "Please enter the information about the image folder:" %}
         <div class="form-group mb-2">
             <!-- Bootstrap class for form groups, mb-2 adds margin bottom -->
             {{ form.as_p }}
             <!-- Renders form fields as paragraphs -->
         </div>
-        <button type="submit" class="btn btn-primary mb-2">Lancer l'import et redimentionnement'</button>
+        <button type="submit" class="btn btn-primary mb-2">{% trans "Start the import and resizing" %}'</button>
         <!-- btn is a Bootstrap class for buttons, btn-primary gives it a primary color -->
     </form>
 
