@@ -20,4 +20,6 @@ urlpatterns = [
     path('search/', views.search_form, name='search_form'),
     # Import new pictures
     path('insertnewpictures/', views.InsertNewPictures, name='insertnewpictures_form'),
+    path('missing-scans/', views.list_missing_scans, name='list_missing_scans'),
+
 ]

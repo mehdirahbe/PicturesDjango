@@ -4,11 +4,13 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect
 import os
+import re
 from django.db.models import Q, Count
 from PicturesDjango import settings
 from unidecode import unidecode
 from .forms import SearchForm, InsertNewPicturesForm, PhotoSubjectForm
 from .PhotoModel import PhotoModel
+from pathlib import Path
 
 
 # Function to generate a Google Maps link if coordinates are available
@@ -271,6 +273,11 @@ def InsertNewPictures(request):
     Returns:
     - HttpResponse: Redirects to the contact sheet of newly added images or renders the form.
     """
+    initial = {}
+    if request.method == 'GET':
+        jpegsdirectory = request.GET.get('jpegsdirectory')
+        if jpegsdirectory:
+            initial['jpegsdirectory'] = jpegsdirectory
     if request.method == 'POST':
         form = InsertNewPicturesForm(request.POST)
         if form.is_valid():
@@ -307,4 +314,63 @@ def InsertNewPictures(request):
         else:
             return render(request, 'InsertNewPictures.html', {'form': form})
     else:
-        return render(request, 'InsertNewPictures.html', {'form': InsertNewPicturesForm()})
+        form = InsertNewPicturesForm(initial=initial)
+
+    return render(request, 'InsertNewPictures.html', {'form': form})
+
+def list_missing_scans(request):
+    scans_root = os.path.join(settings.IMAGES_PATH, "scans")
+    images_root = Path(settings.IMAGES_PATH)
+
+    def get_subdirs(root):
+        subdirs = {}
+        for dirpath, dirnames, _ in os.walk(root):
+            rel = Path(dirpath).relative_to(root)
+            if rel != Path("."):
+                if (not dirpath.endswith('raw')):
+                    # Clé = minuscule, valeur = chemin réel
+                    subdirs[rel.as_posix().lower()] = rel
+        return subdirs
+
+    # Regex pour détecter les extensions JPG (case-insensitive)
+    JPG_PATTERN = re.compile(r'\.jpe?g$', re.IGNORECASE)
+
+    def has_jpg_files(directory):
+        dir_path = Path(directory)
+        if not dir_path.is_dir():
+            return False
+        return any(file.suffix.lower() in {'.jpg', '.jpeg'} for file in dir_path.iterdir() if file.is_file())
+
+    scans_dirs = get_subdirs(scans_root)
+    images_dirs = get_subdirs(images_root)
+
+    # Comparaison case-insensitive
+    missing_lower = scans_dirs.keys() - images_dirs.keys()
+
+    # Récupérer les chemins réels (ceux de scans/)
+    missing = [scans_dirs[lower_key] for lower_key in missing_lower]
+
+    # Trier par chemin relatif (réel, pas lower)
+    missing = sorted(missing, key=lambda p: p.as_posix())
+
+    # Construire les URLs pré-remplies
+    from django.urls import reverse
+    from urllib.parse import quote
+
+    insert_url = reverse('insertnewpictures_form')
+    missing_with_url = []
+    for rel_path in missing:
+        full_path = scans_root / rel_path
+        if full_path.is_dir() and has_jpg_files(full_path):
+            url = f"{insert_url}?jpegsdirectory={quote(str(full_path))}"
+            missing_with_url.append({
+                'path': rel_path,
+                'full_path': str(full_path),
+                'url': url
+            })
+
+    context = {
+        'missing_dirs': missing_with_url,
+        'total': len(missing_with_url)
+    }
+    return render(request, 'list_missing_scans.html', context)
