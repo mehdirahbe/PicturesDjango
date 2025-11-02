@@ -17,6 +17,15 @@ python3 -m venv .venv
 If it fails, run this first:
 sudo apt install python3.10-venv
 
+To update all:
+pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+pip list --outdated | grep -v '^\-e' | cut -d = -f1 | xargs -n1 pip install -U
+pip freeze >requirements.txt
+
+-->pip list --outdated must return an empty list
+
+
 Then:
 source .venv/bin/activate
 pip install -r requirements.txt
