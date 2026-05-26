@@ -44,63 +44,78 @@ def apply_orientation(img):
     return img
 
 
-def resize_image(in_file, out_files, desired_max_sizes):
+def resize_to_max_side(img, max_side, resample=None):
+    """Resize preserving aspect ratio so the longest side is at most max_side."""
+    if resample is None:
+        resample = LANCZOS
+    if img.width <= max_side and img.height <= max_side:
+        return img.copy()
+    if img.width >= img.height:
+        new_width = max_side
+        new_height = int(img.height * (max_side / img.width))
+    else:
+        new_height = max_side
+        new_width = int(img.width * (max_side / img.height))
+    return img.resize((new_width, new_height), resample)
+
+
+# Compatibility shim for older Pillow versions
+try:
+    LANCZOS = Image.Resampling.LANCZOS
+except AttributeError:
+    LANCZOS = Image.LANCZOS  # Pillow < 9.1
+
+
+def process_one_image(src_path, big_path, view_path, contact_path, max_big_size=1935):
+    """
+    Progressive resizing:
+      - big        ← from original (LANCZOS)
+      - view       ← from big        (LANCZOS)
+      - contactsheet ← from view     (LANCZOS)
+    All JPEG qualities ≥ 85.
+    """
     try:
-        with Image.open(in_file) as src_image:
-            src_image = apply_orientation(src_image)
-            max_dimension = max(src_image.width, src_image.height)
-            for out_file, desired_max_size in zip(out_files, desired_max_sizes):
-                scale_factor = 1.0
-                if max_dimension > desired_max_size:
-                    scale_factor = desired_max_size / max_dimension
-                new_width = int(src_image.width * scale_factor)
-                new_height = int(src_image.height * scale_factor)
-                new_image = src_image.resize((new_width, new_height), Image.LANCZOS)
-                new_image.save(out_file, "JPEG", quality=95)
+        with Image.open(src_path) as src:
+            src = apply_orientation(src)
+            # Ensure we are in a mode safe for JPEG
+            if src.mode in ("RGBA", "P"):
+                src = src.convert("RGB")
+            else:
+                src = src.convert("RGB")
+
+            # 1. Big (highest quality)
+            big_img = resize_to_max_side(src, max_big_size, LANCZOS)
+            big_img.save(big_path, "JPEG", quality=93, optimize=True)
+
+            # 2. View - from the big version we just created (in memory)
+            view_img = resize_to_max_side(big_img, max_big_size // 2, LANCZOS)
+            view_img.save(view_path, "JPEG", quality=89, optimize=True)
+
+            # 3. Contactsheet - from the view version (in memory)
+            contact_img = resize_to_max_side(view_img, max_big_size // 10, LANCZOS)
+            contact_img.save(contact_path, "JPEG", quality=87, optimize=True)
+
     except Exception as e:
-        print(f"Got exception {e}")
+        print(f"Error processing {src_path}: {e}")
+        raise
 
 
-def handle_image(psz_tif, psz_jpg_scan, psz_big, psz_contact_sheet, psz_view, p_b_from300d):
-    if psz_tif:
-        pass  # High-quality conversion from TIF to JPG if needed
 
-    l_n_desired_size = 1935
-    if psz_big:
-        print(f"Convert \"{psz_jpg_scan}\" to \"{psz_big}\"")
-        l_n_desired_sizes = [l_n_desired_size, l_n_desired_size // 2, l_n_desired_size // 10]
-        reduced_files = [psz_big, psz_view, psz_contact_sheet]
-        resize_image(psz_jpg_scan, reduced_files, l_n_desired_sizes)
-
-
-def handle_all_tifs(psz_scanned_tifs_dir, psz_jpg_scans):
-    pass  # Implementation if needed for TIF files
-
-
-def handle_jpeg_scans(psz_big, psz_contact_sheet, psz_view, psz_jpg_scans, p_b_from300d):
-    file_entries = os.listdir(psz_jpg_scans)
-    for file_name in file_entries:
-        if file_name.lower().endswith(".jpg"):
-            l_sz_jpg_scan = os.path.join(psz_jpg_scans, file_name)
-            l_sz_big = os.path.join(psz_big, file_name)
-            l_sz_view = os.path.join(psz_view, file_name)
-            l_sz_contact_sheet = os.path.join(psz_contact_sheet, file_name)
-            handle_image(None, l_sz_jpg_scan, l_sz_big, l_sz_contact_sheet, l_sz_view, p_b_from300d)
-
-
-def do_the_job(psz_scanned_tifs_dir, psz_big, psz_contact_sheet, psz_view, psz_jpg_scans, p_b_from300d):
-    if not p_b_from300d:
-        handle_all_tifs(psz_scanned_tifs_dir, psz_jpg_scans)
-    handle_jpeg_scans(psz_big, psz_contact_sheet, psz_view, psz_jpg_scans, p_b_from300d)
 
 
 class Command(BaseCommand):
-    help = ('Resize jpeg files from camera large resolution (mostly not useful) to decent size for visualisation/send by mail in 3 separate subdirs.'
-            'Needs:'
-            'Created by chatgpt to which I did ask to convert my c# script, itself a rewrite of a C program using imagemagick (which was'
-            'paintfully slow)'
-            'To test with something small:'
-            'python manage.py ResizeJpegs --seriesdestdirectory=Corentin/2019')
+    help = (
+        'Resize JPEG files to 3 sizes (big/view/contactsheet) using progressive downsampling.\n\n'
+        'Key improvements:\n'
+        '  - Progressive resizing (each size is generated from the immediately larger one)\n'
+        '  - High quality LANCZOS only (no bilinear)\n'
+        '  - JPEG quality never below 85\n'
+        '  - Parallel processing\n\n'
+        'Strongly recommended: install pillow-simd for much faster resizing on Intel CPUs:\n'
+        '    pip install --upgrade --force-reinstall pillow-simd\n\n'
+        'Example:\n'
+        '    python manage.py ResizeJpegs --seriesdestdirectory=Corentin/2019'
+    )
 
     def add_arguments(self, parser):
         parser.add_argument('--seriesdestdirectory', type=str, help='Required, ie voyages/amsterdam_TreldeNaes_Hoganas_2024')
@@ -129,6 +144,16 @@ class Command(BaseCommand):
         print("l_sz_view is: " + l_sz_view)
         print("l_sz_jpg_scans is: " + l_sz_jpg_scans)
 
+        # Pillow acceleration info
+        import PIL
+        pil_version = getattr(PIL, '__version__', 'unknown')
+        print(f"Pillow version: {pil_version}")
+
+        if "post" in pil_version.lower():
+            print("✓ Running with pillow-simd acceleration (good!)")
+        else:
+            print("! Running with standard Pillow. For much faster resizing on Intel CPUs, install pillow-simd instead.")
+
         #uncomment for a dry run
         #return
 
@@ -138,6 +163,33 @@ class Command(BaseCommand):
         os.makedirs(l_sz_view, exist_ok=True)
         os.makedirs(l_sz_jpg_scans, exist_ok=True)
 
-        do_the_job(sz_scanned_tifs_dir, l_sz_big, l_sz_contact_sheet, l_sz_view, l_sz_jpg_scans, l_b_from300d)
+        # --- Parallel progressive resizing ---
+        import concurrent.futures
 
+        file_entries = os.listdir(l_sz_jpg_scans)
+        jpg_files = sorted([f for f in file_entries if f.lower().endswith((".jpg", ".jpeg"))])
+
+        print(f"Found {len(jpg_files)} JPEG(s) to process in parallel...")
+
+        tasks = []
+        for file_name in jpg_files:
+            src = os.path.join(l_sz_jpg_scans, file_name)
+            big   = os.path.join(l_sz_big, file_name)
+            view  = os.path.join(l_sz_view, file_name)
+            contact = os.path.join(l_sz_contact_sheet, file_name)
+            tasks.append((src, big, view, contact, 1935))
+
+        # Use ProcessPoolExecutor for CPU-bound image resizing (best with pillow-simd)
+        max_workers = max(1, (os.cpu_count() or 4) - 1)   # leave one core free
+        print(f"Using up to {max_workers} parallel workers")
+
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(process_one_image, *task) for task in tasks]
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    future.result()   # will raise if the task failed
+                except Exception as e:
+                    print(f"Task failed: {e}")
+
+        print("ResizeJpegs finished.")
         return

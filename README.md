@@ -23,7 +23,29 @@ pip install -r requirements.txt
 pip list --outdated | grep -v '^\-e' | cut -d = -f1 | xargs -n1 pip install -U
 pip freeze >requirements.txt
 
+You may need the following packages:
+sudo apt update
+sudo apt install -y \
+    build-essential \
+    python3-dev \
+    libjpeg-turbo8-dev \
+    libpng-dev \
+    zlib1g-dev \
+    libwebp-dev \
+    libtiff5-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libopenjp2-7-dev
+
 -->pip list --outdated must return an empty list
+
+Note on Pillow:
+This project uses pillow-simd (in requirements.txt) instead of regular Pillow
+for much faster JPEG resizing (very noticeable on Intel CPUs).
+If you reinstall dependencies, make sure to use:
+    pip uninstall pillow
+    pip install pillow-simd
+Do not have both installed at the same time.
 
 
 Then:
