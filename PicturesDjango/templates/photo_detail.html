@@ -25,8 +25,17 @@
   <div class="row">
     <div class="col-md-auto">
       <!-- Image column -->
-      <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photoRec.sujet_dias|capfirst }}" class="img-fluid" style="max-width: 100%; height: auto;">
-      <!-- img-fluid makes the image responsive -->
+      <div class="photo-container text-center">
+		    <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photoRec.sujet_dias|capfirst }}"
+			 class="img-fluid rounded shadow" 
+			 id="photo-img"
+			 style="max-height: 82vh; 
+				width: auto; 
+				max-width: 100%; 
+				object-fit: contain; 
+				margin: 0 auto;">
+		</div>
+       <!-- img-fluid makes the image responsive -->
     </div>
   </div>
   <div class="row">
@@ -55,6 +64,22 @@
 </div>
 
 <style>
+	.photo-container {
+	    background-color: #343a40;
+	    padding: 15px;
+	    border-radius: 12px;
+	    margin-bottom: 20px;
+	}
+
+	#photo-img {
+	    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+	    transition: transform 0.3s ease;
+	}
+
+	#photo-img:hover {
+	    transform: scale(1.02);
+	}
+
 #subject-form {
     color: white; /* Text color */
     padding: 10px;

@@ -33,8 +33,17 @@
           <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
         {% endif %}
         <!-- Custom class for previous button -->
-        <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid rounded" id="photo-img">
-        <!-- img-fluid makes the image responsive, rounded adds rounded corners -->
+        <div class="photo-container text-center">
+		    <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}"
+			 class="img-fluid rounded shadow" 
+			 id="photo-img"
+			 style="max-height: 82vh; 
+				width: auto; 
+				max-width: 100%; 
+				object-fit: contain; 
+				margin: 0 auto;">
+		</div>
+         <!-- img-fluid makes the image responsive, rounded adds rounded corners -->
         <div class="col-md-auto">
           <p class="mt-2 text-white"><strong>{{ photo.date }}</strong></p>
           <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst }}</p>
@@ -54,6 +63,22 @@
     </div>
   </div>
 <style>
+	.photo-container {
+	    background-color: #343a40;
+	    padding: 15px;
+	    border-radius: 12px;
+	    margin-bottom: 20px;
+	}
+
+	#photo-img {
+	    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+	    transition: transform 0.3s ease;
+	}
+
+	#photo-img:hover {
+	    transform: scale(1.02);
+	}
+
 .photo-viewer {
   position: relative;
   padding: 20px;
