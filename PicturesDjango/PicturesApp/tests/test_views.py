@@ -1,0 +1,209 @@
+"""
+Tests des vues principales.
+
+Stratégie :
+- On crée des objets PhotoModel minimaux en mémoire.
+- On ne touche jamais aux vraies photos ni au vrai filesystem.
+- On utilise la classe de base `PicturesAppTestCase` qui configure automatiquement un IMAGES_PATH temporaire.
+"""
+from django.urls import reverse
+from django.utils.translation import activate
+
+from PicturesApp.PhotoModel import PhotoModel
+from .base import PicturesAppTestCase
+
+
+class HomeAndLevelViewsTest(PicturesAppTestCase):
+
+    def setUp(self):
+        super().setUp()
+        activate('en')
+        PhotoModel.objects.create(
+            sujet="Vacances en Italie",
+            date="Été 2024",
+            sujet_dias="Superbe photo du Colisée",
+            commentaire="Voyage en famille",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="voyages",
+            second_niveau="italie_2024",
+            nom_fichier_jpeg="001.jpg",
+            checksum="test1234567890abcdef1234567890ab",
+        )
+
+    def test_home_displays_first_levels(self):
+        """La page d'accueil affiche les premier_niveau (dossiers de 1er niveau)."""
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "voyages")
+
+    def test_home_pagination(self):
+        response = self.client.get(reverse("home"))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("page_obj", response.context)
+
+
+class SecondLevelViewsTest(PicturesAppTestCase):
+
+    def setUp(self):
+        super().setUp()
+        activate('en')
+        PhotoModel.objects.create(
+            sujet="Vacances en Italie",
+            date="Été 2024",
+            sujet_dias="Photo de Rome",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="voyages",
+            second_niveau="italie_2024",
+            nom_fichier_jpeg="001.jpg",
+            checksum="abc1234567890abcdef1234567890abc",
+        )
+        PhotoModel.objects.create(
+            sujet="Vacances en Italie",
+            date="Été 2024",
+            sujet_dias="Photo de Venise",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="voyages",
+            second_niveau="italie_2024",
+            troisieme_niveau="venise",
+            nom_fichier_jpeg="002.jpg",
+            checksum="abc1234567890abcdef1234567890abc",
+        )
+
+    def test_display_second_level(self):
+        response = self.client.get(reverse("DisplaySecondLevel", args=["voyages"]))
+        self.assertEqual(response.status_code, 200)
+        # The template uses |capfirst|replace_underscore, so we look for the rendered text
+        self.assertContains(response, "Italie")
+
+
+class ContactSheetAndGalleryViewsTest(PicturesAppTestCase):
+
+    def setUp(self):
+        super().setUp()
+        activate('en')
+        self.subject_md5 = "contact1234567890abcdef1234567890a"
+        photo = PhotoModel.objects.create(
+            sujet="Test Contact Sheet",
+            date="2023",
+            sujet_dias="Photo principale",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="test",
+            second_niveau="contact",
+            nom_fichier_jpeg="001.jpg",
+            # We pass a placeholder because the model's save() always overwrites checksum from sujet
+            checksum="placeholder1234567890abcdef123456",
+            appareil="Canon 5D",
+        )
+        # Force the exact checksum we want to use in the test URLs.
+        # Using .update() bypasses the model's save() which always recomputes checksum from sujet.
+        PhotoModel.objects.filter(pk=photo.pk).update(checksum=self.subject_md5)
+
+    def test_contacts_sheet(self):
+        url = reverse("ContactsSheet", args=[self.subject_md5])
+        response = self.client.get(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        # Dans la contact sheet, le seul texte significatif est le sujet de la série (celui de la galerie).
+        # On vérifie la présence du checksum dans la page (il apparaît dans le lien vers la galerie).
+        self.assertContains(response, self.subject_md5)
+
+    def test_gallery(self):
+        import warnings
+        with warnings.catch_warnings(record=True):
+            warnings.simplefilter("always")
+            url = reverse("photo_gallery", args=[self.subject_md5])
+            # follow=True pour gérer d'éventuelles redirections i18n
+            response = self.client.get(url, follow=True)
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Photo principale")
+
+    def test_contacts_sheet_unknown_subject_returns_200_with_empty_list(self):
+        # Current view behavior: it does not raise Http404 for unknown checksum,
+        # it just renders with an empty queryset.
+        # This test documents the current (suboptimal) behavior.
+        url = reverse("ContactsSheet", args=["nonexistentmd5hash1234567890abcdef"])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context['photoRecs']), 0)
+
+
+class SearchViewsTest(PicturesAppTestCase):
+
+    def setUp(self):
+        super().setUp()
+        activate('en')
+
+    def test_search_form_get(self):
+        response = self.client.get(reverse("search_form"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "search_term")
+
+    def test_search_post_redirects_to_results(self):
+        response = self.client.post(reverse("search_form"), {"search_term": "Rome"})
+        self.assertRedirects(response, reverse("ContactsSheetBySearch", args=["Rome"]))
+
+
+class PhotoDetailViewTest(PicturesAppTestCase):
+
+    def setUp(self):
+        super().setUp()
+        activate('en')
+        self.photo = PhotoModel.objects.create(
+            sujet="Test technique",
+            date="2025",
+            sujet_dias="Photo avec données EXIF",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="test",
+            second_niveau="exif",
+            nom_fichier_jpeg="test.jpg",
+            checksum="testexifdata1234567890abcdef12",
+            appareil="Sony A7IV",
+            focale="85 mm",
+            diaphragme="f/1.4",
+            temps_pose="1/200 s",
+            iso=100,
+        )
+
+    def test_photo_detail_displays_technical_data(self):
+        """Vérifie que les nouvelles données techniques s'affichent."""
+        url = reverse("photoDetail", args=[self.photo.pkey])
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Sony A7IV")
+        self.assertContains(response, "85 mm")
+        self.assertContains(response, "f/1.4")
+        self.assertContains(response, "1/200 s")
+        self.assertContains(response, "ISO: 100")
+
+class PhotoDetail404Test(PicturesAppTestCase):
+    """Separate class so we don't run the expensive/fragile setUp just for a 404 test."""
+
+    def setUp(self):
+        super().setUp()
+        activate('en')
+
+    def test_photo_detail_404_on_unknown_id(self):
+        url = reverse("photoDetail", args=[999999])
+        # follow=True pour gérer d'éventuelles redirections i18n
+        response = self.client.get(url, follow=True)
+        self.assertEqual(response.status_code, 404)

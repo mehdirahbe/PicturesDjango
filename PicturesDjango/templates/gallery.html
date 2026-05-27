@@ -41,8 +41,8 @@
                 <!-- 'img-fluid' allows the image to adapt to its container, 'rounded' adds rounded corners -->
                 <div class="col-md-auto">
                     <p class="mt-2 text-white"><strong>{{ photo.date }}</strong></p>
-                    <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst }}</p>
-                    <p class="mt-2 text-white">{{ photo.commentaire }}</p>
+                    <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst|linebreaksbr }}</p>
+                    <p class="mt-2 text-white">{{ photo.commentaire|linebreaksbr }}</p>
                 </div>
                 <div class="col-md-auto text-start">
                     {% if photo.boite %}

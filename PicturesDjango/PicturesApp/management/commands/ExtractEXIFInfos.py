@@ -9,7 +9,7 @@ import requests
 from PicturesApp.PhotoModel import PhotoModel
 from django.db.models import Q
 import time
-from PicturesDjango import settings
+from django.conf import settings
 
 
 def get_exif_data(image_path):

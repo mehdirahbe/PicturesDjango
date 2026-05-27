@@ -42,8 +42,8 @@
     <div class="col-md-auto">
       <!-- Photo details column -->
       <p><strong>{{ photoRec.date }}</strong></p>
-      <p>{{ photoRec.sujet_dias|capfirst }}</p>
-      <p>{{ photoRec.commentaire }}</p>
+      <p>{{ photoRec.sujet_dias|capfirst|linebreaksbr }}</p>
+      <p>{{ photoRec.commentaire|linebreaksbr }}</p>
       <ul>
         <!-- Photo metadata list -->
         {% if photoRec.boite %}

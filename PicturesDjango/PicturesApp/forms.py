@@ -1,12 +1,61 @@
 from django import forms
 import os
-from PicturesDjango import settings
+import unicodedata
+from django.conf import settings
 from .PhotoModel import PhotoModel
 from django.utils.translation import gettext_lazy as _
+
+
+def _clean_control_characters(text):
+    """
+    Nettoie une chaîne de texte libre en supprimant les caractères de contrôle Unicode,
+    tout en conservant les caractères de mise en forme utiles (\\n, \\r, \\t).
+
+    Cette version utilise unicodedata.category() et est donc correcte pour
+    l'ensemble du jeu de caractères Unicode (français avec accents, grec,
+    cyrillique, chinois, emojis, etc.).
+
+    On conserve :
+    - \\n, \\r, \\t (retours à la ligne et tabulations)
+    - Tous les caractères dont la catégorie Unicode ne commence pas par 'C'
+      (c'est-à-dire tout sauf les caractères de contrôle).
+
+    On supprime notamment :
+    - Le caractère nul (\\x00)
+    - Les autres caractères de contrôle (C0, C1, etc.)
+    - Les caractères de formatage invisibles problématiques
+    """
+    if not text:
+        return text
+
+    allowed_controls = {'\n', '\r', '\t'}
+
+    return ''.join(
+        c for c in text
+        if c in allowed_controls or unicodedata.category(c)[0] != 'C'
+    )
 
 #Form to ask for a pattern to search. All images having it in comment will then be displayed
 class SearchForm(forms.Form):
     search_term = forms.CharField(label=_('Word to search'), max_length=100)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Clean control characters (including null bytes) *before* Django validators run
+        original_to_python = self.fields['search_term'].to_python
+
+        def cleaned_to_python(value):
+            value = original_to_python(value)
+            return _clean_control_characters(value)
+
+        self.fields['search_term'].to_python = cleaned_to_python
+
+    def clean_search_term(self):
+        search_term = self.cleaned_data.get('search_term', '')
+        search_term = search_term.strip()
+        # Final pass (in case newlines need normalization, etc.)
+        search_term = _clean_control_characters(search_term)
+        return search_term
 
 #widget to select a directory
 class DirectoryWidget(forms.widgets.Widget):
@@ -31,7 +80,7 @@ class InsertNewPicturesForm(forms.Form):
         "Full path to the hard drive folder (scans subdirectory) containing the JPEGs"))
     subject = forms.CharField(label=_("Subject"), max_length=100, help_text=_("Brief description of the subject, must be unique"))
     date = forms.CharField(label=_("Date"), max_length=50, help_text=_("Information about the period"))
-    comment = forms.CharField(label=_("Comment"), widget=forms.Textarea, help_text=_("Detailed text"))
+    comment = forms.CharField(label=_("Comment"), widget=forms.Textarea, max_length=2048, help_text=_("Detailed text (max ~2KB)"))
 
     '''Méthodes de Nettoyage : Les méthodes de nettoyage dans Django sont des méthodes de classe dans votre formulaire qui suivent le schéma clean_nom_du_champ. Elles sont utilisées pour effectuer des vérifications ou des transformations supplémentaires sur les données après que les validateurs de base ont été appliqués.
 Si une méthode de nettoyage est définie pour un champ (comme clean_jpegsdirectory), elle est appelée après la validation de base du champ.
@@ -49,8 +98,38 @@ Si la méthode de nettoyage lève une exception ValidationError, cette erreur es
 
         return directory
 
+    def clean_subject(self):
+        subject = self.cleaned_data.get('subject', '')
+        subject = subject.strip()
+        if not subject:
+            raise forms.ValidationError(_("Subject cannot be empty."))
+        # Allow newlines, but clean control characters that don't render well
+        subject = _clean_control_characters(subject)
+        return subject
+
+    def clean_comment(self):
+        comment = self.cleaned_data.get('comment', '')
+        comment = comment.strip()
+        if not comment:
+            raise forms.ValidationError(_("Comment cannot be empty."))
+        comment = _clean_control_characters(comment)
+        return comment
+
+
 #to edit sujet_dias when displaying a picture
 class PhotoSubjectForm(forms.ModelForm):
     class Meta:
         model = PhotoModel
         fields = ['sujet_dias']
+
+    def clean_sujet_dias(self):
+        sujet_dias = self.cleaned_data.get('sujet_dias', '')
+        sujet_dias = sujet_dias.strip()
+        if not sujet_dias:
+            raise forms.ValidationError(_("Description cannot be empty."))
+        # Allow newlines for formatting
+        sujet_dias = _clean_control_characters(sujet_dias)
+        # Add a reasonable limit (2KB)
+        if len(sujet_dias) > 2048:
+            raise forms.ValidationError(_("Description is too long (max 2KB)."))
+        return sujet_dias

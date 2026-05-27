@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpRespons
 import os
 import re
 from django.db.models import Q, Count
-from PicturesDjango import settings
+from django.conf import settings
 from unidecode import unidecode
 from .forms import SearchForm, InsertNewPicturesForm, PhotoSubjectForm
 from .PhotoModel import PhotoModel
@@ -140,7 +140,11 @@ def photoDetail(request, photo_id):
     Returns:
     - HttpResponse: Renders the photo detail page or form submission result.
     """
-    photo = PhotoModel.objects.get(pkey=photo_id)
+    try:
+        photo = PhotoModel.objects.get(pkey=photo_id)
+    except PhotoModel.DoesNotExist:
+        raise Http404("Photo not found")
+
     if request.method == 'POST':
         form = PhotoSubjectForm(request.POST, instance=photo)
         if form.is_valid():
@@ -168,7 +172,7 @@ def contactsSheet(request, desiredsubjectMD5):
     - HttpResponse: Renders the contact sheet or raises Http404 if not found.
     """
     try:
-        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
+        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True).order_by('pkey')
         return render(request, 'contactsSheet.html', {'photoRecs': allphotos, 'desiredsubjectMD5': desiredsubjectMD5})
     except:
         raise Http404("Subject not found")
@@ -186,12 +190,15 @@ def Gallery(request, desiredsubjectMD5):
     - HttpResponse: Renders the gallery or raises Http404 if not found.
     """
     try:
-        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
+        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True).order_by('pkey')
         paginator = Paginator(allphotos, 1)
         page_number = request.GET.get('page')
         photos_page = paginator.get_page(page_number)
 
-        photo = photos_page[0] if photos_page else None
+        try:
+            photo = photos_page[0]
+        except (IndexError, TypeError):
+            photo = None
 
         return render(request, 'gallery.html', {
             'photo': photo,

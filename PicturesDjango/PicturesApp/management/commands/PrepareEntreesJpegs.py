@@ -1,7 +1,7 @@
 import os
 from django.core.management.base import BaseCommand
 from PicturesApp.PhotoModel import PhotoModel
-from PicturesDjango import settings
+from django.conf import settings
 
 
 def process_images(dias_dir, jpeg_dir,subject, date, commentaire):

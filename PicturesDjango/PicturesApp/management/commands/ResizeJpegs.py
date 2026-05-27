@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 import os
 from PIL import Image, ExifTags
-from PicturesDjango import settings
+from django.conf import settings
 
 
 def get_image_orientation(img):
