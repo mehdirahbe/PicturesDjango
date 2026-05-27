@@ -52,6 +52,27 @@
         <!-- Additional metadata -->
       </ul>
 
+      <!-- JPEG File Name + Données techniques EXIF -->
+      {% if photoRec.nom_fichier_jpeg %}
+          <p class="mt-2 text-white">JPEG File Name: {{ photoRec.nom_fichier_jpeg }}</p>
+      {% endif %}
+
+      {% if photoRec.appareil %}
+          <p class="mt-2 text-white">Appareil: {{ photoRec.appareil }}</p>
+      {% endif %}
+      {% if photoRec.focale %}
+          <p class="mt-2 text-white">Focale: {{ photoRec.focale }}</p>
+      {% endif %}
+      {% if photoRec.diaphragme %}
+          <p class="mt-2 text-white">Diaphragme: {{ photoRec.diaphragme }}</p>
+      {% endif %}
+      {% if photoRec.temps_pose %}
+          <p class="mt-2 text-white">Temps de pose: {{ photoRec.temps_pose }}</p>
+      {% endif %}
+      {% if photoRec.iso %}
+          <p class="mt-2 text-white">ISO: {{ photoRec.iso }}</p>
+      {% endif %}
+
       <button id="edit-subject-btn">{% trans 'Change subject' %}</button>
 
       <form id="subject-form" method="post" action="" style="display: none;">

@@ -54,6 +54,28 @@
           {% if photo.boite %}
             <p class="mt-2 text-white">Boîte: {{ photo.boite }}</p>
           {% endif %}
+
+          <!-- JPEG File Name + Données techniques EXIF (après JPEG File Name) -->
+          {% if photo.nom_fichier_jpeg %}
+              <p class="mt-2 text-white">JPEG File Name: {{ photo.nom_fichier_jpeg }}</p>
+          {% endif %}
+
+          {% if photo.appareil %}
+              <p class="mt-2 text-white">Appareil: {{ photo.appareil }}</p>
+          {% endif %}
+          {% if photo.focale %}
+              <p class="mt-2 text-white">Focale: {{ photo.focale }}</p>
+          {% endif %}
+          {% if photo.diaphragme %}
+              <p class="mt-2 text-white">Diaphragme: {{ photo.diaphragme }}</p>
+          {% endif %}
+          {% if photo.temps_pose %}
+              <p class="mt-2 text-white">Temps de pose: {{ photo.temps_pose }}</p>
+          {% endif %}
+          {% if photo.iso %}
+              <p class="mt-2 text-white">ISO: {{ photo.iso }}</p>
+          {% endif %}
+
           <!-- Additional photo metadata -->
           {% if photos.has_next %}
             <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>

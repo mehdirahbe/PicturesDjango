@@ -45,6 +45,13 @@ class PhotoModel(models.Model):
     longitude=models.FloatField(null=True)
     latitude = models.FloatField(null=True)
 
+    # === Données techniques EXIF (remplies automatiquement lors de l'import) ===
+    appareil = models.CharField(max_length=120, blank=True, null=True, db_index=True)
+    focale = models.CharField(max_length=30, blank=True, null=True)
+    diaphragme = models.CharField(max_length=20, blank=True, null=True)
+    temps_pose = models.CharField(max_length=20, blank=True, null=True)
+    iso = models.PositiveIntegerField(null=True, blank=True, db_index=True)
+
     #save record, overloaded to compute MD5 hash of the subject
     def save(self, *args, **kwargs):
         self.checksum = hashlib.md5(self.sujet.encode(),usedforsecurity=False).hexdigest()
