@@ -21,7 +21,7 @@ def get_exif_data(image_path):
                 if key in TAGS
             }
         return exif_data
-    except:
+    except Exception:
         return None
 
 

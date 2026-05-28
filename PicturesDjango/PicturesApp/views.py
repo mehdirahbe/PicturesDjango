@@ -115,6 +115,10 @@ def photo_Jpeg(request, photo_id, size):
     Returns:
     - HttpResponse: The image data or raises Http404 if not found.
     """
+    ALLOWED_SIZES = {'big', 'view', 'contactsheet'}
+    if size not in ALLOWED_SIZES:
+        raise Http404("Invalid size")
+
     try:
         photo = PhotoModel.objects.get(pkey=photo_id)
         jpeg_path = os.path.join(settings.IMAGES_PATH, photo.premier_niveau, photo.second_niveau)
@@ -125,7 +129,7 @@ def photo_Jpeg(request, photo_id, size):
         with open(jpeg_path, 'rb') as f:
             image_data = f.read()
         return HttpResponse(image_data, content_type='image/jpeg')
-    except:
+    except Exception:
         raise Http404("Image not found")
 
 
@@ -174,7 +178,7 @@ def contactsSheet(request, desiredsubjectMD5):
     try:
         allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True).order_by('pkey')
         return render(request, 'contactsSheet.html', {'photoRecs': allphotos, 'desiredsubjectMD5': desiredsubjectMD5})
-    except:
+    except Exception:
         raise Http404("Subject not found")
 
 
@@ -206,7 +210,7 @@ def Gallery(request, desiredsubjectMD5):
             'desiredsubjectMD5': desiredsubjectMD5,
             'linktogooglemaps': GetLinkToGoogleMaps(photo)
         })
-    except:
+    except Exception:
         raise Http404("Subject not found")
 
 
@@ -229,7 +233,7 @@ def contactsSheetBySearch(request, search_term):
             Q(commentaire__icontains=search_term) |
             Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True)
         return render(request, 'contactsSheetBySearch.html', {'photoRecs': allphotos, 'search_term': search_term})
-    except:
+    except Exception:
         raise Http404("Subject not found")
 
 
@@ -263,7 +267,7 @@ def GalleryBySearch(request, search_term):
             'search_term': search_term,
             'linktogooglemaps': GetLinkToGoogleMaps(photo)
         })
-    except:
+    except Exception:
         raise Http404("Subject not found")
 
 

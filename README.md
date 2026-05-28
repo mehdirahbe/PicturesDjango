@@ -74,9 +74,20 @@ python manage.py startapp PicturesApp
 To run it in debug, it is:
 python manage.py runserver
 
-Images path can be precised like this:
-Créez un fichier nommé .env dans le répertoire racine de votre projet Django, à côté de manage.py. Le contenu de ce fichier sera :
+Créez un fichier nommé `.env` dans le répertoire racine du projet (à côté de manage.py).
+
+Variables supportées dans le `.env` :
+
+```env
 IMAGES_PATH=/home/mehdi/Images
+DEBUG=False                 # True seulement quand tu veux debugger
+SECRET_KEY=                 # Optionnel pour un usage 100% local sur ton PC
+```
+
+Exemple minimal :
+```
+IMAGES_PATH=/home/mehdi/Images
+```
 
 To run in local in release:
 gunicorn PicturesDjango.wsgi:application

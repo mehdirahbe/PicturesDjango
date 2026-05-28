@@ -27,10 +27,20 @@ IMAGES_PATH = config('IMAGES_PATH', default='/home/mehdi/Images')
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5f!qq@6e!2nm2usbit=5$14n-wsw9*p^1zww^93^gfc#jr9fx)'
+# For local use only, you can leave it empty and a fallback will be generated.
+# Best practice: put SECRET_KEY in your .env file.
+SECRET_KEY = config('SECRET_KEY', default=None)
+
+if not SECRET_KEY:
+    # Fallback for pure local use (not ideal if you ever share the machine image,
+    # but avoids forcing you to manage a secret for an internal-only app).
+    import hashlib
+    SECRET_KEY = hashlib.sha256(
+        (str(IMAGES_PATH) + "picturesdjango-local-fallback").encode()
+    ).hexdigest()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ["127.0.0.1"]
 
