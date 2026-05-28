@@ -27,73 +27,12 @@
 
     -->
     <link rel="stylesheet" href="{% static "bootstrap.min.css" %}"  crossorigin="anonymous">
+    <!-- Custom site styles (centralized in static/css/custom.css) -->
+    <link rel="stylesheet" href="{% static "css/custom.css" %}">
+
+    <!-- Page-specific CSS overrides (if really needed) -->
     <style>
-        body {
-          background-color: #343a40;
-          color: #ffffff;
-        }
-
-        .navbar, .card {
-          background-color: #343a40;
-          color: #ffffff;
-        }
-
-        a {
-          color: #17a2b8;
-        }
-
-        a:hover {
-          color: #138496;
-        }
-
-        .btn-primary {
-          background-color: #007bff;
-          border-color: #007bff;
-        }
-
-        .btn-primary:hover {
-          background-color: #0056b3;
-          border-color: #004085;
-        }
-
-        .list-group-item-dark {
-            background-color: #3a3f44;
-            color: #ffffff;
-        }
-
-        .list-group-item-warning-dark {
-            background-color: #6c757d;
-            color: #ffffff;
-        }
-
-        .pagination-dark .page-link {
-            background-color: #3a3f44;
-            color: #ffffff;
-            border: 1px solid #444950;
-        }
-
-        .pagination-dark .page-link:hover {
-            background-color: #5a6268;
-            color: #ffffff;
-        }
-
-        .pagination-dark .page-item.active .page-link {
-            background-color: #17a2b8;
-            border-color: #17a2b8;
-            color: #ffffff;
-        }
-
-        .pagination-dark .page-link:focus,
-        .pagination-dark .page-link:active {
-            background-color: #138496;
-            border-color: #138496;
-            color: #ffffff;
-        }
-
-        /* Ajoutez d'autres styles personnalisés selon vos besoins */
-        {% block cssstyle %}
-        {% endblock %}
-
+        {% block cssstyle %}{% endblock %}
     </style>
 </head>
 

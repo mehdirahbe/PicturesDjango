@@ -1,0 +1,163 @@
+/* ============================================================
+   PicturesDjango - Custom site styles
+   This is now the single source of truth for all custom CSS.
+   - Dark theme
+   - Photo viewer components
+   - Form styling
+   etc.
+
+   Loaded after bootstrap.min.css in base.html.
+   Run collectstatic after any change.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   Big photo viewer (used in photo_detail, gallery, galleryBySearch)
+   ------------------------------------------------------------ */
+.photo-container {
+    background-color: #343a40;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+#photo-img {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    transition: transform 0.3s ease;
+}
+
+#photo-img:hover {
+    transform: scale(1.02);
+}
+
+/* ------------------------------------------------------------
+   Gallery viewer with prev/next arrows (gallery + galleryBySearch)
+   ------------------------------------------------------------ */
+.photo-viewer {
+    position: relative;
+    padding: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.photo-viewer img {
+    z-index: 2;
+    position: relative;
+}
+
+.prev-btn,
+.next-btn {
+    position: absolute;
+    top: 100px; /* Don't even think to move */
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 50%;
+    text-decoration: none;
+    font-size: 24px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    z-index: 3;
+}
+
+.prev-btn {
+    left: 10px;
+}
+
+.next-btn {
+    right: 10px;
+}
+
+.prev-btn:hover,
+.next-btn:hover {
+    opacity: 1;
+}
+
+/* ------------------------------------------------------------
+   Dark theme for form controls (search + insert new pictures)
+   ------------------------------------------------------------ */
+.form-control,
+.btn {
+    background-color: #495057;
+    border: 1px solid #ced4da;
+    color: #fff; /* ensure text remains readable in dark inputs */
+}
+
+.form-control:focus {
+    background-color: #495057;
+    border-color: #17a2b8;
+    color: #fff;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+/* ------------------------------------------------------------
+   Future: other repeated custom rules can be added here
+   (e.g. enhanced list-group, cards, etc.)
+   ------------------------------------------------------------ */
+
+/* ============================================================
+   GLOBAL DARK THEME
+   Moved from base.html for consistency (single source of truth)
+   ============================================================ */
+
+body {
+  background-color: #343a40;
+  color: #ffffff;
+}
+
+.navbar, .card {
+  background-color: #343a40;
+  color: #ffffff;
+}
+
+a {
+  color: #17a2b8;
+}
+
+a:hover {
+  color: #138496;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #004085;
+}
+
+.list-group-item-dark {
+    background-color: #3a3f44;
+    color: #ffffff;
+}
+
+.list-group-item-warning-dark {
+    background-color: #6c757d;
+    color: #ffffff;
+}
+
+.pagination-dark .page-link {
+    background-color: #3a3f44;
+    color: #ffffff;
+    border: 1px solid #444950;
+}
+
+.pagination-dark .page-link:hover {
+    background-color: #5a6268;
+    color: #ffffff;
+}
+
+.pagination-dark .page-item.active .page-link {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: #ffffff;
+}
+
+.pagination-dark .page-link:focus,
+.pagination-dark .page-link:active {
+    background-color: #138496;
+    border-color: #138496;
+    color: #ffffff;
+}

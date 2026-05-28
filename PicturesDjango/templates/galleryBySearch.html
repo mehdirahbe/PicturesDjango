@@ -33,117 +33,26 @@
           <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
         {% endif %}
         <!-- Custom class for previous button -->
-        <div class="photo-container text-center">
-		    <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|capfirst }}"
-			 class="img-fluid rounded shadow" 
-			 id="photo-img"
-			 style="max-height: 82vh; 
-				width: auto; 
-				max-width: 100%; 
-				object-fit: contain; 
-				margin: 0 auto;">
-		</div>
+        {% include "includes/_photo_image.html" %}
          <!-- img-fluid makes the image responsive, rounded adds rounded corners -->
-        <div class="col-md-auto">
-          <p class="mt-2 text-white"><strong>{{ photo.date }}</strong></p>
-          <p class="mt-2 text-white">{{ photo.sujet_dias|capfirst|linebreaksbr }}</p>
-          <p class="mt-2 text-white">{{ photo.commentaire|linebreaksbr }}</p>
-        </div>
-        <div class="col-md-auto text-start">
-          <!-- text-start aligns text to the left -->
-          {% if photo.boite %}
-            <p class="mt-2 text-white">Boîte: {{ photo.boite }}</p>
-          {% endif %}
 
-          <!-- JPEG File Name + Données techniques EXIF (après JPEG File Name) -->
-          {% if photo.nom_fichier_jpeg %}
-              <p class="mt-2 text-white">JPEG File Name: {{ photo.nom_fichier_jpeg }}</p>
-          {% endif %}
+        {# Shared description + location + maps link #}
+        {% with photo=photo %}
+            {% include "includes/_photo_metadata.html" %}
+        {% endwith %}
 
-          {% if photo.appareil %}
-              <p class="mt-2 text-white">Appareil: {{ photo.appareil }}</p>
-          {% endif %}
-          {% if photo.focale %}
-              <p class="mt-2 text-white">Focale: {{ photo.focale }}</p>
-          {% endif %}
-          {% if photo.diaphragme %}
-              <p class="mt-2 text-white">Diaphragme: {{ photo.diaphragme }}</p>
-          {% endif %}
-          {% if photo.temps_pose %}
-              <p class="mt-2 text-white">Temps de pose: {{ photo.temps_pose }}</p>
-          {% endif %}
-          {% if photo.iso %}
-              <p class="mt-2 text-white">ISO: {{ photo.iso }}</p>
-          {% endif %}
+        {# Technical EXIF (shared partial) #}
+        {% with photo=photo %}
+            {% include "includes/_technical_exif_info.html" %}
+        {% endwith %}
 
-          <!-- Additional photo metadata -->
-          {% if photos.has_next %}
-            <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
-          {% endif %}
-          <!-- Custom class for next button -->
-      </div>
+        <!-- Next arrow (positioned by CSS) -->
+        {% if photos.has_next %}
+          <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
+        {% endif %}
     </div>
   </div>
-<style>
-	.photo-container {
-	    background-color: #343a40;
-	    padding: 15px;
-	    border-radius: 12px;
-	    margin-bottom: 20px;
-	}
-
-	#photo-img {
-	    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-	    transition: transform 0.3s ease;
-	}
-
-	#photo-img:hover {
-	    transform: scale(1.02);
-	}
-
-.photo-viewer {
-  position: relative;
-  padding: 20px;
-  border-radius: 10px;
-  overflow: hidden;
-  /* Custom styling for photo viewer container */
-}
-
-.photo-viewer img {
-  z-index: 2;
-  position: relative;
-  /* Image is positioned relative to the photo-viewer */
-}
-
-.prev-btn, .next-btn {
-  position: absolute;
-  top: 100px; /* Don't even think to move */
-  transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 10px 15px;
-  border-radius: 50%;
-  text-decoration: none;
-  font-size: 24px;
-  opacity: 0.7;
-  transition: opacity 0.3s ease;
-  z-index: 3; /* Above the image */
-  /* Custom styling for navigation buttons */
-}
-
-.prev-btn {
-  left: 10px; /* Fixed position on the left */
-}
-
-.next-btn {
-  right: 10px; /* Fixed position on the right */
-}
-
-.prev-btn:hover, .next-btn:hover {
-  opacity: 1;
-  /* Hover effect to increase opacity */
-}
-</style>
+</div>
 
 {% endblock %}
 

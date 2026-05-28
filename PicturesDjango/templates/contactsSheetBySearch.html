@@ -25,15 +25,7 @@
     </div>
     <div class="row">
         {% for photo in photoRecs %}
-        <div class="col-md-2 mb-2">
-            <!-- 'col-md-2' takes 2 units out of 12 in the grid. 'mb-2' adds margin at the bottom -->
-            <a href="{% url 'photoDetail' photo.pkey %}">
-                <img src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
-                     alt="{{ photo.sujet_dias|capfirst }}" class="img-fluid" data-toggle="tooltip" data-placement="top" title="{{ photo.sujet_dias|capfirst }}">
-                <!-- 'img-fluid' allows the image to adapt to its container. 'data-toggle="tooltip"' activates the tooltip -->
-            </a>
-            <p>{{ photo.sujet_dias|capfirst|truncatechars:20 }}</p>
-        </div>
+            {% include "includes/_photo_thumbnail_card.html" %}
         {% endfor %}
     </div>
 </div>
@@ -42,9 +34,12 @@
 
 {% block javascript %}
 <script>
-    $(document).ready(function(){
-        $('[data-toggle="tooltip"]').tooltip();
+document.addEventListener('DOMContentLoaded', function() {
+    // Bootstrap 5 native tooltips (no jQuery required)
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl);
     });
+});
 </script>
-<!-- This script initializes tooltips for elements with the 'data-toggle="tooltip"' attribute -->
 {% endblock %}

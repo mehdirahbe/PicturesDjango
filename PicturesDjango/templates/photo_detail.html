@@ -25,53 +25,23 @@
   <div class="row">
     <div class="col-md-auto">
       <!-- Image column -->
-      <div class="photo-container text-center">
-		    <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photoRec.sujet_dias|capfirst }}"
-			 class="img-fluid rounded shadow" 
-			 id="photo-img"
-			 style="max-height: 82vh; 
-				width: auto; 
-				max-width: 100%; 
-				object-fit: contain; 
-				margin: 0 auto;">
-		</div>
+      {% with photo=photoRec %}
+        {% include "includes/_photo_image.html" %}
+      {% endwith %}
        <!-- img-fluid makes the image responsive -->
     </div>
   </div>
   <div class="row">
     <div class="col-md-auto">
-      <!-- Photo details column -->
-      <p><strong>{{ photoRec.date }}</strong></p>
-      <p>{{ photoRec.sujet_dias|capfirst|linebreaksbr }}</p>
-      <p>{{ photoRec.commentaire|linebreaksbr }}</p>
-      <ul>
-        <!-- Photo metadata list -->
-        {% if photoRec.boite %}
-          <li>Boîte: {{ photoRec.boite }}</li>
-        {% endif %}
-        <!-- Additional metadata -->
-      </ul>
+      {# Shared description + location + maps link #}
+      {% with photo=photoRec %}
+          {% include "includes/_photo_metadata.html" %}
+      {% endwith %}
 
-      <!-- JPEG File Name + Données techniques EXIF -->
-      {% if photoRec.nom_fichier_jpeg %}
-          <p class="mt-2 text-white">JPEG File Name: {{ photoRec.nom_fichier_jpeg }}</p>
-      {% endif %}
-
-      {% if photoRec.appareil %}
-          <p class="mt-2 text-white">Appareil: {{ photoRec.appareil }}</p>
-      {% endif %}
-      {% if photoRec.focale %}
-          <p class="mt-2 text-white">Focale: {{ photoRec.focale }}</p>
-      {% endif %}
-      {% if photoRec.diaphragme %}
-          <p class="mt-2 text-white">Diaphragme: {{ photoRec.diaphragme }}</p>
-      {% endif %}
-      {% if photoRec.temps_pose %}
-          <p class="mt-2 text-white">Temps de pose: {{ photoRec.temps_pose }}</p>
-      {% endif %}
-      {% if photoRec.iso %}
-          <p class="mt-2 text-white">ISO: {{ photoRec.iso }}</p>
-      {% endif %}
+      {# Technical EXIF (shared partial) #}
+      {% with photo=photoRec %}
+          {% include "includes/_technical_exif_info.html" %}
+      {% endwith %}
 
       <button id="edit-subject-btn">{% trans 'Change subject' %}</button>
 
@@ -85,33 +55,18 @@
 </div>
 
 <style>
-	.photo-container {
-	    background-color: #343a40;
-	    padding: 15px;
-	    border-radius: 12px;
-	    margin-bottom: 20px;
-	}
-
-	#photo-img {
-	    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-	    transition: transform 0.3s ease;
-	}
-
-	#photo-img:hover {
-	    transform: scale(1.02);
-	}
-
 #subject-form {
-    color: white; /* Text color */
+    color: white;
     padding: 10px;
     border-radius: 5px;
     margin-top: 10px;
 }
 
-#subject-form input, #subject-form textarea {
-    background-color: #444; /* Dark input background */
-    color: white; /* White text in input fields */
-    border: 1px solid #666; /* Dark border for input fields */
+#subject-form input,
+#subject-form textarea {
+    background-color: #444;
+    color: white;
+    border: 1px solid #666;
 }
 </style>
 

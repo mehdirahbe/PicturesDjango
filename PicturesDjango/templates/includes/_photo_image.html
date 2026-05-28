@@ -1,0 +1,11 @@
+<div class="photo-container text-center">
+    <img src="{% url 'photo_Jpeg' photo.pkey 'big' %}" 
+         alt="{{ photo.sujet_dias|capfirst }}"
+         class="img-fluid rounded shadow" 
+         id="photo-img"
+         style="max-height: 82vh; 
+                width: auto; 
+                max-width: 100%; 
+                object-fit: contain; 
+                margin: 0 auto;">
+</div>
