@@ -474,7 +474,7 @@ def InsertNewPictures(request):
     return render(request, 'InsertNewPictures.html', {'form': form})
 
 def list_missing_scans(request):
-    scans_root = os.path.join(settings.IMAGES_PATH, "scans")
+    scans_root = Path(settings.IMAGES_PATH) / "scans"
     images_root = Path(settings.IMAGES_PATH)
 
     def get_subdirs(root):
