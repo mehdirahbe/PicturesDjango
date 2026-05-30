@@ -136,6 +136,11 @@ Si la méthode de nettoyage lève une exception ValidationError, cette erreur es
             raise forms.ValidationError(_("Subject cannot be empty."))
         # Allow newlines, but clean control characters that don't render well
         subject = _clean_control_characters(subject)
+
+        # Unicité du sujet : on ne veut pas ré-importer une galerie qui existe déjà
+        if PhotoModel.objects.filter(sujet=subject).exists():
+            raise forms.ValidationError(_("Ce sujet existe déjà."))
+
         return subject
 
     def clean_comment(self):

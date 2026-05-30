@@ -37,6 +37,10 @@ def process_images(dias_dir, jpeg_dir, subject, date, commentaire):
     if len(dir_parts) == 0:
         raise ValueError("Vous devez sélectionner un sous-dossier contenant des photos.")
 
+    # Unicité du sujet : on refuse de ré-importer une galerie qui existe déjà
+    if PhotoModel.objects.filter(sujet=subject).exists():
+        raise ValueError("Ce sujet existe déjà.")
+
     # === Règle de conception importante ===
     # On ne gère que les séries "plates" : tous les JPEGs doivent se trouver
     # directement dans le dossier sélectionné. Tous les sous-dossiers

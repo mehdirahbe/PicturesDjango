@@ -56,7 +56,7 @@ class SearchFormTest(SimpleTestCase):
         self.assertIn("–", cleaned)
 
 
-class InsertNewPicturesFormTest(SimpleTestCase):
+class InsertNewPicturesFormTest(TestCase):
     """
     Tests critiques pour le formulaire d'ajout de nouvelles images.
     Ce formulaire est la porte d'entrée du système.
