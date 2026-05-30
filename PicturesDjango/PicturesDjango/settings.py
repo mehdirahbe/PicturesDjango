@@ -10,10 +10,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import sys
+import logging
 from pathlib import Path
 from decouple import config
 # for translations, from https://www.codementor.io/@curiouslearner/supporting-multiple-languages-in-django-part-1-11xjd2ovik
 from django.utils.translation import gettext_lazy as _
+
+# === Early logging setup for debugging settings loading ===
+# This will print to the console even during `manage.py` commands.
+logging.basicConfig(
+    level=logging.INFO,
+    format='[SETTINGS-DEBUG] %(message)s',
+    stream=sys.stdout,
+    force=True   # override any previous basicConfig
+)
+logger = logging.getLogger('settings_debug')
+logger.info("===== SETTINGS.PY LOADING START =====")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,10 +53,14 @@ if not SECRET_KEY:
     ).hexdigest()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
+#
+# Strong priority to real environment variable (for one-shot usage like
+# DEBUG=True python manage.py runserver or migrate), falling back to .env / decouple.
+DEBUG = os.environ.get('DEBUG', '').lower() in ('true', '1', 'yes') or config('DEBUG', default=False, cast=bool)
+
+logger.info(f"DEBUG after evaluation = {DEBUG} | os.environ.get('DEBUG') = {os.environ.get('DEBUG')!r}")
 
 ALLOWED_HOSTS = ["127.0.0.1"]
-
 
 # Application definition
 
@@ -57,6 +74,19 @@ INSTALLED_APPS = [
     'PicturesApp',
 ]
 
+# Django Debug Toolbar
+# We add the app (so its migrations are visible to `migrate`) only when DEBUG=True
+# and the package is installed via requirements-dev.txt.
+if DEBUG:
+    try:
+        import debug_toolbar
+        INSTALLED_APPS.append('debug_toolbar')
+        logger.info(">>> debug_toolbar successfully ADDED to INSTALLED_APPS")
+    except ImportError:
+        logger.info(">>> debug_toolbar package NOT FOUND (ImportError)")
+else:
+    logger.info(">>> DEBUG=False → debug_toolbar NOT added to INSTALLED_APPS (skipped)")
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',#to serve static files
@@ -68,6 +98,25 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Django Debug Toolbar middleware (must be early, only in DEBUG)
+if DEBUG and 'debug_toolbar' in INSTALLED_APPS:
+    MIDDLEWARE.insert(1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    logger.info(">>> debug_toolbar middleware INSERTED into MIDDLEWARE")
+else:
+    logger.info(f">>> debug_toolbar middleware NOT inserted (DEBUG={DEBUG}, in INSTALLED_APPS={'debug_toolbar' in INSTALLED_APPS})")
+
+# Django Debug Toolbar configuration (memory store + large contact sheets)
+if DEBUG and 'debug_toolbar' in INSTALLED_APPS:
+    DEBUG_TOOLBAR_CONFIG = {
+        'RESULTS_STORE': 'debug_toolbar.storage.CacheStore',   # ← on repasse en cache
+        'RESULTS_CACHE_SIZE': 2000,                             # beaucoup plus permissif
+        'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,
+        'SQL_WARNING_THRESHOLD': 200,
+    }
+    logger.info(">>> DEBUG_TOOLBAR_CONFIG activated with CacheStore (RESULTS_CACHE_SIZE=200)")
+else:
+    logger.info(">>> DEBUG_TOOLBAR_CONFIG NOT activated")
 
 ROOT_URLCONF = 'PicturesDjango.urls'
 
@@ -88,6 +137,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'PicturesDjango.wsgi.application'
+
+logger.info("===== SETTINGS.PY LOADING FINISHED =====")
 
 
 # Database

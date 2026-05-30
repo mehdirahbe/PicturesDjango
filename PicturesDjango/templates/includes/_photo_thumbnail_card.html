@@ -1,8 +1,9 @@
 <div class="col-md-2 mb-2">
     <a href="{% url 'photoDetail' photo.pkey %}">
-        <img src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
+        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+             data-src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
              alt="{{ photo.sujet_dias|capfirst }}"
-             class="img-fluid"
+             class="img-fluid lazyload"
              data-bs-toggle="tooltip"
              data-bs-placement="top"
              title="{{ photo.sujet_dias|capfirst }}">

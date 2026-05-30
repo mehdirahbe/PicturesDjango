@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.conf.urls.i18n import i18n_patterns
+from django.conf import settings
 
 '''For enabling multiple languages in admin panel, we’ll prefer i18n_patterns
 function and modify our root urls.py as shown below:
@@ -44,3 +45,10 @@ urlpatterns += [
     # URL patterns without language prefix
     path('', include('PicturesApp.urls')),
 ]
+
+# Django Debug Toolbar URLs (only in DEBUG mode)
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ]

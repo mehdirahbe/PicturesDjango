@@ -74,6 +74,23 @@ python manage.py startapp PicturesApp
 To run it in debug, it is:
 python manage.py runserver
 
+### Django Debug Toolbar (recommandé en développement)
+
+Pour voir les requêtes SQL, les temps de rendu, les requêtes dupliquées (N+1), etc. :
+
+1. Installe les dépendances de développement :
+   ```bash
+   pip install -r requirements-dev.txt
+   ```
+
+2. Assure-toi que `DEBUG=True` dans ton fichier `.env` (ou via la variable d'environnement).
+
+3. Le toolbar apparaîtra automatiquement sur la droite de l'écran quand tu navigues sur le site en mode debug.
+
+Le toolbar est **uniquement activé** quand `DEBUG=True` et n'est donc jamais présent en production.
+
+Fichier `requirements-dev.txt` contient `django-debug-toolbar`. Ne l'ajoute pas dans `requirements.txt` (il est réservé au développement).
+
 Créez un fichier nommé `.env` dans le répertoire racine du projet (à côté de manage.py).
 
 Variables supportées dans le `.env` :
