@@ -12,6 +12,10 @@ from .forms import SearchForm, InsertNewPicturesForm, PhotoSubjectForm
 from .PhotoModel import PhotoModel
 from pathlib import Path
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 # Function to generate a Google Maps link if coordinates are available
 def GetLinkToGoogleMaps(photo):
@@ -176,7 +180,14 @@ def contactsSheet(request, desiredsubjectMD5):
     - HttpResponse: Renders the contact sheet or raises Http404 if not found.
     """
     try:
-        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True).order_by('pkey')
+        base_qs = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
+        total_count = base_qs.count()
+        if total_count > 1000:
+            logger.warning(
+                "Troncature de la planche contact pour le sujet MD5=%s : %d photos trouvées (>1000), limité à 1000.",
+                desiredsubjectMD5, total_count
+            )
+        allphotos = base_qs.order_by('pkey')[:1000]
         return render(request, 'contactsSheet.html', {'photoRecs': allphotos, 'desiredsubjectMD5': desiredsubjectMD5})
     except Exception:
         raise Http404("Subject not found")
@@ -194,7 +205,14 @@ def Gallery(request, desiredsubjectMD5):
     - HttpResponse: Renders the gallery or raises Http404 if not found.
     """
     try:
-        allphotos = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True).order_by('pkey')
+        base_qs = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
+        total_count = base_qs.count()
+        if total_count > 1000:
+            logger.warning(
+                "Troncature de la galerie pour le sujet MD5=%s : %d photos trouvées (>1000), limité à 1000.",
+                desiredsubjectMD5, total_count
+            )
+        allphotos = base_qs.order_by('pkey')[:1000]
         paginator = Paginator(allphotos, 1)
         page_number = request.GET.get('page')
         photos_page = paginator.get_page(page_number)
@@ -231,7 +249,7 @@ def contactsSheetBySearch(request, search_term):
             Q(sujet_dias__icontains=search_term) |
             Q(sujet_dias__icontains=search_term_normalized) |
             Q(commentaire__icontains=search_term) |
-            Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True)
+            Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True).order_by('pkey')[:1000]
         return render(request, 'contactsSheetBySearch.html', {'photoRecs': allphotos, 'search_term': search_term})
     except Exception:
         raise Http404("Subject not found")
@@ -254,7 +272,7 @@ def GalleryBySearch(request, search_term):
             Q(sujet_dias__icontains=search_term) |
             Q(sujet_dias__icontains=search_term_normalized) |
             Q(commentaire__icontains=search_term) |
-            Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True)
+            Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True).order_by('pkey')[:1000]
         paginator = Paginator(allphotos, 1)
         page_number = request.GET.get('page')
         photos_page = paginator.get_page(page_number)
