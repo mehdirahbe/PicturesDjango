@@ -5,9 +5,10 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect
 import os
 import re
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Case, When, Value, IntegerField
 from django.conf import settings
 from unidecode import unidecode
+from rapidfuzz import fuzz
 from .forms import SearchForm, InsertNewPicturesForm, PhotoSubjectForm
 from .PhotoModel import PhotoModel
 from pathlib import Path
@@ -15,6 +16,141 @@ from pathlib import Path
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
+    """
+    Recherche full-text multi-mots avec fuzzy (rapidfuzz) - Mode Option A strict (règle dure).
+
+    Phase 1 - Mot exact:
+        Pour chaque mot de la requête, récupération large par icontains exact (pas de fuzzy, pas de prefix).
+        Union via OR (Q objects) : un record avec typo "furte" est ramené grâce aux autres mots exacts
+        présents dans ses données (ex: "david" + "2013").
+
+    Phase 2 - Règle dure pour filtrer:
+        Pour chaque photo candidate, pour chaque mot de recherche :
+          - Si mot = année (isdigit) → match EXACT obligatoire dans les tokens (pas de fuzzy).
+          - Sinon → meilleur score WRatio sur les tokens individuels des champs.
+        Si UN SEUL mot a un score < fuzzy_threshold → exclusion totale (continue).
+        Photos qui passent la porte dure mais avec un score hybride très faible sont aussi éliminées
+        (floor sur final_score) pour éviter le bruit "année + fuzzy faible" en fin de liste.
+
+    Seuil 75 par défaut (relevé pour supprimer le bruit tout en préservant les typos utiles
+    comme "davud"→"david", "furte"↔"fuerte" etc.).
+    """
+    if not search_term or not search_term.strip():
+        return PhotoModel.objects.none()
+
+    normalized = unidecode(search_term).lower().strip()
+    words = [w for w in normalized.split() if len(w) >= 2]
+
+    if not words:
+        return PhotoModel.objects.none()
+
+    # ========== PHASE 1 : Récupération LARGE par mot EXACT (union OR) ==========
+    # Les records sont trouvés via les mots exacts (david, 2013...). Pas de fuzzy ici.
+    base_filter = Q(agrandi=True) & Q(premier_niveau__isnull=False)
+
+    candidates_qs = PhotoModel.objects.none()
+
+    for word in words:
+        word_q = (
+            Q(sujet_dias__icontains=word) |
+            Q(commentaire__icontains=word) |
+            Q(lieu__icontains=word) |
+            Q(date__icontains=word) |
+            Q(sujet__icontains=word)
+        )
+        candidates_qs |= PhotoModel.objects.filter(base_filter & word_q)
+
+    # On ramène un pool large (le filtrage dur se fait en phase 2)
+    candidates = list(
+        candidates_qs.distinct().order_by('pkey')[:3000]
+    )
+
+    if not apply_fuzzy:
+        return candidates[:1000]
+
+    # ========== PHASE 2 : RÈGLE DURE + scoring hybride ==========
+    scored_photos = []
+
+    for photo in candidates:
+        # Tokenisation de tous les champs texte (mots >= 2 chars)
+        raw_tokens = set()
+        for field in (photo.sujet_dias, photo.commentaire, photo.lieu, photo.date, photo.sujet):
+            if field:
+                for tok in re.split(r'[^a-z0-9]+', field.lower()):
+                    if len(tok) >= 2:
+                        raw_tokens.add(tok)
+
+        # Note: on garde les tokens tels quels (david's reste "david's") pour ne pas être trop permissif
+        photo_tokens = raw_tokens
+
+        word_scores = []
+        exact_in_sujet_dias = 0
+
+        for word in words:
+            best_score = 0
+
+            # 1) Match exact sur token ?
+            if word in photo_tokens:
+                best_score = 100
+                # Boost très fort si l'exact match est dans sujet_dias (règle métier)
+                if photo.sujet_dias:
+                    dias_tokens = re.split(r'[^a-z0-9]+', photo.sujet_dias.lower())
+                    if word in dias_tokens:
+                        exact_in_sujet_dias += 1
+            elif word.isdigit():
+                # Année : EXACT obligatoire, pas de fuzzy (règle dure)
+                best_score = 0
+            else:
+                # Fuzzy mot-à-mot (sur tokens individuels, plus précis que sur phrase entière)
+                # On ignore volontairement les tout petits tokens ("la", "de", "au", "me", "en"...)
+                # car ils font gonfler artificiellement le WRatio sur des mots longs ("montblanc")
+                # et font fuiter du bruit en fin de résultats.
+                if photo_tokens:
+                    min_tok_len = max(3, len(word) - 2)
+                    for tok in photo_tokens:
+                        if len(tok) < min_tok_len:
+                            continue
+                        score = fuzz.WRatio(word, tok)
+                        if score > best_score:
+                            best_score = score
+
+            word_scores.append(best_score)
+
+        min_word_score = min(word_scores) if word_scores else 0
+
+        # === RÈGLE DURE (Option A stricte) : un seul mot en dessous du seuil → EXCLUSION TOTALE (pas dans les résultats) ===
+        if min_word_score < fuzzy_threshold:
+            # On ne garde pas la photo du tout (c''est la "règle dure pour filtrer")
+            continue
+
+        # Score hybride : priorité aux matches exacts + qualité fuzzy + boost sujet_dias
+        num_exact = sum(1 for s in word_scores if s >= 99)
+        avg_fuzzy = sum(word_scores) / len(word_scores)
+
+        # Base forte pour les matches exacts (chaque mot exact = gros poids)
+        base = num_exact * 12
+        # Bonus supplémentaire très important pour les matches dans sujet_dias (exigence utilisateur)
+        base += exact_in_sujet_dias * 18
+
+        # Partie fuzzy (qualité de la tolérance typo) + récompense forte du pire mot (plus strict sur la "règle dure")
+        final_score = base + (avg_fuzzy * 0.25) + (min_word_score * 0.35)
+
+        # Floor de sécurité : même si on a passé la porte dure, si le score global reste très faible
+        # (typiquement "une année + un mot avec fuzzy juste au-dessus du seuil et rien d'autre"),
+        # on élimine pour ne pas polluer la fin des résultats.
+        if final_score < 12:
+            continue
+
+        scored_photos.append((final_score, photo))
+
+    # Tri par score final (les bons matches avec tous mots forts remontent en premier)
+    scored_photos.sort(key=lambda x: x[0], reverse=True)
+
+    # Limite finale 1000 (cohérent avec les autres galeries)
+    return [p for _, p in scored_photos[:1000]]
 
 
 # Function to generate a Google Maps link if coordinates are available
@@ -244,12 +380,7 @@ def contactsSheetBySearch(request, search_term):
     - HttpResponse: Renders the search result contact sheet or raises Http404 if not found.
     """
     try:
-        search_term_normalized = unidecode(search_term)
-        allphotos = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).filter(
-            Q(sujet_dias__icontains=search_term) |
-            Q(sujet_dias__icontains=search_term_normalized) |
-            Q(commentaire__icontains=search_term) |
-            Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True).order_by('pkey')[:1000]
+        allphotos = get_search_queryset(search_term)
         return render(request, 'contactsSheetBySearch.html', {'photoRecs': allphotos, 'search_term': search_term})
     except Exception:
         raise Http404("Subject not found")
@@ -267,12 +398,7 @@ def GalleryBySearch(request, search_term):
     - HttpResponse: Renders the search result gallery or raises Http404 if not found.
     """
     try:
-        search_term_normalized = unidecode(search_term)
-        allphotos = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).filter(
-            Q(sujet_dias__icontains=search_term) |
-            Q(sujet_dias__icontains=search_term_normalized) |
-            Q(commentaire__icontains=search_term) |
-            Q(commentaire__icontains=search_term_normalized)).filter(agrandi=True).order_by('pkey')[:1000]
+        allphotos = get_search_queryset(search_term)
         paginator = Paginator(allphotos, 1)
         page_number = request.GET.get('page')
         photos_page = paginator.get_page(page_number)

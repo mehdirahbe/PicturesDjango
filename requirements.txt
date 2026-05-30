@@ -8,6 +8,7 @@ idna==3.17
 packaging==26.2
 Pillow-SIMD==9.5.0.post2
 python-decouple==3.8
+rapidfuzz>=3.0.0
 requests==2.34.2
 setuptools==82.0.1
 sqlparse==0.5.5
