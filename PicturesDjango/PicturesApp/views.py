@@ -2,7 +2,7 @@ import hashlib
 from django.core.management import call_command
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect, FileResponse
 import os
 import re
 from django.db.models import Q, Count, Case, When, Value, IntegerField
@@ -247,13 +247,16 @@ def photo_Jpeg(request, photo_id, size):
     """
     Serve a JPEG image based on its ID and desired size.
 
+    - Uses FileResponse for streaming (better memory usage than loading the whole file).
+    - Explicitly handles photos without a scanned JPEG (historical slides).
+
     Args:
     - request (HttpRequest): The HTTP request object.
     - photo_id (int): The primary key of the photo.
-    - size (str): The size of the image to return.
+    - size (str): The size of the image to return ('big', 'view' or 'contactsheet').
 
     Returns:
-    - HttpResponse: The image data or raises Http404 if not found.
+    - FileResponse: The JPEG stream, or raises Http404 with a clear message.
     """
     ALLOWED_SIZES = {'big', 'view', 'contactsheet'}
     if size not in ALLOWED_SIZES:
@@ -261,15 +264,25 @@ def photo_Jpeg(request, photo_id, size):
 
     try:
         photo = PhotoModel.objects.get(pkey=photo_id)
-        jpeg_path = os.path.join(settings.IMAGES_PATH, photo.premier_niveau, photo.second_niveau)
-        if photo.troisieme_niveau:
-            jpeg_path = os.path.join(jpeg_path, photo.troisieme_niveau)
-        jpeg_path = os.path.join(jpeg_path, size, photo.nom_fichier_jpeg)
 
-        with open(jpeg_path, 'rb') as f:
-            image_data = f.read()
-        return HttpResponse(image_data, content_type='image/jpeg')
+        if not photo.nom_fichier_jpeg:
+            # This entry corresponds to a physical slide that was never scanned
+            raise Http404("No scanned image available for this slide.")
+
+        base_path = Path(settings.IMAGES_PATH) / photo.premier_niveau / photo.second_niveau
+        if photo.troisieme_niveau:
+            base_path = base_path / photo.troisieme_niveau
+
+        jpeg_path = base_path / size / photo.nom_fichier_jpeg
+
+        return FileResponse(open(jpeg_path, 'rb'), content_type='image/jpeg')
+
+    except PhotoModel.DoesNotExist:
+        raise Http404("Photo not found")
+    except FileNotFoundError:
+        raise Http404("Image file not found on disk")
     except Exception:
+        logger.exception("Unexpected error while serving photo pkey=%s size=%s", photo_id, size)
         raise Http404("Image not found")
 
 
