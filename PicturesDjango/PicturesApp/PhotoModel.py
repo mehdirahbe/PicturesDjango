@@ -52,6 +52,10 @@ class PhotoModel(models.Model):
     temps_pose = models.CharField(max_length=20, blank=True, null=True)
     iso = models.PositiveIntegerField(null=True, blank=True, db_index=True)
 
+    # Localisation déduite des coordonnées GPS (via Nominatim)
+    # Remplie automatiquement. Ne pas confondre avec un sujet_dias écrit manuellement.
+    lieu = models.CharField(max_length=200, blank=True, null=True, db_index=True)
+
     #save record, overloaded to compute MD5 hash of the subject
     def save(self, *args, **kwargs):
         self.checksum = hashlib.md5(self.sujet.encode(),usedforsecurity=False).hexdigest()

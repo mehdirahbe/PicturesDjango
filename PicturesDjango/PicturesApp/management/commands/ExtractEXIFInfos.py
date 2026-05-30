@@ -325,7 +325,7 @@ class Command(BaseCommand):
     help = (
         'Extract EXIF information from images of a given series:\n'
         '  - Date de prise de vue\n'
-        '  - Coordonnées GPS + localisation (sujet_dias, uniquement si vide)\n'
+        '  - Coordonnées GPS + lieu (champ dédié "lieu", uniquement si vide)\n'
         '  - Données techniques (appareil, focale, diaphragme, temps de pose, ISO)\n\n'
         'Syntax: python manage.py ExtractEXIFInfos --SubjectMD5 <md5>\n\n'
         'Note: pour remplir les nouveaux champs techniques sur toute la base, '
@@ -406,40 +406,36 @@ class Command(BaseCommand):
                                     setattr(photo, field, value)
                                     recUpdated = True
 
-                    # --- Localisation + GPS ---
-                    if photo.longitude is None or not (photo.sujet_dias or '').strip():
-                        lat, lon = get_gps_coordinates(exif)
-                        if lat is not None and lon is not None:
-                            if photo.longitude is None:
-                                photo.longitude = lon
-                                photo.latitude = lat
-                                recUpdated = True
-                            if not (photo.sujet_dias or '').strip():
-                                    #create a key from lat and lon keeping 2 digits, meaning about 1 km précision
-                                    gpsKey = (1000 * int(lat * 100.) + int(lon * 100.))
-                                    if gpsKey in dicoGPSToAddress:
-                                        print("from GPS cache: "+str(gpsKey)+" "+str(dicoGPSToAddress[gpsKey]))
-                                        if dicoGPSToAddress[gpsKey]:
-                                            photo.sujet_dias = dicoGPSToAddress[gpsKey]
-                                            recUpdated = True
-                                    else:
-                                        countCallsReverseGPS = countCallsReverseGPS + 1
-                                        if countCallsReverseGPS < 100:
-                                            '''From grok: La politique d'utilisation 
-                                            de Nominatim recommande explicitement de ne pas dépasser 1 requête par 
-                                            seconde. Cela signifie que vous devez intégrer un délai d'au moins 1 seconde 
-                                            entre chaque appel à l'API.'''
-                                            time.sleep(1.1)
-                                            print("ask reverse for "+ str(lat)+" "+ str(lon))
-                                            raw_address = _fetch_nominatim_address(lat, lon)
-                                            nice_location = build_short_location(raw_address)
-                                            print("address is "+ str(nice_location))
-                                            dicoGPSToAddress[gpsKey] = nice_location
-                                            if nice_location:
-                                                photo.sujet_dias = nice_location
-                                                recUpdated = True
-                                        else:
-                                            print("reverse GPS not done, call count is " + str(countCallsReverseGPS))
+                    # --- Localisation GPS + coordonnées ---
+                    lat, lon = get_gps_coordinates(exif)
+                    if lat is not None and lon is not None:
+                        if photo.longitude is None:
+                            photo.longitude = lon
+                            photo.latitude = lat
+                            recUpdated = True
+
+                        # Sauvegarder le lieu dans le nouveau champ dédié (ne plus polluer sujet_dias)
+                        if not (photo.lieu or '').strip():
+                            gpsKey = (1000 * int(lat * 100.) + int(lon * 100.))
+                            if gpsKey in dicoGPSToAddress:
+                                print("from GPS cache: " + str(gpsKey) + " " + str(dicoGPSToAddress[gpsKey]))
+                                if dicoGPSToAddress[gpsKey]:
+                                    photo.lieu = dicoGPSToAddress[gpsKey]
+                                    recUpdated = True
+                            else:
+                                countCallsReverseGPS = countCallsReverseGPS + 1
+                                if countCallsReverseGPS < 100:
+                                    time.sleep(1.1)
+                                    print("ask reverse for " + str(lat) + " " + str(lon))
+                                    raw_address = _fetch_nominatim_address(lat, lon)
+                                    nice_location = build_short_location(raw_address)
+                                    print("address is " + str(nice_location))
+                                    dicoGPSToAddress[gpsKey] = nice_location
+                                    if nice_location:
+                                        photo.lieu = nice_location
+                                        recUpdated = True
+                                else:
+                                    print("reverse GPS not done, call count is " + str(countCallsReverseGPS))
 
                 # Sauvegarder le modèle
                 if recUpdated:

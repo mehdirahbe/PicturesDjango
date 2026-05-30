@@ -2,6 +2,10 @@
     <p class="mt-2 text-white">JPEG File Name: {{ photo.nom_fichier_jpeg }}</p>
 {% endif %}
 
+{% if photo.lieu %}
+    <p class="mt-2 text-white">Lieu: {{ photo.lieu }}</p>
+{% endif %}
+
 {% if photo.appareil %}
     <p class="mt-2 text-white">Appareil: {{ photo.appareil }}</p>
 {% endif %}
