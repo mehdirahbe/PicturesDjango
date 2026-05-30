@@ -92,7 +92,17 @@ Si la méthode de nettoyage lève une exception ValidationError, cette erreur es
             raise forms.ValidationError(_("Please select a folder."))
         if not os.path.isdir(directory):
             raise forms.ValidationError(_("The specified path is not a directory."))
+
         scansPath = os.path.join(settings.IMAGES_PATH, "scans")
+
+        # Le dossier sélectionné doit être STRICTEMENT à l'intérieur de scans/,
+        # pas le dossier scans lui-même (qui ne contient pas directement une série de photos).
+        if directory == scansPath or directory == scansPath + os.sep:
+            raise forms.ValidationError(
+                _("Vous devez sélectionner un sous-dossier à l'intérieur de 'scans/' "
+                  "(ex: scans/voyages/fuerteventura_2013), pas le dossier scans lui-même.")
+            )
+
         if not directory.startswith(scansPath):
             raise forms.ValidationError(_(f"The folder must be under {scansPath}"))
 

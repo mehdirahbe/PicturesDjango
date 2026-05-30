@@ -436,17 +436,17 @@ def InsertNewPictures(request):
     if request.method == 'POST':
         form = InsertNewPicturesForm(request.POST)
         if form.is_valid():
-            jpegsdirectory = request.POST.get('jpegsdirectory')
-            subject = request.POST.get('subject')
-            date = request.POST.get('date')
-            comment = request.POST.get('comment')
+            cleaned = form.cleaned_data
 
-            # Calculate the destination directory for series
+            jpegsdirectory = cleaned['jpegsdirectory']
+            subject = cleaned['subject']
+            date = cleaned['date']
+            comment = cleaned['comment']
+
+            # The directory has already been validated by the form's clean_jpegsdirectory()
+            # (must be under IMAGES_PATH/scans and must exist)
             base_path = os.path.join(settings.IMAGES_PATH, "scans")
-            if jpegsdirectory.startswith(base_path):
-                seriesdestdirectory = jpegsdirectory[len(base_path):].strip(os.sep)
-            else:
-                raise Http404("Le chemin des jpegs n'est pas valide.")
+            seriesdestdirectory = jpegsdirectory[len(base_path):].strip(os.sep)
 
             # Add entries for JPEGs in the DB
             call_command('PrepareEntreesJpegs',
