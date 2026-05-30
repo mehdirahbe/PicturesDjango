@@ -1,20 +1,35 @@
 import os
-from django.core.management.base import BaseCommand
+from pathlib import Path
+from django.core.management.base import BaseCommand, CommandError
 from PicturesApp.PhotoModel import PhotoModel
 from django.conf import settings
 
 
-def process_images(dias_dir, jpeg_dir,subject, date, commentaire):
-    scans_dir = os.path.join(dias_dir, 'scans')
+def process_images(dias_dir, jpeg_dir, subject, date, commentaire):
+    scans_root = (Path(dias_dir) / "scans").resolve(strict=True)
+    selected = Path(jpeg_dir).expanduser().resolve(strict=True)
 
-    if not jpeg_dir.startswith(scans_dir):
-        raise ValueError("Le dossier sélectionné doit être dans le sous-répertoire 'scans' du répertoire 'dias'")
+    # 1. Doit être à l'intérieur de scans/
+    if not selected.is_relative_to(scans_root):
+        raise ValueError(
+            "Le dossier sélectionné doit être dans le sous-répertoire 'scans'."
+        )
 
-    # Extraire les niveaux de répertoires
-    relative_path = jpeg_dir[len(scans_dir):].lstrip(os.sep)
-    dir_parts = relative_path.split(os.sep)
+    # 2. Ne doit PAS être exactement le dossier scans/ lui-même
+    if selected == scans_root:
+        raise ValueError(
+            "Vous devez sélectionner un sous-dossier à l'intérieur de 'scans/' "
+            "(ex: scans/voyages/fuerteventura_2013), pas le dossier scans lui-même."
+        )
+
+    # Extraction propre du chemin relatif
+    relative_path = selected.relative_to(scans_root)
+    dir_parts = relative_path.parts
+
     if len(dir_parts) > 3:
         raise ValueError("Le niveau max de sous-répertoires est de trois")
+    if len(dir_parts) == 0:
+        raise ValueError("Vous devez sélectionner un sous-dossier contenant des photos.")
 
     # Lister et trier les fichiers JPG
     jpg_files = []
@@ -85,15 +100,18 @@ class Command(BaseCommand):
             return
 
         print("Will run PrepareEntreesJpegs")
-        print("jpeg_dir is: "+jpeg_dir)
+        print("jpeg_dir is: " + jpeg_dir)
         print("subject is: " + subject)
         print("date is: " + date)
         print("commentaire is: " + commentaire)
 
-        #uncomment for a dry run
-        #return
+        # uncomment for a dry run
+        # return
 
-        process_images(dias_dir,jpeg_dir, subject, date, commentaire)
+        try:
+            process_images(dias_dir, jpeg_dir, subject, date, commentaire)
+        except ValueError as e:
+            raise CommandError(str(e))
         return
 
 
