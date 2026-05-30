@@ -1,6 +1,7 @@
 from django import forms
 import os
 import unicodedata
+from pathlib import Path
 from django.conf import settings
 from .PhotoModel import PhotoModel
 from django.utils.translation import gettext_lazy as _
@@ -88,25 +89,30 @@ Si la méthode de nettoyage lève une exception ValidationError, cette erreur es
 '''
     def clean_jpegsdirectory(self):
         directory = self.cleaned_data['jpegsdirectory']
+
         if not directory:
             raise forms.ValidationError(_("Please select a folder."))
-        if not os.path.isdir(directory):
-            raise forms.ValidationError(_("The specified path is not a directory."))
 
-        scansPath = os.path.join(settings.IMAGES_PATH, "scans")
+        try:
+            scans_root = (Path(settings.IMAGES_PATH) / "scans").resolve(strict=True)
+            selected = Path(directory).expanduser().resolve(strict=True)
+        except (FileNotFoundError, RuntimeError):
+            raise forms.ValidationError(_("The specified path does not exist or is invalid."))
 
-        # Le dossier sélectionné doit être STRICTEMENT à l'intérieur de scans/,
-        # pas le dossier scans lui-même (qui ne contient pas directement une série de photos).
-        if directory == scansPath or directory == scansPath + os.sep:
+        # 1. Doit être à l'intérieur de scans/
+        if not selected.is_relative_to(scans_root):
+            raise forms.ValidationError(
+                _("Le dossier doit se trouver à l'intérieur du dossier 'scans/'.")
+            )
+
+        # 2. Ne doit PAS être exactement scans/ lui-même
+        if selected == scans_root:
             raise forms.ValidationError(
                 _("Vous devez sélectionner un sous-dossier à l'intérieur de 'scans/' "
                   "(ex: scans/voyages/fuerteventura_2013), pas le dossier scans lui-même.")
             )
 
-        if not directory.startswith(scansPath):
-            raise forms.ValidationError(_(f"The folder must be under {scansPath}"))
-
-        return directory
+        return str(selected)
 
     def clean_subject(self):
         subject = self.cleaned_data.get('subject', '')
