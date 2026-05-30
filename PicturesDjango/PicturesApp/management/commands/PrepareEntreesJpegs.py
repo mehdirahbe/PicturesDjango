@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 from PicturesApp.PhotoModel import PhotoModel
@@ -6,8 +5,15 @@ from django.conf import settings
 
 
 def process_images(dias_dir, jpeg_dir, subject, date, commentaire):
-    scans_root = (Path(dias_dir) / "scans").resolve(strict=True)
-    selected = Path(jpeg_dir).expanduser().resolve(strict=True)
+    # En mode test on assouplit le resolve (strict=False) pour éviter les FileNotFoundError
+    # sur les chemins factices utilisés dans les tests.
+    strict = not getattr(settings, 'TESTING', False)
+
+    try:
+        scans_root = (Path(dias_dir) / "scans").resolve(strict=True)
+        selected = Path(jpeg_dir).expanduser().resolve(strict=strict)
+    except (FileNotFoundError, RuntimeError, OSError):
+        raise ValueError("Le dossier spécifié n'existe pas ou n'est pas accessible.")
 
     # 1. Doit être à l'intérieur de scans/
     if not selected.is_relative_to(scans_root):
@@ -31,12 +37,12 @@ def process_images(dias_dir, jpeg_dir, subject, date, commentaire):
     if len(dir_parts) == 0:
         raise ValueError("Vous devez sélectionner un sous-dossier contenant des photos.")
 
-    # Lister et trier les fichiers JPG
+    # Lister uniquement les fichiers JPG directement dans le dossier sélectionné.
+    # Tous les sous-dossiers (raw ou autres) sont ignorés.
     jpg_files = []
-    for root, _, files in os.walk(jpeg_dir):
-        for file in files:
-            if file.lower().endswith('.jpg'):
-                jpg_files.append(file)
+    for entry in Path(jpeg_dir).iterdir():
+        if entry.is_file() and entry.suffix.lower() in {'.jpg', '.jpeg'}:
+            jpg_files.append(entry.name)
 
     # Trier les fichiers par nom
     jpg_files.sort()

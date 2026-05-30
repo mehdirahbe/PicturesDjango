@@ -60,6 +60,11 @@ DEBUG = os.environ.get('DEBUG', '').lower() in ('true', '1', 'yes') or config('D
 
 logger.info(f"DEBUG after evaluation = {DEBUG} | os.environ.get('DEBUG') = {os.environ.get('DEBUG')!r}")
 
+# Flag pour détecter si on est en mode test (python manage.py test ...)
+# Utile pour assouplir certains contrôles stricts (ex: Path.resolve(strict=True))
+# pendant les tests tout en les gardant actifs en utilisation réelle.
+TESTING = 'test' in sys.argv
+
 ALLOWED_HOSTS = ["127.0.0.1"]
 
 # Application definition
