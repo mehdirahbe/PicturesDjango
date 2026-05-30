@@ -37,8 +37,22 @@ def process_images(dias_dir, jpeg_dir, subject, date, commentaire):
     if len(dir_parts) == 0:
         raise ValueError("Vous devez sélectionner un sous-dossier contenant des photos.")
 
+    # === Règle de conception importante ===
+    # On ne gère que les séries "plates" : tous les JPEGs doivent se trouver
+    # directement dans le dossier sélectionné. Tous les sous-dossiers
+    # (y compris le dossier "raw" contenant les fichiers bruts) sont
+    # volontairement ignorés.
+    #
+    # Ce choix rend le système simple, prévisible et cohérent avec ResizeJpegs.
+
+    # Détection des sous-dossiers (information pour l'utilisateur)
+    subdirs = [e.name for e in Path(jpeg_dir).iterdir() if e.is_dir()]
+    if subdirs:
+        print(f"Info: {len(subdirs)} sous-dossier(s) ignoré(s) "
+              f"({', '.join(subdirs[:3])}{'...' if len(subdirs) > 3 else ''}). "
+              f"Seuls les fichiers directement dans le dossier sont importés.")
+
     # Lister uniquement les fichiers JPG directement dans le dossier sélectionné.
-    # Tous les sous-dossiers (raw ou autres) sont ignorés.
     jpg_files = []
     for entry in Path(jpeg_dir).iterdir():
         if entry.is_file() and entry.suffix.lower() in {'.jpg', '.jpeg'}:

@@ -165,9 +165,18 @@ class Command(BaseCommand):
 
         # --- Parallel progressive resizing ---
         import concurrent.futures
+        from pathlib import Path
 
-        file_entries = os.listdir(l_sz_jpg_scans)
-        jpg_files = sorted([f for f in file_entries if f.lower().endswith((".jpg", ".jpeg"))])
+        # === Règle de conception ===
+        # ResizeJpegs ne traite que les fichiers directement présents dans le dossier
+        # de la série. Les sous-dossiers (raw, etc.) sont ignorés.
+        # Cette règle est cohérente avec PrepareEntreesJpegs (séries plates uniquement).
+
+        jpg_dir = Path(l_sz_jpg_scans)
+        jpg_files = sorted([
+            f.name for f in jpg_dir.iterdir()
+            if f.is_file() and f.suffix.lower() in {".jpg", ".jpeg"}
+        ])
 
         print(f"Found {len(jpg_files)} JPEG(s) to process in parallel...")
 
