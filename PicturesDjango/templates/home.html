@@ -5,9 +5,33 @@
 
 {% load custom_filters %}
 
+   <!-- Messages -->
+   {% if messages %}
+       <div class="container mt-3">
+           {% for message in messages %}
+               <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                   {{ message }}
+                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+               </div>
+           {% endfor %}
+       </div>
+   {% endif %}
+
    <nav class="navbar navbar-expand-lg navbar-dark">
       <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
       <a class="navbar-brand" href="{% url 'search_form' %}">{% trans 'Search' %}</a>
+
+      <!-- Button to prepare smartphone folder (POST action) -->
+      <form method="post" class="d-inline" onsubmit="return confirm('{% filter escapejs %}{% trans "This will copy a large number of images. Continue?" %}{% endfilter %}');">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="copy_to_smartphone">
+          <button type="submit" 
+                  class="navbar-brand p-0 bg-transparent border-0 text-decoration-none"
+                  style="color: inherit; cursor: pointer;">
+              {% trans "Copy to smartphone" %}
+          </button>
+      </form>
+
       <!-- Bootstrap class for branding, typically used for the site's logo or title -->
       <a class="navbar-brand" href="{% url 'list_missing_scans' %}">{% trans 'Add new pictures' %}</a>
    </nav>

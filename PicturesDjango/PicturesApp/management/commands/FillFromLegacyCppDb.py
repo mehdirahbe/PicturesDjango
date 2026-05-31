@@ -130,20 +130,23 @@ def save_photos_to_db(photos):
 
 class Command(BaseCommand):
     help = (
-        'Convert my very legacy format from the nineties where db was composed of nul terminated C strings, '
-        'in western european.'
-        'Need the db file, ie  /home/mehdi/Images/dbase/SQLBASE/Dias.bdd'
-        'So syntax is python manage.py FillFromLegacyCppDb --DiasbddPath /home/mehdi/Images/dbase/SQLBASE/Dias.bdd')
+        '[DEPRECATED - DO NOT USE] One-shot legacy migration from the 90s C++ MFC database.\n'
+        'Converts old nul-terminated C strings binary format.\n'
+        'The implementation is commented out. This command should never be executed again.'
+    )
 
     def add_arguments(self, parser):
         parser.add_argument('--DiasbddPath', type=str, help='Required, ie /home/mehdi/Images/dbase/SQLBASE/Dias.bdd')
 
     def handle(self, *args, **options):
-        print("Never execute this anymore as hundreds of not yet treated pictures has been added in the new db")
+        self.stdout.write(self.style.ERROR(
+            "DEPRECATED: This command is a one-shot legacy migration from the 90s C++ database.\n"
+            "It should never be run again. Hundreds of new pictures have been added since.\n"
+            "The code has been commented out for historical reference only."
+        ))
         return
-        '''
-        filename = options["DiasbddPath"]
-        photos = read_binaire_file(filename)
-        save_photos_to_db(photos)
-        return
-        '''
+
+        # === DEPRECATED CODE BELOW - DO NOT UNCOMMENT ===
+        # filename = options["DiasbddPath"]
+        # photos = read_binaire_file(filename)
+        # save_photos_to_db(photos)

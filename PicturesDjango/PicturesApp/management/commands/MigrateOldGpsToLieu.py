@@ -66,14 +66,9 @@ def looks_like_old_gps_location(text, max_words=5):
 
 class Command(BaseCommand):
     help = (
-        "Migre les anciennes localisations GPS stockées dans 'sujet_dias' vers le champ 'lieu'.\n"
-        "Puis vide le champ 'sujet_dias'.\n\n"
-        "Conditions pour migrer une photo :\n"
-        "  - Doit avoir des coordonnées GPS (latitude/longitude)\n"
-        "  - Le champ 'lieu' doit être vide\n"
-        "  - 'sujet_dias' doit ressembler à un ancien libellé GPS : 'Lieu (Pays)'\n"
-        "  - Maximum X mots dans sujet_dias (défaut 5)\n\n"
-        "Par défaut : mode --dry-run (aucune modification en base)."
+        "[DEPRECATED - DO NOT USE] One-shot migration command.\n"
+        "Was used to move old GPS-style location strings from 'sujet_dias' to the dedicated 'lieu' field.\n"
+        "The implementation has been commented out. This command should no longer be needed."
     )
 
     def add_arguments(self, parser):
@@ -101,6 +96,15 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        self.stdout.write(self.style.ERROR(
+            "DEPRECATED: This is a one-shot migration command.\n"
+            "It was used to migrate old GPS location strings from 'sujet_dias' to the 'lieu' field.\n"
+            "It should not be needed anymore. The implementation is commented out for historical reference."
+        ))
+        return
+
+        # === DEPRECATED CODE BELOW - DO NOT UNCOMMENT ===
+
         execute = options['execute'] and not options['dry_run']
         subject_md5 = options['subject_md5']
         max_words = options['max_words']

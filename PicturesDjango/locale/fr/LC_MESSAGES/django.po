@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-31 19:16+0000\n"
+"POT-Creation-Date: 2026-05-31 19:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -150,19 +150,27 @@ msgstr "Le niveau maximum de sous-répertoires est de trois."
 msgid "You must select a subdirectory containing photos."
 msgstr "Vous devez sélectionner un sous-dossier contenant des photos."
 
-#: PicturesApp/views.py:396
+#: PicturesApp/views.py:254
+msgid "Smartphone folder prepared successfully."
+msgstr "Dossier smartphone préparé avec succès."
+
+#: PicturesApp/views.py:256
+msgid "Error while preparing smartphone folder: {}"
+msgstr "Erreur lors de la préparation du dossier smartphone : {}"
+
+#: PicturesApp/views.py:401
 msgid "Intelligent resizing re-triggered successfully."
 msgstr "Redimensionnement intelligent relancé avec succès."
 
-#: PicturesApp/views.py:398
+#: PicturesApp/views.py:403
 msgid "Error during resizing: {}"
 msgstr "Erreur lors du redimensionnement : {}"
 
-#: PicturesApp/views.py:405
+#: PicturesApp/views.py:410
 msgid "Exposure quality analysis completed for this series."
 msgstr "Analyse d'exposition terminée pour cette série."
 
-#: PicturesApp/views.py:407
+#: PicturesApp/views.py:412
 msgid "Error during analysis: {}"
 msgstr "Erreur lors de l'analyse : {}"
 
@@ -238,16 +246,24 @@ msgstr "Exposition très extrême"
 msgid "Contact Sheet"
 msgstr "Planche contact"
 
-#: templates/home.html:10 templates/search_form.html:24
+#: templates/home.html:22 templates/search_form.html:24
 #: templates/secondlevel.html:13
 msgid "Search"
 msgstr "Recherche"
 
-#: templates/home.html:12
+#: templates/home.html:25
+msgid "This will copy a large number of images. Continue?"
+msgstr "Cela va copier un grand nombre d'images. Continuer ?"
+
+#: templates/home.html:29
+msgid "Copy to smartphone"
+msgstr "Copier pour le smartphone"
+
+#: templates/home.html:34
 msgid "Add new pictures"
 msgstr "Ajout de nouvelles images"
 
-#: templates/home.html:17
+#: templates/home.html:39
 msgid "Search levels"
 msgstr "Recherche dans les niveaux"
 

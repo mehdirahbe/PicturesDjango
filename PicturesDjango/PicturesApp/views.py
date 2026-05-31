@@ -246,12 +246,17 @@ def home(request):
 
     Uses pagination to manage large datasets.
 
-    Args:
-    - request (HttpRequest): The HTTP request object.
-
-    Returns:
-    - HttpResponse: Renders the home page with paginated data.
+    Also handles the "Copy to smartphone" action via POST.
     """
+    if request.method == 'POST' and request.POST.get('action') == 'copy_to_smartphone':
+        try:
+            call_command('copy_images_for_smartphone')
+            messages.success(request, _("Smartphone folder prepared successfully."))
+        except Exception as e:
+            messages.error(request, _("Error while preparing smartphone folder: {}").format(e))
+
+        return redirect(request.path_info)
+
     photo_niveaux = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).values_list(
         'premier_niveau', flat=True).annotate(count=Count('pkey')).order_by('premier_niveau')
     paginator = Paginator(photo_niveaux, 100)  # Show 100 items per page
