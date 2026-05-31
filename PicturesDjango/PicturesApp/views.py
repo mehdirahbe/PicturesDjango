@@ -3,6 +3,7 @@ from django.core.management import call_command
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect, FileResponse
+from django.core.cache import cache
 import os
 import re
 from django.db.models import Q, Count, Case, When, Value, IntegerField
@@ -45,7 +46,23 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
     words = [w for w in normalized.split() if len(w) >= 2]
 
     if not words:
+        # On met aussi en cache les recherches vides pour éviter des recalculs inutiles
+        cache_key = f"search:{normalized}:{apply_fuzzy}:{fuzzy_threshold}"
+        cache.set(cache_key, [], timeout=900)
         return PhotoModel.objects.none()
+
+    # ========== CACHE ==========
+    # On met en cache la liste des pkeys (et non les objets complets) pour éviter
+    # de recalculer le scoring fuzzy à chaque affichage de la planche ou de la galerie.
+    cache_key = f"search:{normalized}:{apply_fuzzy}:{fuzzy_threshold}"
+    cached_pkeys = cache.get(cache_key)
+
+    if cached_pkeys is not None:
+        # Reconstruction de la liste ordonnée à partir des pkeys en cache
+        photos = list(PhotoModel.objects.filter(pkey__in=cached_pkeys))
+        photo_dict = {p.pkey: p for p in photos}
+        ordered_photos = [photo_dict[pk] for pk in cached_pkeys if pk in photo_dict]
+        return ordered_photos
 
     # ========== PHASE 1 : Récupération LARGE par mot EXACT (union OR) ==========
     # Les records sont trouvés via les mots exacts (david, 2013...). Pas de fuzzy ici.
@@ -150,7 +167,13 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
     scored_photos.sort(key=lambda x: x[0], reverse=True)
 
     # Limite finale 1000 (cohérent avec les autres galeries)
-    return [p for _, p in scored_photos[:1000]]
+    final_results = [p for _, p in scored_photos[:1000]]
+
+    # Mise en cache des pkeys (pour éviter de recalculer le fuzzy sur les affichages suivants)
+    pkeys = [p.pkey for p in final_results]
+    cache.set(cache_key, pkeys, timeout=900)  # 15 minutes
+
+    return final_results
 
 
 # Function to generate a Google Maps link if coordinates are available
