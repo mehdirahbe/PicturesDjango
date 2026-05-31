@@ -7,7 +7,7 @@ from pathlib import Path
 import os
 
 
-def analyze_exposure(image_path: Path | str, max_size: int = 800):
+def analyze_exposure(image_path: Path | str, max_size: int = 600):
     """
     Analyse l'exposition d'une image JPEG de manière légère et rapide.
 
@@ -58,23 +58,25 @@ def analyze_exposure(image_path: Path | str, max_size: int = 800):
 
 def _build_photo_path(photo, images_root: Path) -> Path | None:
     """
-    Reconstruit le chemin vers le gros JPEG (privilégie 'big' si présent,
-    sinon retombe sur le fichier dans scans/ pour les anciens imports).
+    Reconstruit le chemin vers un JPEG pour l'analyse d'exposition.
+    On privilégie les versions les plus petites possibles (contactsheet > view > big)
+    car pour de la luminance + histogramme, la haute résolution est inutile.
     """
     if not photo.nom_fichier_jpeg:
         return None
 
-    # 1) Essayer d'abord la version "big" (la plus grande disponible)
     base = images_root / photo.premier_niveau / photo.second_niveau
     if photo.troisieme_niveau:
         base = base / photo.troisieme_niveau
 
-    big_path = base / 'big' / photo.nom_fichier_jpeg
-    if big_path.exists():
-        return big_path
+    # Ordre de préférence : du plus petit au plus gros (pour la vitesse)
+    for size_dir in ("contactsheet", "view", "big"):
+        candidate = base / size_dir / photo.nom_fichier_jpeg
+        if candidate.exists():
+            return candidate
 
-    # 2) Fallback : l'original dans scans/ (utile juste après import avant resize)
-    scans_path = images_root / 'scans' / photo.premier_niveau / photo.second_niveau
+    # Dernier recours : l'original dans scans/ (cas d'import très récent)
+    scans_path = images_root / "scans" / photo.premier_niveau / photo.second_niveau
     if photo.troisieme_niveau:
         scans_path = scans_path / photo.troisieme_niveau
     scans_jpeg = scans_path / photo.nom_fichier_jpeg

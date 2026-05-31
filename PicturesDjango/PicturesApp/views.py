@@ -404,9 +404,11 @@ def contactsSheet(request, desiredsubjectMD5):
                 messages.success(request, "Analyse d'exposition terminée pour cette série.")
             except Exception as e:
                 messages.error(request, f"Erreur lors de l'analyse : {e}")
-            return redirect(request.path_info)
+            return redirect(f"{request.path_info}?show_quality=1")
 
-        worst_photos = _get_worst_exposure_photos(allphotos)
+        show_quality = request.GET.get('show_quality') == '1'
+        worst_photos = _get_worst_exposure_photos(allphotos) if show_quality else []
+
         return render(
             request,
             'contactsSheet.html',
