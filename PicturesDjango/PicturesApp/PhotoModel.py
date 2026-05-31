@@ -117,6 +117,21 @@ class PhotoModel(models.Model):
     # écrit manuellement par l'utilisateur.
     lieu = models.CharField(max_length=200, blank=True, null=True, db_index=True)
 
+    # === Analyse d'exposition (détection automatique des images à améliorer) ===
+    # Remplis par la commande AnalyzePhotoQuality et le bouton
+    # "Analyser la qualité d'exposition" dans la planche contacts.
+    #
+    # luminance_mean : luminance moyenne (0=noir pur, 255=blanc pur).
+    # shadow_clip_pct / highlight_clip_pct : % de pixels très sombres (0-10)
+    #   ou très clairs (245-255) → indicateur de perte de détail.
+    #
+    # Objectif : identifier *dans une série donnée* les photos les plus
+    # problématiques (trop sombres ou trop claires) pour les retoucher en priorité.
+    luminance_mean = models.FloatField(null=True, blank=True)
+    shadow_clip_pct = models.FloatField(null=True, blank=True)
+    highlight_clip_pct = models.FloatField(null=True, blank=True)
+    quality_analyzed_at = models.DateTimeField(null=True, blank=True)
+
     #save record, overloaded to compute MD5 hash of the subject
     def save(self, *args, **kwargs):
         self.checksum = hashlib.md5(self.sujet.encode(),usedforsecurity=False).hexdigest()

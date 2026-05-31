@@ -42,8 +42,53 @@
                     Relancer le redimensionnement
                 </button>
             </form>
+
+            <form method="post" style="display: inline; margin-left: 8px;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="analyze_quality">
+                <button type="submit" class="btn btn-outline-secondary btn-sm">
+                    Analyser la qualité d'exposition
+                </button>
+            </form>
         </div>
     </div>
+
+    {# Section "top pires en exposition" — seulement si des photos ont déjà été analysées #}
+    {% if worst_photos %}
+    <div class="row mt-2 mb-3">
+        <div class="col-md-12">
+            <div class="alert alert-warning py-2 mb-2" style="font-size: 0.95em;">
+                <strong>Images à améliorer (top {{ worst_photos|length }})</strong>
+                — les plus sombres ou les plus claires de cette série.
+                Clique pour voir le détail et retoucher.
+            </div>
+            <div class="row">
+                {% for photo in worst_photos %}
+                <div class="col-md-2 mb-2">
+                    <a href="{% url 'photoDetail' photo.pkey %}">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
+                             alt="photo {{ photo.pkey }}"
+                             class="img-fluid lazyload border border-warning"
+                             style="max-height: 110px;">
+                    </a>
+                    <small class="d-block mt-1" style="line-height: 1.15;">
+                        Lum: <strong>{{ photo.luminance_mean|floatformat:"0" }}</strong><br>
+                        {% if photo.shadow_clip_pct > 12 %}
+                            Ombres bouchées ({{ photo.shadow_clip_pct|floatformat:"0" }}%)
+                        {% elif photo.highlight_clip_pct > 12 %}
+                            Hautes lumières cramées ({{ photo.highlight_clip_pct|floatformat:"0" }}%)
+                        {% else %}
+                            Exposition très extrême
+                        {% endif %}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="row">
         {% for photo in photoRecs %}
             {% include "includes/_photo_thumbnail_card.html" %}

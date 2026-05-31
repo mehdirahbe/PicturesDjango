@@ -21,6 +21,25 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _get_worst_exposure_photos(photos, limit=5):
+    """
+    Parmi une liste de photos déjà analysées, retourne les 'limit' pires
+    sur le critère d'exposition (trop sombres ou trop claires).
+    Photos sans métriques → ignorées.
+    """
+    analyzed = [p for p in photos if p.luminance_mean is not None]
+    if not analyzed:
+        return []
+
+    def exposure_problem_score(p):
+        dev = abs(p.luminance_mean - 128.0) / 128.0
+        max_clip = max(p.shadow_clip_pct or 0.0, p.highlight_clip_pct or 0.0)
+        # Pondération : 65% écart à la moyenne, 35% sur les zones clipées
+        return (dev * 0.65) + (max_clip / 100.0 * 0.35)
+
+    return sorted(analyzed, key=exposure_problem_score, reverse=True)[:limit]
+
+
 def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
     """
     Recherche full-text multi-mots avec fuzzy (rapidfuzz) - Mode Option A strict (règle dure).
@@ -379,7 +398,24 @@ def contactsSheet(request, desiredsubjectMD5):
 
             return redirect(request.path_info)
 
-        return render(request, 'contactsSheet.html', {'photoRecs': allphotos, 'desiredsubjectMD5': desiredsubjectMD5})
+        if request.method == 'POST' and request.POST.get('action') == 'analyze_quality':
+            try:
+                call_command('AnalyzePhotoQuality', SubjectMD5=desiredsubjectMD5)
+                messages.success(request, "Analyse d'exposition terminée pour cette série.")
+            except Exception as e:
+                messages.error(request, f"Erreur lors de l'analyse : {e}")
+            return redirect(request.path_info)
+
+        worst_photos = _get_worst_exposure_photos(allphotos)
+        return render(
+            request,
+            'contactsSheet.html',
+            {
+                'photoRecs': allphotos,
+                'desiredsubjectMD5': desiredsubjectMD5,
+                'worst_photos': worst_photos,
+            }
+        )
     except Exception:
         raise Http404("Subject not found")
 
