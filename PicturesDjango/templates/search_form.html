@@ -15,13 +15,13 @@
     <form method="post" class="form-inline">
         <!-- Bootstrap class for inline form layout -->
         {% csrf_token %}
-        Veuillez entrez un mot à rechercher:
+        {% trans "Please enter a search term:" %}
         <div class="form-group mb-2">
             <!-- Bootstrap class for form groups, mb-2 adds margin bottom -->
             {{ form.search_term }}
             <!-- Assuming this renders a text input field for the search term -->
         </div>
-        <button type="submit" class="btn btn-primary mb-2">Rechercher</button>
+        <button type="submit" class="btn btn-primary mb-2">{% trans "Search" %}</button>
         <!-- btn is a Bootstrap class for buttons, btn-primary gives it a primary color -->
     </form>
 

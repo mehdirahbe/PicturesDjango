@@ -2,6 +2,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 from PicturesApp.PhotoModel import PhotoModel
 from django.conf import settings
+from django.utils.translation import gettext as _
 
 
 def process_images(dias_dir, jpeg_dir, subject, date, commentaire):
@@ -13,19 +14,19 @@ def process_images(dias_dir, jpeg_dir, subject, date, commentaire):
         scans_root = (Path(dias_dir) / "scans").resolve(strict=True)
         selected = Path(jpeg_dir).expanduser().resolve(strict=strict)
     except (FileNotFoundError, RuntimeError, OSError):
-        raise ValueError("Le dossier spécifié n'existe pas ou n'est pas accessible.")
+        raise ValueError(_("The specified folder does not exist or is not accessible."))
 
     # 1. Doit être à l'intérieur de scans/
     if not selected.is_relative_to(scans_root):
         raise ValueError(
-            "Le dossier sélectionné doit être dans le sous-répertoire 'scans'."
+            _("The selected folder must be inside the 'scans' subdirectory.")
         )
 
     # 2. Ne doit PAS être exactement le dossier scans/ lui-même
     if selected == scans_root:
         raise ValueError(
-            "Vous devez sélectionner un sous-dossier à l'intérieur de 'scans/' "
-            "(ex: scans/voyages/fuerteventura_2013), pas le dossier scans lui-même."
+            _("You must select a subdirectory inside 'scans/' "
+              "(e.g. scans/voyages/fuerteventura_2013), not the scans folder itself.")
         )
 
     # Extraction propre du chemin relatif
@@ -33,13 +34,13 @@ def process_images(dias_dir, jpeg_dir, subject, date, commentaire):
     dir_parts = relative_path.parts
 
     if len(dir_parts) > 3:
-        raise ValueError("Le niveau max de sous-répertoires est de trois")
+        raise ValueError(_("Maximum of three subdirectory levels is allowed"))
     if len(dir_parts) == 0:
-        raise ValueError("Vous devez sélectionner un sous-dossier contenant des photos.")
+        raise ValueError(_("You must select a subdirectory containing photos."))
 
     # Unicité du sujet : on refuse de ré-importer une galerie qui existe déjà
     if PhotoModel.objects.filter(sujet=subject).exists():
-        raise ValueError("Ce sujet existe déjà.")
+        raise ValueError(_("This subject already exists."))
 
     # === Règle de conception importante ===
     # On ne gère que les séries "plates" : tous les JPEGs doivent se trouver

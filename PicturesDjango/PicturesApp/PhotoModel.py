@@ -117,16 +117,16 @@ class PhotoModel(models.Model):
     # écrit manuellement par l'utilisateur.
     lieu = models.CharField(max_length=200, blank=True, null=True, db_index=True)
 
-    # === Analyse d'exposition (détection automatique des images à améliorer) ===
-    # Remplis par la commande AnalyzePhotoQuality et le bouton
-    # "Analyser la qualité d'exposition" dans la planche contacts.
+    # === Exposure analysis (automatic detection of images to improve) ===
+    # Populated by the AnalyzePhotoQuality command and the
+    # "Analyze exposure quality" button in the contact sheet.
     #
-    # luminance_mean : luminance moyenne (0=noir pur, 255=blanc pur).
-    # shadow_clip_pct / highlight_clip_pct : % de pixels très sombres (0-10)
-    #   ou très clairs (245-255) → indicateur de perte de détail.
+    # luminance_mean : average luminance (0 = pure black, 255 = pure white).
+    # shadow_clip_pct / highlight_clip_pct : % of very dark (0-10)
+    #   or very bright (245-255) pixels → indicator of lost detail.
     #
-    # Objectif : identifier *dans une série donnée* les photos les plus
-    # problématiques (trop sombres ou trop claires) pour les retoucher en priorité.
+    # Goal: identify, *within a given series*, the most problematic photos
+    # (too dark or too bright) to retouch in priority.
     luminance_mean = models.FloatField(null=True, blank=True)
     shadow_clip_pct = models.FloatField(null=True, blank=True)
     highlight_clip_pct = models.FloatField(null=True, blank=True)

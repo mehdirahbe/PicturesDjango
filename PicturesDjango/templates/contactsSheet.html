@@ -39,7 +39,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="resize">
                 <button type="submit" class="btn btn-outline-primary btn-sm">
-                    Relancer le redimensionnement
+                    {% trans "Re-trigger resizing" %}
                 </button>
             </form>
 
@@ -47,20 +47,20 @@
                 {% csrf_token %}
                 <input type="hidden" name="action" value="analyze_quality">
                 <button type="submit" class="btn btn-outline-secondary btn-sm">
-                    Analyser la qualité d'exposition
+                    {% trans "Analyze exposure quality" %}
                 </button>
             </form>
         </div>
     </div>
 
-    {# Section "Images à améliorer" — n'apparaît que juste après un clic sur le bouton (via ?show_quality=1) #}
+    {# "Images to improve" section only appears right after clicking the button (via ?show_quality=1) #}
     {% if worst_photos %}
     <div class="row mt-2 mb-3">
         <div class="col-md-12">
             <div class="alert alert-warning py-2 mb-2" style="font-size: 0.95em;">
-                <strong>Images à améliorer (top {{ worst_photos|length }})</strong>
-                — les plus sombres ou les plus claires de cette série.
-                Clique pour voir le détail et retoucher.
+                <strong>{% trans "Images to improve" %} (top {{ worst_photos|length }})</strong>
+                — {% trans "the darkest or brightest in this series." %}
+                {% trans "Click to view details and retouch." %}
             </div>
             <div class="row">
                 {% for photo in worst_photos %}
@@ -75,11 +75,11 @@
                     <small class="d-block mt-1" style="line-height: 1.15;">
                         Lum: <strong>{{ photo.luminance_mean|floatformat:"0" }}</strong><br>
                         {% if photo.shadow_clip_pct > 12 %}
-                            Ombres bouchées ({{ photo.shadow_clip_pct|floatformat:"0" }}%)
+                            {% trans "Blocked shadows" %} ({{ photo.shadow_clip_pct|floatformat:"0" }}%)
                         {% elif photo.highlight_clip_pct > 12 %}
-                            Hautes lumières cramées ({{ photo.highlight_clip_pct|floatformat:"0" }}%)
+                            {% trans "Blown highlights" %} ({{ photo.highlight_clip_pct|floatformat:"0" }}%)
                         {% else %}
-                            Exposition très extrême
+                            {% trans "Very extreme exposure" %}
                         {% endif %}
                     </small>
                 </div>

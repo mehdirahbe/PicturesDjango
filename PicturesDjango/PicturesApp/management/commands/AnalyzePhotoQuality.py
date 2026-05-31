@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django.utils import timezone
+from django.utils.translation import gettext as _, gettext_lazy as _lazy
 from PicturesApp.PhotoModel import PhotoModel
 from PIL import Image, ImageStat
 from pathlib import Path
@@ -9,14 +10,13 @@ import os
 
 def analyze_exposure(image_path: Path | str, max_size: int = 600):
     """
-    Analyse l'exposition d'une image JPEG de manière légère et rapide.
+    Analyze the exposure of a JPEG image in a lightweight way.
 
-    - Downscale à max_size (800px) pour que l'analyse reste instantanée même
-      sur de gros scans originaux.
-    - Retourne luminance moyenne (0-255) + pourcentages de pixels "clipés"
-      dans les ombres (0-10) et les hautes lumières (245-255).
+    - Downscales to max_size for fast analysis even on large original scans.
+    - Returns mean luminance (0-255) + percentages of clipped pixels
+      in shadows (0-10) and highlights (245-255).
 
-    Utilise uniquement Pillow (pas de numpy/OpenCV).
+    Uses only Pillow (no numpy/OpenCV).
     """
     try:
         p = Path(image_path)
@@ -58,9 +58,9 @@ def analyze_exposure(image_path: Path | str, max_size: int = 600):
 
 def _build_photo_path(photo, images_root: Path) -> Path | None:
     """
-    Reconstruit le chemin vers un JPEG pour l'analyse d'exposition.
-    On privilégie les versions les plus petites possibles (contactsheet > view > big)
-    car pour de la luminance + histogramme, la haute résolution est inutile.
+    Rebuilds the path to a JPEG for exposure analysis.
+    Prefers the smallest available versions (contactsheet > view > big)
+    because high resolution is unnecessary for luminance + histogram analysis.
     """
     if not photo.nom_fichier_jpeg:
         return None
@@ -87,14 +87,14 @@ def _build_photo_path(photo, images_root: Path) -> Path | None:
 
 
 class Command(BaseCommand):
-    help = (
-        "Analyse l'exposition des photos d'une série (ou de toute la base) "
-        "et stocke les métriques de luminance / clipping.\n\n"
+    help = _lazy(
+        "Analyze photo exposure of a series (or the whole database) "
+        "and store luminance/clipping metrics.\n\n"
         "Usage:\n"
         "  python manage.py AnalyzePhotoQuality --SubjectMD5 <md5>\n"
-        "  python manage.py AnalyzePhotoQuality                 # toute la base (lent)\n\n"
-        "Les métriques permettent ensuite d'afficher dans la planche contacts "
-        "le top 5 des images à améliorer (trop sombres ou trop claires)."
+        "  python manage.py AnalyzePhotoQuality                 # full database (slow)\n\n"
+        "The metrics are then used to display the top 5 images to improve "
+        "(too dark or too bright) in the contact sheet."
     )
 
     def add_arguments(self, parser):
@@ -102,12 +102,12 @@ class Command(BaseCommand):
             '--SubjectMD5',
             type=str,
             default=None,
-            help='MD5 du sujet. Si absent, analyse toutes les photos (lent sur grosse collection).'
+            help=_lazy('MD5 of the subject. If omitted, analyzes all photos (slow on large collections).')
         )
         parser.add_argument(
             '--force',
             action='store_true',
-            help='Ré-analyser même les photos déjà traitées.'
+            help=_lazy('Re-analyze even photos that were already processed.')
         )
 
     def handle(self, *args, **options):
@@ -128,12 +128,12 @@ class Command(BaseCommand):
                 agrandi=True,
                 nom_fichier_jpeg__isnull=False
             ).exclude(nom_fichier_jpeg='')
-            self.stdout.write("ATTENTION : mode TOUTE LA BASE (peut être long)")
-            self.stdout.write("Appuyez sur Ctrl+C pour annuler si nécessaire.")
+            self.stdout.write(_("WARNING: Full database mode (can be slow)"))
+            self.stdout.write(_("Press Ctrl+C to cancel if needed."))
 
         total = qs.count()
         if total == 0:
-            self.stdout.write(self.style.WARNING("Aucune photo à analyser."))
+            self.stdout.write(self.style.WARNING(_("No photos to analyze.")))
             return
 
         self.stdout.write(f"{total} photos candidates.\n")
@@ -143,11 +143,11 @@ class Command(BaseCommand):
         errors = 0
 
         for idx, photo in enumerate(qs.iterator(), 1):
-            # Skip si déjà analysé (sauf --force)
+            # Skip if already analyzed (unless --force)
             if not force and photo.quality_analyzed_at is not None:
                 skipped += 1
                 if idx % 50 == 0:
-                    self.stdout.write(f"  [{idx}/{total}] ... (skip déjà analysées)")
+                    self.stdout.write(_("  [{}/{}] ... (skip already analyzed)").format(idx, total))
                 continue
 
             photo_path = _build_photo_path(photo, images_root)
@@ -172,10 +172,10 @@ class Command(BaseCommand):
 
             if idx % 20 == 0 or idx == total:
                 self.stdout.write(
-                    f"  [{idx}/{total}] mis à jour: {updated} | erreurs: {errors}"
+                    _("  [{}/{}] updated: {} | errors: {}").format(idx, total, updated, errors)
                 )
 
         self.stdout.write(self.style.SUCCESS(
-            f"\nTerminé. {updated} photos analysées/mises à jour, "
-            f"{skipped} ignorées (déjà analysées), {errors} erreurs."
+            _("\nDone. {} photos analyzed/updated, {} skipped (already analyzed), {} errors."
+            ).format(updated, skipped, errors)
         ))

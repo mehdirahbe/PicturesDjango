@@ -105,8 +105,8 @@ Si la méthode de nettoyage lève une exception ValidationError, cette erreur es
 
             if directory == scans_path or directory == scans_path + os.sep:
                 raise forms.ValidationError(
-                    _("Vous devez sélectionner un sous-dossier à l'intérieur de 'scans/' "
-                      "(ex: scans/voyages/fuerteventura_2013), pas le dossier scans lui-même.")
+                    _("You must select a subdirectory inside 'scans/' "
+                      "(e.g. scans/voyages/fuerteventura_2013), not the scans folder itself.")
                 )
             return directory
         else:
@@ -119,12 +119,12 @@ Si la méthode de nettoyage lève une exception ValidationError, cette erreur es
 
             if selected == scans_root:
                 raise forms.ValidationError(
-                    _("Vous devez sélectionner un sous-dossier à l'intérieur de 'scans/' "
-                      "(ex: scans/voyages/fuerteventura_2013), pas le dossier scans lui-même.")
+                    _("You must select a subdirectory inside 'scans/' "
+                      "(e.g. scans/voyages/fuerteventura_2013), not the scans folder itself.")
                 )
 
             if not selected.is_relative_to(scans_root):
-                raise forms.ValidationError(_("Le dossier doit se trouver à l'intérieur du dossier 'scans/'."))
+                raise forms.ValidationError(_("The folder must be inside the 'scans/' directory."))
 
             return str(selected)
 
@@ -139,7 +139,7 @@ Si la méthode de nettoyage lève une exception ValidationError, cette erreur es
 
         # Unicité du sujet : on ne veut pas ré-importer une galerie qui existe déjà
         if PhotoModel.objects.filter(sujet=subject).exists():
-            raise forms.ValidationError(_("Ce sujet existe déjà."))
+            raise forms.ValidationError(_("This subject already exists."))
 
         return subject
 

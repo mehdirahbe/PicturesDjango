@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.management import call_command
 from django.db import transaction
 from django.conf import settings
+from django.utils.translation import gettext as _
 from pathlib import Path
 import os
 import hashlib
@@ -49,15 +50,15 @@ class Command(BaseCommand):
             scans_root = (Path(settings.IMAGES_PATH) / "scans").resolve(strict=True)
             selected = Path(jpegsdirectory).expanduser().resolve(strict=True)
         except (FileNotFoundError, RuntimeError, OSError):
-            raise CommandError("Le dossier spécifié n'existe pas ou n'est pas accessible.")
+            raise CommandError(_("The specified folder does not exist or is not accessible."))
 
         if not selected.is_relative_to(scans_root):
-            raise CommandError("Le dossier doit se trouver à l'intérieur du dossier 'scans/'.")
+            raise CommandError(_("The folder must be inside the 'scans/' directory."))
 
         if selected == scans_root:
             raise CommandError(
-                "Vous devez sélectionner un sous-dossier à l'intérieur de 'scans/' "
-                "(ex: scans/voyages/fuerteventura_2013), pas le dossier scans lui-même."
+                _("You must select a subdirectory inside 'scans/' "
+                  "(e.g. scans/voyages/fuerteventura_2013), not the scans folder itself.")
             )
 
         seriesdestdirectory = str(selected.relative_to(scans_root))

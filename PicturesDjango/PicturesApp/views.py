@@ -6,6 +6,7 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpRespons
 from django.core.cache import cache
 from django.core.management import call_command
 from django.contrib import messages
+from django.utils.translation import gettext as _
 import os
 import re
 from django.db.models import Q, Count, Case, When, Value, IntegerField
@@ -392,18 +393,18 @@ def contactsSheet(request, desiredsubjectMD5):
 
                 try:
                     call_command('ResizeJpegs', seriesdestdirectory=seriesdestdirectory)
-                    messages.success(request, "Redimensionnement intelligent relancé avec succès.")
+                    messages.success(request, _("Intelligent resizing re-triggered successfully."))
                 except Exception as e:
-                    messages.error(request, f"Erreur lors du redimensionnement : {e}")
+                    messages.error(request, _("Error during resizing: {}").format(e))
 
             return redirect(request.path_info)
 
         if request.method == 'POST' and request.POST.get('action') == 'analyze_quality':
             try:
                 call_command('AnalyzePhotoQuality', SubjectMD5=desiredsubjectMD5)
-                messages.success(request, "Analyse d'exposition terminée pour cette série.")
+                messages.success(request, _("Exposure quality analysis completed for this series."))
             except Exception as e:
-                messages.error(request, f"Erreur lors de l'analyse : {e}")
+                messages.error(request, _("Error during analysis: {}").format(e))
             return redirect(f"{request.path_info}?show_quality=1")
 
         show_quality = request.GET.get('show_quality') == '1'
