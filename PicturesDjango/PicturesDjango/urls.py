@@ -19,34 +19,27 @@ from django.urls import include, path
 from django.conf.urls.i18n import i18n_patterns
 from django.conf import settings
 
-'''For enabling multiple languages in admin panel, we’ll prefer i18n_patterns
-function and modify our root urls.py as shown below:
-The i18n_patterns will automatically prepend the current active language
-code to all URL patterns defined within i18n_patterns(). So, all your admin URLs,
-with the current configuration having zh-cn and en activated, will have URLs as:
-/en/admin/*
-/zh-cn/admin/*'''
+"""
+Clean URL configuration with i18n support.
+
+All application URLs are placed inside i18n_patterns so that:
+- They get a language prefix (/en/, /fr/)
+- Django's LocaleMiddleware can properly detect and activate the language
+  from the URL for the whole request.
+
+This prevents the language from "resetting" when navigating through links.
+"""
 
 urlpatterns = []
 
+# Everything that should support language switching goes here
 urlpatterns += i18n_patterns(
     path('admin/', admin.site.urls),
     path('', include('PicturesApp.urls')),
-)
-
-urlpatterns = i18n_patterns(
-    path('admin/', admin.site.urls),
-    # Add your other URL patterns here
-    path('', include('PicturesApp.urls')),
-)
-
-urlpatterns += [
     path('accounts/', include('django.contrib.auth.urls')),
-    # URL patterns without language prefix
-    path('', include('PicturesApp.urls')),
-]
+)
 
-# Django Debug Toolbar URLs (only in DEBUG mode)
+# Non-i18n URLs (debug toolbar, etc.)
 if settings.DEBUG:
     import debug_toolbar
     urlpatterns += [
