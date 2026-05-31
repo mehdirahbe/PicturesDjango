@@ -4,6 +4,8 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect, FileResponse
 from django.core.cache import cache
+from django.core.management import call_command
+from django.contrib import messages
 import os
 import re
 from django.db.models import Q, Count, Case, When, Value, IntegerField
@@ -360,6 +362,23 @@ def contactsSheet(request, desiredsubjectMD5):
                 desiredsubjectMD5, total_count
             )
         allphotos = base_qs.order_by('pkey')[:1000]
+
+        if request.method == 'POST' and request.POST.get('action') == 'resize':
+            photo = allphotos.first()
+            if photo:
+                parts = [photo.premier_niveau, photo.second_niveau]
+                if photo.troisieme_niveau:
+                    parts.append(photo.troisieme_niveau)
+                seriesdestdirectory = '/'.join(parts)
+
+                try:
+                    call_command('ResizeJpegs', seriesdestdirectory=seriesdestdirectory)
+                    messages.success(request, "Redimensionnement intelligent relancé avec succès.")
+                except Exception as e:
+                    messages.error(request, f"Erreur lors du redimensionnement : {e}")
+
+            return redirect(request.path_info)
+
         return render(request, 'contactsSheet.html', {'photoRecs': allphotos, 'desiredsubjectMD5': desiredsubjectMD5})
     except Exception:
         raise Http404("Subject not found")

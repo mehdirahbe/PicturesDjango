@@ -14,13 +14,34 @@
 </nav>
 
 <div class="container">
-    <!-- 'container' creates a centered content area -->
+    <!-- Messages -->
+    {% if messages %}
+        <div class="row">
+            <div class="col-md-12">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
     <div class="row">
         <!-- 'row' to organize content in a row -->
         <div class="col-md-12">
             <!-- 'col-md-12' takes up the full width of the grid -->
             <h2>{{ photoRecs.0.sujet|proper_case }}</h2>
             <p><strong>{{ photoRecs.0.date }}</strong></p>
+
+            <form method="post" style="display: inline;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="resize">
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    Relancer le redimensionnement
+                </button>
+            </form>
         </div>
     </div>
     <div class="row">
