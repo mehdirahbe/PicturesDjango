@@ -461,23 +461,22 @@ def InsertNewPictures(request):
             base_path = os.path.join(settings.IMAGES_PATH, "scans")
             seriesdestdirectory = jpegsdirectory[len(base_path):].strip(os.sep)
 
-            # Add entries for JPEGs in the DB
-            call_command('PrepareEntreesJpegs',
-                         jpegsdirectory=jpegsdirectory,
-                         subject=subject,
-                         date=date,
-                         comment=comment)
+            # Use the new high-level ImportSeries command.
+            # It orchestrates:
+            #   1. Smart resizing (file-by-file, only what is needed)
+            #   2. If resizing succeeds → atomic (Prepare + ExtractEXIF) inside a transaction
+            call_command(
+                'ImportSeries',
+                jpegsdirectory=jpegsdirectory,
+                subject=subject,
+                date=date,
+                comment=comment,
+            )
 
-            # Resize images for screen display and contact sheet
-            call_command('ResizeJpegs', seriesdestdirectory=seriesdestdirectory)
-
-            # Generate MD5 for the subject
+            # Generate the MD5 (still needed for the redirect to the contact sheet)
             desiredsubjectMD5 = hashlib.md5(subject.encode(), usedforsecurity=False).hexdigest()
 
-            # Extract EXIF information
-            call_command('ExtractEXIFInfos', SubjectMD5=desiredsubjectMD5)
-
-            # Redirect to the contact sheet of added images
+            # Redirect to the contact sheet of the newly imported series
             return redirect('ContactsSheet', desiredsubjectMD5=desiredsubjectMD5)
         else:
             return render(request, 'InsertNewPictures.html', {'form': form})

@@ -1,5 +1,6 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 import os
+from pathlib import Path
 from PIL import Image, ExifTags
 from django.conf import settings
 
@@ -100,6 +101,44 @@ def process_one_image(src_path, big_path, view_path, contact_path, max_big_size=
         raise
 
 
+def _needs_resizing(src_path: str, big_path: str, view_path: str, contact_path: str) -> bool:
+    """
+    Returns True if at least one of the three destination sizes needs to be (re)generated.
+
+    A destination is considered needing regeneration if:
+    - It does not exist, or
+    - It exists but cannot be properly opened/validated by Pillow (corrupted or incomplete), or
+    - The source JPEG has a more recent modification time.
+    """
+    src = Path(src_path)
+    if not src.exists():
+        return False
+
+    src_mtime = src.stat().st_mtime
+
+    for dst_path in (big_path, view_path, contact_path):
+        dst = Path(dst_path)
+
+        # File missing → needs processing
+        if not dst.exists():
+            return True
+
+        # Source is newer than this destination → needs refresh (retouche)
+        if src_mtime > dst.stat().st_mtime:
+            return True
+
+        # Try to validate the existing file with Pillow
+        try:
+            with Image.open(dst) as img:
+                # verify() checks the file integrity without fully decoding
+                img.verify()
+        except Exception:
+            # File exists but is not a valid readable JPEG → reprocess
+            return True
+
+    return False
+
+
 
 
 
@@ -126,23 +165,56 @@ class Command(BaseCommand):
 
         sz_scanned_tifs_dir = None
         sz_dias_root_dir = settings.IMAGES_PATH
-        sz_series_dest_dir = options['seriesdestdirectory']
-        if sz_dias_root_dir is None or sz_series_dest_dir is None:
+        raw_series_dir = options['seriesdestdirectory']
+
+        if sz_dias_root_dir is None or raw_series_dir is None:
             print("Required args missing")
             return
 
-        l_sz_root_serie = os.path.join(sz_dias_root_dir, sz_series_dest_dir)
-        l_sz_big = os.path.join(l_sz_root_serie, "big")
-        l_sz_contact_sheet = os.path.join(l_sz_root_serie, "contactsheet")
-        l_sz_view = os.path.join(l_sz_root_serie, "view")
-        l_sz_jpg_scans = os.path.join(sz_dias_root_dir, "scans", sz_series_dest_dir)
+        # === Normalisation ROBUSTE du chemin ===
+        # On accepte les deux formes :
+        #   - Chemin relatif après scans/   →  "Montblanc/2026/..."
+        #   - Chemin absolu complet         →  "/home/mehdi/Images/scans/Montblanc/2026/..."
+        #
+        # Règle : 
+        # - Si le chemin est absolu → il doit être sous scans/
+        # - Si le chemin est relatif → on le considère comme étant après "scans/"
+
+        scans_root = (Path(sz_dias_root_dir) / "scans").resolve(strict=False)
+        raw = Path(raw_series_dir).expanduser()
+
+        if raw.is_absolute():
+            provided = raw.resolve(strict=False)
+            try:
+                relative = provided.relative_to(scans_root)
+            except ValueError:
+                raise CommandError(
+                    f"Le chemin doit être sous {scans_root} "
+                    f"ou être un chemin relatif après 'scans/' (ex: Montblanc/2026/...)"
+                )
+        else:
+            # Chemin relatif → on le prend tel quel comme relatif à scans/
+            relative = raw
+
+        # Sécurité : refuser les chemins qui remontent (ex: ../..)
+        if ".." in relative.parts:
+            raise CommandError("Chemin invalide : il sort de l'arborescence autorisée.")
+
+        sz_series_dest_dir = str(relative)
+
+        # Chemins finaux
+        l_sz_root_serie = Path(sz_dias_root_dir) / sz_series_dest_dir
+        l_sz_big = l_sz_root_serie / "big"
+        l_sz_contact_sheet = l_sz_root_serie / "contactsheet"
+        l_sz_view = l_sz_root_serie / "view"
+        l_sz_jpg_scans = scans_root / sz_series_dest_dir
 
         print("Will run ResizeJpegs")
-        print("l_sz_root_serie is: "+l_sz_root_serie)
-        print("l_sz_big is: " + l_sz_big)
-        print("l_sz_contact_sheet is: " + l_sz_contact_sheet)
-        print("l_sz_view is: " + l_sz_view)
-        print("l_sz_jpg_scans is: " + l_sz_jpg_scans)
+        print(f"l_sz_root_serie is: {l_sz_root_serie}")
+        print(f"l_sz_big is: {l_sz_big}")
+        print(f"l_sz_contact_sheet is: {l_sz_contact_sheet}")
+        print(f"l_sz_view is: {l_sz_view}")
+        print(f"l_sz_jpg_scans is: {l_sz_jpg_scans}")
 
         # Pillow acceleration info
         import PIL
@@ -163,30 +235,46 @@ class Command(BaseCommand):
         os.makedirs(l_sz_view, exist_ok=True)
         os.makedirs(l_sz_jpg_scans, exist_ok=True)
 
-        # --- Parallel progressive resizing ---
+        # --- Parallel progressive resizing (intelligent mode) ---
         import concurrent.futures
-        from pathlib import Path
 
         # === Règle de conception ===
         # ResizeJpegs ne traite que les fichiers directement présents dans le dossier
         # de la série. Les sous-dossiers (raw, etc.) sont ignorés.
         # Cette règle est cohérente avec PrepareEntreesJpegs (séries plates uniquement).
+        #
+        # Comportement "intelligent" par défaut :
+        # - On ne régénère un fichier que si :
+        #     • le fichier de destination n'existe pas ou est invalide (non lisible par Pillow)
+        #     • ou le JPEG source est plus récent que la version redimensionnée
+        #       (cas de retouche après coup)
 
         jpg_dir = Path(l_sz_jpg_scans)
-        jpg_files = sorted([
+        source_files = sorted([
             f.name for f in jpg_dir.iterdir()
             if f.is_file() and f.suffix.lower() in {".jpg", ".jpeg"}
         ])
 
-        print(f"Found {len(jpg_files)} JPEG(s) to process in parallel...")
-
         tasks = []
-        for file_name in jpg_files:
+        skipped = 0
+
+        for file_name in source_files:
             src = os.path.join(l_sz_jpg_scans, file_name)
             big   = os.path.join(l_sz_big, file_name)
             view  = os.path.join(l_sz_view, file_name)
             contact = os.path.join(l_sz_contact_sheet, file_name)
-            tasks.append((src, big, view, contact, 1935))
+
+            if _needs_resizing(src, big, view, contact):
+                tasks.append((src, big, view, contact, 1935))
+            else:
+                skipped += 1
+
+        print(f"Found {len(source_files)} JPEG(s) in source folder.")
+        print(f" → {len(tasks)} file(s) need processing, {skipped} skipped (up to date).")
+
+        if not tasks:
+            print("Nothing to do. ResizeJpegs finished.")
+            return
 
         # Use ProcessPoolExecutor for CPU-bound image resizing (best with pillow-simd)
         max_workers = max(1, (os.cpu_count() or 4) - 1)   # leave one core free
@@ -199,6 +287,8 @@ class Command(BaseCommand):
                     future.result()   # will raise if the task failed
                 except Exception as e:
                     print(f"Task failed: {e}")
+                    # Fail fast as requested: stop everything if resize fails on one file
+                    raise
 
         print("ResizeJpegs finished.")
         return
