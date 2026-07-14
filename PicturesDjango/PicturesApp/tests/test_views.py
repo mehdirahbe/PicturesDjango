@@ -155,6 +155,88 @@ class ContactSheetAndGalleryViewsTest(PicturesAppTestCase):
         self.assertIsNone(response.context['photo'])
 
 
+class LegacySeriesViewsTest(PicturesAppTestCase):
+    """Séries héritées : diapos sans arborescence ni JPEG numérisé."""
+
+    def setUp(self):
+        super().setUp()
+        activate('en')
+        self.legacy_md5 = "02118ec40c253cfc4d453d9c67ed15d2"
+        for _ in range(3):
+            photo = PhotoModel.objects.create(
+                sujet="CHAT DEMON ET CHIEN CESAR",
+                date="1988-1998",
+                sujet_dias="",
+                commentaire="",
+                agrandi=True,
+                classe=False,
+                verifie=False,
+                camera_digitale=False,
+                premier_niveau="",
+                second_niveau="",
+                nom_fichier_jpeg="",
+                checksum="placeholder",
+            )
+            PhotoModel.objects.filter(pk=photo.pk).update(checksum=self.legacy_md5)
+
+    def test_contacts_sheet_legacy_series_without_jpeg_does_not_crash(self):
+        url = reverse("ContactsSheet", args=[self.legacy_md5])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["photoRecs"]), 0)
+
+    def test_photo_detail_legacy_slide_without_nav_does_not_crash(self):
+        photo = PhotoModel.objects.filter(checksum=self.legacy_md5).first()
+        response = self.client.get(reverse("photoDetail", args=[photo.pkey]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_subjects_search_excludes_series_without_viewable_jpeg(self):
+        from PicturesApp.views import invalidate_search_cache
+        invalidate_search_cache()
+        response = self.client.get(reverse("SubjectsBySearch", args=["cesar"]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["page_obj"]), 0)
+
+    def test_contacts_sheet_shows_only_scanned_slides(self):
+        from PicturesApp.views import invalidate_search_cache
+        invalidate_search_cache()
+        md5 = "legacyscanned1234567890abcdef12"
+        PhotoModel.objects.create(
+            sujet="Legacy scanned series",
+            date="1990",
+            sujet_dias="",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=False,
+            premier_niveau="",
+            second_niveau="",
+            nom_fichier_jpeg="001.jpg",
+            checksum="placeholder",
+        )
+        photo = PhotoModel.objects.filter(sujet="Legacy scanned series").first()
+        PhotoModel.objects.filter(pk=photo.pk).update(checksum=md5)
+        PhotoModel.objects.create(
+            sujet="Legacy scanned series",
+            date="1990",
+            sujet_dias="",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=False,
+            premier_niveau="",
+            second_niveau="",
+            nom_fichier_jpeg="",
+            checksum=md5,
+        )
+        response = self.client.get(reverse("ContactsSheet", args=[md5]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["photoRecs"]), 1)
+        self.assertEqual(response.context["photoRecs"][0].nom_fichier_jpeg, "001.jpg")
+
+
 class SearchViewsTest(PicturesAppTestCase):
 
     def setUp(self):

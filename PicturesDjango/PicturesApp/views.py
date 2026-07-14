@@ -41,6 +41,56 @@ _SEARCH_FIELD_LOOKUPS = {
     'sujet': lambda word: Q(sujet__icontains=word),
 }
 
+# Diapositive numérisée : agrandi avec un nom de fichier JPEG renseigné.
+_VIEWABLE_JPEG_Q = (
+    Q(agrandi=True)
+    & Q(nom_fichier_jpeg__isnull=False)
+    & ~Q(nom_fichier_jpeg='')
+)
+
+
+def _has_nav_level(value):
+    return bool(value and str(value).strip())
+
+
+def _search_base_filter(result_mode):
+    """Photos éligibles à la recherche selon le mode."""
+    if result_mode == RESULT_MODE_SUBJECTS:
+        return _VIEWABLE_JPEG_Q
+    return (
+        _VIEWABLE_JPEG_Q
+        & Q(premier_niveau__isnull=False)
+        & ~Q(premier_niveau='')
+    )
+
+
+def _series_checksums_with_viewable_jpeg(checksums):
+    if not checksums:
+        return set()
+    return set(
+        PhotoModel.objects.filter(checksum__in=checksums)
+        .filter(_VIEWABLE_JPEG_Q)
+        .values_list('checksum', flat=True)
+        .distinct()
+    )
+
+
+def _filter_photos_to_viewable_series(photos):
+    """Mode sujets : ne garder qu'une entrée par série ayant au moins un JPEG."""
+    viewable_checksums = _series_checksums_with_viewable_jpeg([photo.checksum for photo in photos])
+    seen = set()
+    unique = []
+    for photo in photos:
+        if photo.checksum not in viewable_checksums or photo.checksum in seen:
+            continue
+        seen.add(photo.checksum)
+        unique.append(photo)
+    return unique
+
+
+def _viewable_series_queryset(checksum):
+    return PhotoModel.objects.filter(checksum=checksum).filter(_VIEWABLE_JPEG_Q).order_by('pkey')
+
 
 def _nav_label(value):
     if not value:
@@ -92,14 +142,17 @@ def _breadcrumbs_third_level(first_level, second_level):
 
 def _breadcrumbs_from_photo(photo, current_label=None):
     label = current_label or proper_case(photo.sujet)
-    crumbs = [
-        _collections_crumb(),
-        _crumb(
+    crumbs = [_collections_crumb()]
+    if _has_nav_level(photo.premier_niveau):
+        crumbs.append(_crumb(
             _nav_label(photo.premier_niveau),
             reverse('DisplaySecondLevel', args=[photo.premier_niveau]),
-        ),
-    ]
-    if photo.troisieme_niveau:
+        ))
+    if (
+        photo.troisieme_niveau
+        and _has_nav_level(photo.second_niveau)
+        and _has_nav_level(photo.premier_niveau)
+    ):
         crumbs.append(_crumb(
             _nav_label(photo.second_niveau),
             reverse('DisplayThirdLevel', args=[photo.premier_niveau, photo.second_niveau]),
@@ -223,10 +276,16 @@ def _photo_to_subject_dict(photo):
     On ne l'affiche dans le libellé que si la série a un troisieme_niveau ; dans ce cas,
     on reprend premier/second/troisieme depuis une photo de référence si besoin.
     """
+    cover = (
+        PhotoModel.objects.filter(checksum=photo.checksum)
+        .filter(_VIEWABLE_JPEG_Q)
+        .order_by('pkey')
+        .first()
+    )
     subject = {
         'checksum': photo.checksum,
         'sujet': photo.sujet,
-        'cover_id': photo.pkey,
+        'cover_id': cover.pkey if cover else None,
         'premier_niveau': photo.premier_niveau,
         'second_niveau': photo.second_niveau,
         'troisieme_niveau': photo.troisieme_niveau or '',
@@ -356,7 +415,7 @@ def get_search_queryset(
 
     # ========== PHASE 1 : Récupération LARGE par mot EXACT (union OR) ==========
     # Les records sont trouvés via les mots exacts (david, 2013...). Pas de fuzzy ici.
-    base_filter = Q(agrandi=True) & Q(premier_niveau__isnull=False)
+    base_filter = _search_base_filter(result_mode)
 
     candidates_qs = PhotoModel.objects.none()
 
@@ -372,7 +431,7 @@ def get_search_queryset(
 
     if not apply_fuzzy:
         if result_mode == RESULT_MODE_SUBJECTS:
-            final_photos = _dedupe_photos_by_checksum(candidates)
+            final_photos = _filter_photos_to_viewable_series(_dedupe_photos_by_checksum(candidates))
             cache.set(cache_key, [photo.checksum for photo in final_photos], timeout=900)
             return _photos_to_subject_dicts(final_photos)
         cache.set(cache_key, [photo.pkey for photo in candidates[:1000]], timeout=900)
@@ -453,7 +512,9 @@ def get_search_queryset(
 
     if result_mode == RESULT_MODE_SUBJECTS:
         # Limite finale 1000 séries (cohérent avec les autres vues)
-        final_photos = _dedupe_photos_by_checksum(photo for _, photo in scored_photos)
+        final_photos = _filter_photos_to_viewable_series(
+            _dedupe_photos_by_checksum(photo for _, photo in scored_photos)
+        )
         cache.set(cache_key, [photo.checksum for photo in final_photos], timeout=900)  # 15 minutes
         return _photos_to_subject_dicts(final_photos)
 
@@ -707,14 +768,17 @@ def photoDetail(request, photo_id):
     else:
         form = PhotoSubjectForm(instance=photo)
 
-    series_qs = PhotoModel.objects.filter(
-        checksum=photo.checksum,
-        agrandi=True,
-    ).order_by('pkey')
-    previous_photo = series_qs.filter(pkey__lt=photo.pkey).order_by('-pkey').first()
-    next_photo = series_qs.filter(pkey__gt=photo.pkey).order_by('pkey').first()
-    series_count = series_qs.count()
-    series_position = series_qs.filter(pkey__lte=photo.pkey).count()
+    series_qs = _viewable_series_queryset(photo.checksum)
+    if series_qs.filter(pkey=photo.pkey).exists():
+        previous_photo = series_qs.filter(pkey__lt=photo.pkey).order_by('-pkey').first()
+        next_photo = series_qs.filter(pkey__gt=photo.pkey).order_by('pkey').first()
+        series_count = series_qs.count()
+        series_position = series_qs.filter(pkey__lte=photo.pkey).count()
+    else:
+        previous_photo = None
+        next_photo = None
+        series_count = 1
+        series_position = 1
 
     return render(request, 'photo_detail.html', {
         'photoRec': photo,
@@ -740,16 +804,17 @@ def contactsSheet(request, desiredsubjectMD5):
     - HttpResponse: Renders the contact sheet (possibly empty).
     """
     base_qs = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
-    total_count = base_qs.count()
+    viewable_qs = base_qs.filter(_VIEWABLE_JPEG_Q)
+    total_count = viewable_qs.count()
     if total_count > 1000:
         logger.warning(
             "Troncature de la planche contact pour le sujet MD5=%s : %d photos trouvées (>1000), limité à 1000.",
             desiredsubjectMD5, total_count
         )
-    allphotos = base_qs.order_by('pkey')[:1000]
+    allphotos = viewable_qs.order_by('pkey')[:1000]
 
     if request.method == 'POST' and request.POST.get('action') == 'resize':
-        photo = allphotos.first()
+        photo = viewable_qs.order_by('pkey').first()
         if photo:
             parts = [photo.premier_niveau, photo.second_niveau]
             if photo.troisieme_niveau:
@@ -777,7 +842,7 @@ def contactsSheet(request, desiredsubjectMD5):
     show_quality = request.GET.get('show_quality') == '1'
     worst_photos = _get_worst_exposure_photos(allphotos) if show_quality else []
 
-    first_photo = allphotos[0] if allphotos else None
+    first_photo = viewable_qs.order_by('pkey').first() or base_qs.order_by('pkey').first()
     breadcrumbs = _breadcrumbs_from_photo(first_photo) if first_photo else [_crumb(_('Contact sheet'))]
 
     return render(
@@ -804,14 +869,14 @@ def Gallery(request, desiredsubjectMD5):
     Returns:
     - HttpResponse: Renders the gallery (possibly empty).
     """
-    base_qs = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
-    total_count = base_qs.count()
+    viewable_qs = _viewable_series_queryset(desiredsubjectMD5)
+    total_count = viewable_qs.count()
     if total_count > 1000:
         logger.warning(
             "Troncature de la galerie pour le sujet MD5=%s : %d photos trouvées (>1000), limité à 1000.",
             desiredsubjectMD5, total_count
         )
-    allphotos = base_qs.order_by('pkey')[:1000]
+    allphotos = viewable_qs[:1000]
     paginator = Paginator(allphotos, 1)
     page_number = request.GET.get('page')
     photos_page = paginator.get_page(page_number)
