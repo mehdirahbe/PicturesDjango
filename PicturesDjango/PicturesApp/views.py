@@ -1,10 +1,10 @@
 import hashlib
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseNotFound, Http404, HttpResponseRedirect, FileResponse
 from django.core.cache import cache
-from django.core.management import call_command
 from django.contrib import messages
 from django.utils.translation import gettext as _
 import os
@@ -20,6 +20,24 @@ from pathlib import Path
 import logging
 
 logger = logging.getLogger(__name__)
+
+SEARCH_CACHE_VERSION_KEY = 'search:cache_version'
+
+
+def _search_cache_version():
+    return cache.get(SEARCH_CACHE_VERSION_KEY, 0)
+
+
+def _search_cache_key(normalized, apply_fuzzy, fuzzy_threshold):
+    return f"search:{_search_cache_version()}:{normalized}:{apply_fuzzy}:{fuzzy_threshold}"
+
+
+def invalidate_search_cache():
+    """Bump search cache version so new imports appear in search results immediately."""
+    try:
+        cache.incr(SEARCH_CACHE_VERSION_KEY)
+    except ValueError:
+        cache.set(SEARCH_CACHE_VERSION_KEY, 1, timeout=None)
 
 
 def _get_worst_exposure_photos(photos, limit=5):
@@ -69,14 +87,14 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
 
     if not words:
         # On met aussi en cache les recherches vides pour éviter des recalculs inutiles
-        cache_key = f"search:{normalized}:{apply_fuzzy}:{fuzzy_threshold}"
+        cache_key = _search_cache_key(normalized, apply_fuzzy, fuzzy_threshold)
         cache.set(cache_key, [], timeout=900)
         return PhotoModel.objects.none()
 
     # ========== CACHE ==========
     # On met en cache la liste des pkeys (et non les objets complets) pour éviter
     # de recalculer le scoring fuzzy à chaque affichage de la planche ou de la galerie.
-    cache_key = f"search:{normalized}:{apply_fuzzy}:{fuzzy_threshold}"
+    cache_key = _search_cache_key(normalized, apply_fuzzy, fuzzy_threshold)
     cached_pkeys = cache.get(cache_key)
 
     if cached_pkeys is not None:
@@ -257,8 +275,13 @@ def home(request):
 
         return redirect(request.path_info)
 
-    photo_niveaux = PhotoModel.objects.filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau='')).values_list(
-        'premier_niveau', flat=True).annotate(count=Count('pkey')).order_by('premier_niveau')
+    photo_niveaux = (
+        PhotoModel.objects
+        .filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau=''))
+        .values('premier_niveau')
+        .annotate(count=Count('pkey'))
+        .order_by('premier_niveau')
+    )
     paginator = Paginator(photo_niveaux, 100)  # Show 100 items per page
 
     page_number = request.GET.get('page')
@@ -376,56 +399,55 @@ def contactsSheet(request, desiredsubjectMD5):
     - desiredsubjectMD5 (str): The MD5 checksum of the subject.
 
     Returns:
-    - HttpResponse: Renders the contact sheet or raises Http404 if not found.
+    - HttpResponse: Renders the contact sheet (possibly empty).
     """
-    try:
-        base_qs = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
-        total_count = base_qs.count()
-        if total_count > 1000:
-            logger.warning(
-                "Troncature de la planche contact pour le sujet MD5=%s : %d photos trouvées (>1000), limité à 1000.",
-                desiredsubjectMD5, total_count
-            )
-        allphotos = base_qs.order_by('pkey')[:1000]
-
-        if request.method == 'POST' and request.POST.get('action') == 'resize':
-            photo = allphotos.first()
-            if photo:
-                parts = [photo.premier_niveau, photo.second_niveau]
-                if photo.troisieme_niveau:
-                    parts.append(photo.troisieme_niveau)
-                seriesdestdirectory = '/'.join(parts)
-
-                try:
-                    call_command('ResizeJpegs', seriesdestdirectory=seriesdestdirectory)
-                    messages.success(request, _("Intelligent resizing re-triggered successfully."))
-                except Exception as e:
-                    messages.error(request, _("Error during resizing: {}").format(e))
-
-            return redirect(request.path_info)
-
-        if request.method == 'POST' and request.POST.get('action') == 'analyze_quality':
-            try:
-                call_command('AnalyzePhotoQuality', SubjectMD5=desiredsubjectMD5)
-                messages.success(request, _("Exposure quality analysis completed for this series."))
-            except Exception as e:
-                messages.error(request, _("Error during analysis: {}").format(e))
-            return redirect(f"{request.path_info}?show_quality=1")
-
-        show_quality = request.GET.get('show_quality') == '1'
-        worst_photos = _get_worst_exposure_photos(allphotos) if show_quality else []
-
-        return render(
-            request,
-            'contactsSheet.html',
-            {
-                'photoRecs': allphotos,
-                'desiredsubjectMD5': desiredsubjectMD5,
-                'worst_photos': worst_photos,
-            }
+    base_qs = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
+    total_count = base_qs.count()
+    if total_count > 1000:
+        logger.warning(
+            "Troncature de la planche contact pour le sujet MD5=%s : %d photos trouvées (>1000), limité à 1000.",
+            desiredsubjectMD5, total_count
         )
-    except Exception:
-        raise Http404("Subject not found")
+    allphotos = base_qs.order_by('pkey')[:1000]
+
+    if request.method == 'POST' and request.POST.get('action') == 'resize':
+        photo = allphotos.first()
+        if photo:
+            parts = [photo.premier_niveau, photo.second_niveau]
+            if photo.troisieme_niveau:
+                parts.append(photo.troisieme_niveau)
+            seriesdestdirectory = '/'.join(parts)
+
+            try:
+                call_command('ResizeJpegs', seriesdestdirectory=seriesdestdirectory)
+                messages.success(request, _("Intelligent resizing re-triggered successfully."))
+            except Exception as e:
+                logger.exception("Resize failed for MD5=%s", desiredsubjectMD5)
+                messages.error(request, _("Error during resizing: {}").format(e))
+
+        return redirect(request.path_info)
+
+    if request.method == 'POST' and request.POST.get('action') == 'analyze_quality':
+        try:
+            call_command('AnalyzePhotoQuality', SubjectMD5=desiredsubjectMD5)
+            messages.success(request, _("Exposure quality analysis completed for this series."))
+        except Exception as e:
+            logger.exception("Quality analysis failed for MD5=%s", desiredsubjectMD5)
+            messages.error(request, _("Error during analysis: {}").format(e))
+        return redirect(f"{request.path_info}?show_quality=1")
+
+    show_quality = request.GET.get('show_quality') == '1'
+    worst_photos = _get_worst_exposure_photos(allphotos) if show_quality else []
+
+    return render(
+        request,
+        'contactsSheet.html',
+        {
+            'photoRecs': allphotos,
+            'desiredsubjectMD5': desiredsubjectMD5,
+            'worst_photos': worst_photos,
+        }
+    )
 
 
 def Gallery(request, desiredsubjectMD5):
@@ -437,34 +459,31 @@ def Gallery(request, desiredsubjectMD5):
     - desiredsubjectMD5 (str): The MD5 checksum of the subject.
 
     Returns:
-    - HttpResponse: Renders the gallery or raises Http404 if not found.
+    - HttpResponse: Renders the gallery (possibly empty).
     """
+    base_qs = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
+    total_count = base_qs.count()
+    if total_count > 1000:
+        logger.warning(
+            "Troncature de la galerie pour le sujet MD5=%s : %d photos trouvées (>1000), limité à 1000.",
+            desiredsubjectMD5, total_count
+        )
+    allphotos = base_qs.order_by('pkey')[:1000]
+    paginator = Paginator(allphotos, 1)
+    page_number = request.GET.get('page')
+    photos_page = paginator.get_page(page_number)
+
     try:
-        base_qs = PhotoModel.objects.filter(checksum=desiredsubjectMD5).filter(agrandi=True)
-        total_count = base_qs.count()
-        if total_count > 1000:
-            logger.warning(
-                "Troncature de la galerie pour le sujet MD5=%s : %d photos trouvées (>1000), limité à 1000.",
-                desiredsubjectMD5, total_count
-            )
-        allphotos = base_qs.order_by('pkey')[:1000]
-        paginator = Paginator(allphotos, 1)
-        page_number = request.GET.get('page')
-        photos_page = paginator.get_page(page_number)
+        photo = photos_page[0]
+    except (IndexError, TypeError):
+        photo = None
 
-        try:
-            photo = photos_page[0]
-        except (IndexError, TypeError):
-            photo = None
-
-        return render(request, 'gallery.html', {
-            'photo': photo,
-            'photos': photos_page,
-            'desiredsubjectMD5': desiredsubjectMD5,
-            'linktogooglemaps': GetLinkToGoogleMaps(photo)
-        })
-    except Exception:
-        raise Http404("Subject not found")
+    return render(request, 'gallery.html', {
+        'photo': photo,
+        'photos': photos_page,
+        'desiredsubjectMD5': desiredsubjectMD5,
+        'linktogooglemaps': GetLinkToGoogleMaps(photo)
+    })
 
 
 def contactsSheetBySearch(request, search_term):
@@ -476,13 +495,10 @@ def contactsSheetBySearch(request, search_term):
     - search_term (str): The term to search for.
 
     Returns:
-    - HttpResponse: Renders the search result contact sheet or raises Http404 if not found.
+    - HttpResponse: Renders the search result contact sheet (possibly empty).
     """
-    try:
-        allphotos = get_search_queryset(search_term)
-        return render(request, 'contactsSheetBySearch.html', {'photoRecs': allphotos, 'search_term': search_term})
-    except Exception:
-        raise Http404("Subject not found")
+    allphotos = get_search_queryset(search_term)
+    return render(request, 'contactsSheetBySearch.html', {'photoRecs': allphotos, 'search_term': search_term})
 
 
 def GalleryBySearch(request, search_term):
@@ -494,24 +510,21 @@ def GalleryBySearch(request, search_term):
     - search_term (str): The term to search for.
 
     Returns:
-    - HttpResponse: Renders the search result gallery or raises Http404 if not found.
+    - HttpResponse: Renders the search result gallery (possibly empty).
     """
-    try:
-        allphotos = get_search_queryset(search_term)
-        paginator = Paginator(allphotos, 1)
-        page_number = request.GET.get('page')
-        photos_page = paginator.get_page(page_number)
+    allphotos = get_search_queryset(search_term)
+    paginator = Paginator(allphotos, 1)
+    page_number = request.GET.get('page')
+    photos_page = paginator.get_page(page_number)
 
-        photo = photos_page[0] if photos_page else None
+    photo = photos_page[0] if photos_page else None
 
-        return render(request, 'galleryBySearch.html', {
-            'photo': photo,
-            'photos': photos_page,
-            'search_term': search_term,
-            'linktogooglemaps': GetLinkToGoogleMaps(photo)
-        })
-    except Exception:
-        raise Http404("Subject not found")
+    return render(request, 'galleryBySearch.html', {
+        'photo': photo,
+        'photos': photos_page,
+        'search_term': search_term,
+        'linktogooglemaps': GetLinkToGoogleMaps(photo)
+    })
 
 
 def InsertNewPictures(request):
@@ -551,13 +564,20 @@ def InsertNewPictures(request):
             # It orchestrates:
             #   1. Smart resizing (file-by-file, only what is needed)
             #   2. If resizing succeeds → atomic (Prepare + ExtractEXIF) inside a transaction
-            call_command(
-                'ImportSeries',
-                jpegsdirectory=jpegsdirectory,
-                subject=subject,
-                date=date,
-                comment=comment,
-            )
+            try:
+                call_command(
+                    'ImportSeries',
+                    jpegsdirectory=jpegsdirectory,
+                    subject=subject,
+                    date=date,
+                    comment=comment,
+                )
+            except CommandError as e:
+                logger.exception("ImportSeries failed for %s", jpegsdirectory)
+                messages.error(request, _("Import failed: {}").format(e))
+                return render(request, 'InsertNewPictures.html', {'form': form})
+
+            invalidate_search_cache()
 
             # Generate the MD5 (still needed for the redirect to the contact sheet)
             desiredsubjectMD5 = hashlib.md5(subject.encode(), usedforsecurity=False).hexdigest()

@@ -16,39 +16,34 @@
 
 <div class="container mt-5">
   <!-- Bootstrap container class for responsive design, mt-5 adds margin top -->
+  {% if photo %}
   <div class="row justify-content-center mt-4">
-    <!-- Bootstrap row class, justify-content-center centers the content horizontally, mt-4 adds margin top -->
     <div class="col-md-auto">
-      <!-- Bootstrap column class, col-md-auto adjusts width automatically -->
       <a class="mt-2 text-white" href="{% url 'ContactsSheet' photo.checksum %}"><h1>{{ photo.sujet|proper_case }}</h1></a>
-      <!-- mt-2 adds margin top, text-white sets text color to white -->
     </div>
   </div>
+  {% endif %}
   <div class="row justify-content-center mt-4">
     <div class="col-md-10">
-      <!-- Column width set to 10/12 of the grid on medium screens -->
       <div class="photo-viewer text-center position-relative">
-        <!-- Custom class for photo viewer, text-center centers text, position-relative allows absolute positioning of children -->
+        {% if photo %}
         {% if photos.has_previous %}
           <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
         {% endif %}
-        <!-- Custom class for previous button -->
         {% include "includes/_photo_image.html" %}
-         <!-- img-fluid makes the image responsive, rounded adds rounded corners -->
-
-        {# Shared description + location + maps link #}
         {% with photo=photo %}
             {% include "includes/_photo_metadata.html" %}
         {% endwith %}
-
-        {# Technical EXIF (shared partial) #}
         {% with photo=photo %}
             {% include "includes/_technical_exif_info.html" %}
         {% endwith %}
-
-        <!-- Next arrow (positioned by CSS) -->
         {% if photos.has_next %}
           <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-secondary" role="alert">
+            {% trans "No photos found for this search." %}
+        </div>
         {% endif %}
     </div>
   </div>

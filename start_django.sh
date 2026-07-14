@@ -12,6 +12,7 @@ source .venv/bin/activate
 cd PicturesDjango
 
 # Lancer le serveur de développement
-gunicorn PicturesDjango.wsgi:application --bind 0.0.0.0:8000 --reload --timeout 600 --workers 3
+# 1 worker: SQLite does not handle concurrent writes well across processes.
+gunicorn PicturesDjango.wsgi:application --bind 0.0.0.0:8000 --reload --timeout 600 --workers 1
 
 

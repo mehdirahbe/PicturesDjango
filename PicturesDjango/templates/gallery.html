@@ -23,26 +23,24 @@
         <div class="col-md-10">
             <!-- 'col-md-10' takes up 10 units out of 12 in the grid on medium screens and up -->
             <div class="photo-viewer text-center position-relative">
-                <!-- 'text-center' centers text, 'position-relative' sets the positioning context for child elements -->
+                {% if photo %}
                 {% if photos.has_previous %}
                     <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
-                    <!-- Previous button for pagination -->
                 {% endif %}
-		{% include "includes/_photo_image.html" %}
-                <!-- 'img-fluid' allows the image to adapt to its container, 'rounded' adds rounded corners -->
-
-                {# Shared description + location + maps link #}
+                {% include "includes/_photo_image.html" %}
                 {% with photo=photo %}
                     {% include "includes/_photo_metadata.html" %}
                 {% endwith %}
-
-                {# Technical EXIF (shared partial) #}
                 {% with photo=photo %}
                     {% include "includes/_technical_exif_info.html" %}
                 {% endwith %}
                 {% if photos.has_next %}
                     <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
-                    <!-- Next button for pagination -->
+                {% endif %}
+                {% else %}
+                <div class="alert alert-secondary" role="alert">
+                    {% trans "No photos found for this subject." %}
+                </div>
                 {% endif %}
             </div>
         </div>

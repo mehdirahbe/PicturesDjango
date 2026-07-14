@@ -133,13 +133,17 @@ class ContactSheetAndGalleryViewsTest(PicturesAppTestCase):
             self.assertContains(response, "Photo principale")
 
     def test_contacts_sheet_unknown_subject_returns_200_with_empty_list(self):
-        # Current view behavior: it does not raise Http404 for unknown checksum,
-        # it just renders with an empty queryset.
-        # This test documents the current (suboptimal) behavior.
+        # Unknown checksum: empty queryset and a friendly empty-state message.
         url = reverse("ContactsSheet", args=["nonexistentmd5hash1234567890abcdef"])
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['photoRecs']), 0)
+
+    def test_gallery_unknown_subject_returns_200_without_crash(self):
+        url = reverse("photo_gallery", args=["nonexistentmd5hash1234567890abcdef"])
+        response = self.client.get(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.context['photo'])
 
 
 class SearchViewsTest(PicturesAppTestCase):

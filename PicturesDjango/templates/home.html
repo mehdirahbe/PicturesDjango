@@ -43,10 +43,10 @@
   <div class="list-group" id="levelList">
     <!-- Bootstrap class for creating a list of items with a consistent look -->
     {% for level in page_obj %}
-      {% if level %}
-        <a href="{% url 'DisplaySecondLevel' firstLevel=level %}" class="list-group-item list-group-item-action list-group-item-dark">
+      {% if level.premier_niveau %}
+        <a href="{% url 'DisplaySecondLevel' firstLevel=level.premier_niveau %}" class="list-group-item list-group-item-action list-group-item-dark">
           <!-- list-group-item for list item, list-group-item-action for clickable items, list-group-item-dark for dark theme -->
-          {{ level|capfirst|replace_underscore }}
+          {{ level.premier_niveau|capfirst|replace_underscore }}
         </a>
       {% else %}
         <div class="list-group-item list-group-item-warning-dark text-center">

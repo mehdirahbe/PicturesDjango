@@ -242,6 +242,18 @@ msgstr "Hautes lumières cramées"
 msgid "Very extreme exposure"
 msgstr "Exposition très extrême"
 
+#: templates/contactsSheet.html:54
+msgid "No photos found for this subject."
+msgstr "Aucune photo trouvée pour ce sujet."
+
+#: templates/contactsSheetBySearch.html:25
+msgid "No photos found for this search."
+msgstr "Aucune photo trouvée pour cette recherche."
+
+#: PicturesApp/views.py:577
+msgid "Import failed: {}"
+msgstr "Échec de l'import : {}"
+
 #: templates/gallery.html:13 templates/galleryBySearch.html:14
 msgid "Contact Sheet"
 msgstr "Planche contact"

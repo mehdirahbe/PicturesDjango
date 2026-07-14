@@ -16,11 +16,15 @@
 <div class="container">
     <!-- 'container' creates a centered content area -->
     <div class="row">
-        <!-- 'row' to organize content in a row -->
         <div class="col-md-12">
-            <!-- 'col-md-12' takes up the full width of the grid -->
+            {% if photoRecs %}
             <h2>{{ photoRecs.0.sujet|proper_case }}</h2>
             <p><strong>{{ photoRecs.0.date }}</strong></p>
+            {% else %}
+            <div class="alert alert-secondary" role="alert">
+                {% trans "No photos found for this search." %}
+            </div>
+            {% endif %}
         </div>
     </div>
     <div class="row">
