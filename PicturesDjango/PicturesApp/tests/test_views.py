@@ -83,8 +83,17 @@ class SecondLevelViewsTest(PicturesAppTestCase):
     def test_display_second_level(self):
         response = self.client.get(reverse("DisplaySecondLevel", args=["voyages"]))
         self.assertEqual(response.status_code, 200)
-        # The template uses |capfirst|replace_underscore, so we look for the rendered text
-        self.assertContains(response, "Italie")
+        # Direct series (no third level): subject only
+        self.assertContains(response, "Vacances en Italie")
+        # Subfolder with third-level series underneath
+        self.assertContains(response, "Italie/2024")
+
+    def test_display_third_level(self):
+        response = self.client.get(
+            reverse("DisplayThirdLevel", args=["voyages", "italie_2024"])
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Vacances en Italie")
 
 
 class ContactSheetAndGalleryViewsTest(PicturesAppTestCase):

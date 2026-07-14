@@ -336,3 +336,11 @@ msgstr "Veuillez entrer un mot à rechercher :"
 #: templates/secondlevel.html:18
 msgid "Search second levels"
 msgstr "Recherche dans les second niveaux"
+
+#: templates/secondlevel.html:15
+msgid "Search series and subfolders"
+msgstr "Recherche dans les séries et sous-dossiers"
+
+#: templates/thirdlevel.html:15
+msgid "Search series"
+msgstr "Recherche dans les séries"

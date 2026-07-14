@@ -293,27 +293,65 @@ def home(request):
 
 def DisplaySecondLevel(request, firstLevel):
     """
-    Display photos categorized by second level, with optional third level.
-
-    Args:
-    - request (HttpRequest): The HTTP request object.
-    - firstLevel (str): The first level category to filter by.
-
-    Returns:
-    - HttpResponse: Renders the second level page with paginated data.
+    Under a first-level folder: direct photo series (no third level), then
+    second-level subfolders that contain third-level series.
     """
-    allphotos = PhotoModel.objects.filter(premier_niveau=firstLevel).filter(
-        Q(second_niveau__isnull=False) & ~Q(second_niveau=''))
+    base_qs = PhotoModel.objects.filter(premier_niveau=firstLevel).filter(
+        Q(second_niveau__isnull=False) & ~Q(second_niveau='')
+    )
+    no_third = Q(troisieme_niveau__isnull=True) | Q(troisieme_niveau='')
 
-    photo_niveaux = allphotos.values_list('second_niveau', 'troisieme_niveau', 'checksum', 'sujet').distinct().annotate(
-        count=Count('pkey')).order_by('sujet')
+    direct_series = (
+        base_qs.filter(no_third)
+        .values('checksum', 'sujet')
+        .annotate(count=Count('pkey'))
+        .order_by('sujet')
+    )
 
-    paginator = Paginator(photo_niveaux, 100)
+    second_folders = (
+        base_qs.exclude(no_third)
+        .values('second_niveau')
+        .annotate(count=Count('pkey'))
+        .order_by('second_niveau')
+    )
+
+    paginator = Paginator(direct_series, 100)
+    page_number = request.GET.get('page')
+    direct_series_page = paginator.get_page(page_number)
+
+    context = {
+        'firstLevel': firstLevel,
+        'direct_series_page': direct_series_page,
+        'second_folders': second_folders,
+    }
+    return render(request, 'secondlevel.html', context)
+
+
+def DisplayThirdLevel(request, firstLevel, secondLevel):
+    """
+    Under a first- and second-level folder: photo series that use a third level.
+    """
+    series = (
+        PhotoModel.objects.filter(
+            premier_niveau=firstLevel,
+            second_niveau=secondLevel,
+        )
+        .exclude(Q(troisieme_niveau__isnull=True) | Q(troisieme_niveau=''))
+        .values('checksum', 'sujet')
+        .annotate(count=Count('pkey'))
+        .order_by('sujet')
+    )
+
+    paginator = Paginator(series, 100)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    context = {'page_obj': page_obj}
-    return render(request, 'secondlevel.html', context)
+    context = {
+        'firstLevel': firstLevel,
+        'secondLevel': secondLevel,
+        'page_obj': page_obj,
+    }
+    return render(request, 'thirdlevel.html', context)
 
 
 def photo_Jpeg(request, photo_id, size):
