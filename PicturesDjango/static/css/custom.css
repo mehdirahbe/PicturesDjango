@@ -167,18 +167,23 @@ a:hover {
     padding-left: 0;
     list-style: none;
 }
-/* Miniatures en lazy loading - on réserve l'espace pour éviter les sauts de scroll */
-img.lazyload {
-    aspect-ratio: 4 / 3;           /* ← le hint important */
-    object-fit: cover;             /* ou "contain" selon ton goût */
+/* Contact sheet thumbnails: fixed slot prevents CLS while lazy-loading */
+.thumbnail-slot {
+    position: relative;
     width: 100%;
-    height: auto;
+    height: 0;
+    padding-bottom: 75%; /* 4:3 box reserved in layout before image loads */
+    overflow: hidden;
     background-color: #3a3f44;
     background-image: linear-gradient(145deg, #3a3f44 0%, #4a4f55 100%);
-    transition: background-color 0.25s ease;
 }
 
-img.lazyloaded {
-    background-color: transparent;
-    background-image: none;
+.thumbnail-slot img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
 }

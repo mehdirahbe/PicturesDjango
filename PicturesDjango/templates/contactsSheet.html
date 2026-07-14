@@ -65,12 +65,13 @@
             <div class="row">
                 {% for photo in worst_photos %}
                 <div class="col-md-2 mb-2">
-                    <a href="{% url 'photoDetail' photo.pkey %}">
-                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                             data-src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
-                             alt="photo {{ photo.pkey }}"
-                             class="img-fluid lazyload border border-warning"
-                             style="max-height: 110px;">
+                    <a href="{% url 'photoDetail' photo.pkey %}" class="d-block">
+                        <div class="thumbnail-slot">
+                            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                                 data-src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
+                                 alt="photo {{ photo.pkey }}"
+                                 class="lazyload border border-warning">
+                        </div>
                     </a>
                     <small class="d-block mt-1" style="line-height: 1.15;">
                         Lum: <strong>{{ photo.luminance_mean|floatformat:"0" }}</strong><br>

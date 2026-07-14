@@ -1,12 +1,14 @@
 <div class="col-md-2 mb-2">
-    <a href="{% url 'photoDetail' photo.pkey %}">
-        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-             data-src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
-             alt="{{ photo.sujet_dias|capfirst }}"
-             class="img-fluid lazyload"
-             data-bs-toggle="tooltip"
-             data-bs-placement="top"
-             title="{{ photo.sujet_dias|capfirst }}">
+    <a href="{% url 'photoDetail' photo.pkey %}" class="d-block">
+        <div class="thumbnail-slot">
+            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
+                 alt="{{ photo.sujet_dias|capfirst }}"
+                 class="lazyload"
+                 data-bs-toggle="tooltip"
+                 data-bs-placement="top"
+                 title="{{ photo.sujet_dias|capfirst }}">
+        </div>
     </a>
-    <p>{{ photo.sujet_dias|capfirst|truncatechars:20 }}</p>
+    <p class="mb-0">{{ photo.sujet_dias|capfirst|truncatechars:20 }}</p>
 </div>
