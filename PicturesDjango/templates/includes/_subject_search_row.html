@@ -1,0 +1,6 @@
+{% load custom_filters %}
+{% if subject.troisieme_niveau %}
+{{ subject.premier_niveau|capfirst|replace_underscore }} / {{ subject.second_niveau|capfirst|replace_underscore }} - {{ subject.sujet|proper_case }}
+{% else %}
+{{ subject.premier_niveau|capfirst|replace_underscore }} - {{ subject.sujet|proper_case }}
+{% endif %}

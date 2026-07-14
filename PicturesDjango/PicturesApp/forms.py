@@ -39,6 +39,7 @@ def _clean_control_characters(text):
 #Form to ask for a pattern to search. All images having it in comment will then be displayed
 class SearchForm(forms.Form):
     search_term = forms.CharField(label=_('Word to search'), max_length=100)
+    only_subjects = forms.BooleanField(label=_('Only subjects'), required=False)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

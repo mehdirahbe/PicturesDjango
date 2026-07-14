@@ -160,15 +160,121 @@ class SearchViewsTest(PicturesAppTestCase):
     def setUp(self):
         super().setUp()
         activate('en')
+        PhotoModel.objects.create(
+            sujet="Vacances Rome",
+            date="Ete 2024",
+            sujet_dias="Colisee detail",
+            commentaire="commentaire bruit",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="voyages",
+            second_niveau="italie",
+            nom_fichier_jpeg="001.jpg",
+            checksum="abc1234567890abcdef1234567890abc",
+        )
+        PhotoModel.objects.create(
+            sujet="Vacances Rome",
+            date="Ete 2024",
+            sujet_dias="Autre diapo",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="voyages",
+            second_niveau="italie",
+            troisieme_niveau="rome",
+            nom_fichier_jpeg="002.jpg",
+            checksum="abc1234567890abcdef1234567890abc",
+        )
 
     def test_search_form_get(self):
         response = self.client.get(reverse("search_form"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "search_term")
+        self.assertContains(response, "only_subjects")
 
     def test_search_post_redirects_to_results(self):
         response = self.client.post(reverse("search_form"), {"search_term": "Rome"})
         self.assertRedirects(response, reverse("ContactsSheetBySearch", args=["Rome"]))
+
+    def test_search_post_only_subjects_redirects(self):
+        response = self.client.post(
+            reverse("search_form"),
+            {"search_term": "Rome", "only_subjects": "on"},
+        )
+        self.assertRedirects(response, reverse("SubjectsBySearch", args=["Rome"]))
+
+    def test_subjects_by_search_dedupes_and_ignores_commentaire(self):
+        response = self.client.get(reverse("SubjectsBySearch", args=["Colisee"]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["page_obj"]), 0)
+
+        response = self.client.get(reverse("SubjectsBySearch", args=["Rome"]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["page_obj"]), 1)
+        self.assertContains(response, "Vacances Rome")
+        self.assertContains(response, "Voyages / Italie - Vacances Rome")
+
+    def test_subjects_by_search_omits_folder_second_when_no_third_level(self):
+        PhotoModel.objects.create(
+            sujet="Randonnee Alpes",
+            date="2018",
+            sujet_dias="",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="voyages",
+            second_niveau="alpes",
+            nom_fichier_jpeg="010.jpg",
+            checksum="aaa11111111111111111111111111111",
+        )
+        response = self.client.get(reverse("SubjectsBySearch", args=["Alpes"]))
+        self.assertContains(response, "Voyages - Randonnee Alpes")
+        self.assertNotContains(response, "Voyages / Alpes")
+
+    def test_subjects_by_search_omits_storage_folder_for_direct_series(self):
+        PhotoModel.objects.create(
+            sujet="Fuerteventura Paques 2013",
+            date="2013",
+            sujet_dias="",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="voyages",
+            second_niveau="fuertepaques2013",
+            nom_fichier_jpeg="011.jpg",
+            checksum="bbb22222222222222222222222222222",
+        )
+        response = self.client.get(reverse("SubjectsBySearch", args=["Fuerteventura"]))
+        self.assertContains(response, "Voyages - Fuerteventura Paques 2013")
+        self.assertNotContains(response, "Fuertepaques2013")
+
+    def test_subjects_by_search_omits_third_level_in_label(self):
+        PhotoModel.objects.create(
+            sujet="Escapade Venise",
+            date="2020",
+            sujet_dias="",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="voyages",
+            second_niveau="italie",
+            troisieme_niveau="venise",
+            nom_fichier_jpeg="003.jpg",
+            checksum="def4567890abcdef1234567890abcdef",
+        )
+        response = self.client.get(reverse("SubjectsBySearch", args=["Venise"]))
+        self.assertContains(response, "Voyages / Italie - Escapade Venise")
+        self.assertNotContains(response, "Venise - Escapade")
 
 
 class PhotoDetailViewTest(PicturesAppTestCase):

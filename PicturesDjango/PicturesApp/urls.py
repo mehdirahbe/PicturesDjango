@@ -14,6 +14,7 @@ urlpatterns = [
 
     # contact sheet and gallery by search term
     path('ContactsSheetBySearch/<str:search_term>/', views.contactsSheetBySearch, name='ContactsSheetBySearch'),
+    path('SubjectsBySearch/<str:search_term>/', views.subjectsBySearch, name='SubjectsBySearch'),
     path('GalleryBySearch/<str:search_term>/', views.GalleryBySearch, name='photo_galleryBySearch'),
     path('GalleryBySearch/<str:search_term>/page/<int:page>/', views.GalleryBySearch, name='photo_galleryBySearch'),
 

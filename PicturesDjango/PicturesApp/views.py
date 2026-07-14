@@ -23,13 +23,120 @@ logger = logging.getLogger(__name__)
 
 SEARCH_CACHE_VERSION_KEY = 'search:cache_version'
 
+# Champs interrogés en mode "photos" (recherche classique → planche contact).
+PHOTO_SEARCH_FIELDS = ('sujet_dias', 'commentaire', 'lieu', 'date', 'sujet')
+# Champs interrogés en mode "sujets uniquement" (date + sujet de série).
+SUBJECT_SEARCH_FIELDS = ('date', 'sujet')
+RESULT_MODE_PHOTOS = 'photos'
+RESULT_MODE_SUBJECTS = 'subjects'
+
+# Mapping champ → filtre SQL icontains (phase 1). Paramétré pour réutiliser la même fuzzy search.
+_SEARCH_FIELD_LOOKUPS = {
+    'sujet_dias': lambda word: Q(sujet_dias__icontains=word),
+    'commentaire': lambda word: Q(commentaire__icontains=word),
+    'lieu': lambda word: Q(lieu__icontains=word),
+    'date': lambda word: Q(date__icontains=word),
+    'sujet': lambda word: Q(sujet__icontains=word),
+}
+
 
 def _search_cache_version():
     return cache.get(SEARCH_CACHE_VERSION_KEY, 0)
 
 
-def _search_cache_key(normalized, apply_fuzzy, fuzzy_threshold):
-    return f"search:{_search_cache_version()}:{normalized}:{apply_fuzzy}:{fuzzy_threshold}"
+def _search_cache_key(normalized, apply_fuzzy, fuzzy_threshold, search_fields, result_mode):
+    fields_key = ','.join(search_fields)
+    return (
+        f"search:{_search_cache_version()}:{normalized}:{apply_fuzzy}:"
+        f"{fuzzy_threshold}:{fields_key}:{result_mode}"
+    )
+
+
+def _empty_search_result(result_mode):
+    return [] if result_mode == RESULT_MODE_SUBJECTS else PhotoModel.objects.none()
+
+
+def _word_filter_q(word, search_fields):
+    word_q = Q()
+    for field_name in search_fields:
+        word_q |= _SEARCH_FIELD_LOOKUPS[field_name](word)
+    return word_q
+
+
+def _photo_search_tokens(photo, search_fields):
+    """Tokenisation phase 2 : mots >= 2 chars, limités aux champs actifs (search_fields)."""
+    raw_tokens = set()
+    for field_name in search_fields:
+        field_value = getattr(photo, field_name, None)
+        if field_value:
+            for tok in re.split(r'[^a-z0-9]+', str(field_value).lower()):
+                if len(tok) >= 2:
+                    raw_tokens.add(tok)
+    return raw_tokens
+
+
+def _dedupe_photos_by_checksum(photos):
+    """Mode sujets : une entrée par checksum (série), en conservant l'ordre de score."""
+    seen = set()
+    unique = []
+    for photo in photos:
+        if photo.checksum in seen:
+            continue
+        seen.add(photo.checksum)
+        unique.append(photo)
+    return unique[:1000]
+
+
+def _photo_to_subject_dict(photo):
+    """
+    Représentation d'une série pour l'affichage SubjectsBySearch.
+    second_niveau sert aussi de dossier disque pour les séries directes (sans 3e niveau).
+    On ne l'affiche dans le libellé que si la série a un troisieme_niveau ; dans ce cas,
+    on reprend premier/second/troisieme depuis une photo de référence si besoin.
+    """
+    subject = {
+        'checksum': photo.checksum,
+        'sujet': photo.sujet,
+        'premier_niveau': photo.premier_niveau,
+        'second_niveau': photo.second_niveau,
+        'troisieme_niveau': photo.troisieme_niveau or '',
+        'date': photo.date,
+    }
+    if subject['troisieme_niveau']:
+        return subject
+
+    ref = (
+        PhotoModel.objects.filter(checksum=photo.checksum)
+        .exclude(Q(troisieme_niveau__isnull=True) | Q(troisieme_niveau=''))
+        .order_by('pkey')
+        .first()
+    )
+    if ref:
+        subject['premier_niveau'] = ref.premier_niveau
+        subject['second_niveau'] = ref.second_niveau
+        subject['troisieme_niveau'] = ref.troisieme_niveau
+    return subject
+
+
+def _photos_to_subject_dicts(photos):
+    return [_photo_to_subject_dict(photo) for photo in photos]
+
+
+def _restore_cached_search(cached_ids, result_mode):
+    """Reconstruit le résultat ordonné à partir du cache (pkeys ou checksums selon le mode)."""
+    if result_mode == RESULT_MODE_SUBJECTS:
+        photos = PhotoModel.objects.filter(checksum__in=cached_ids)
+        photo_by_checksum = {photo.checksum: photo for photo in photos}
+        ordered_photos = [
+            photo_by_checksum[checksum]
+            for checksum in cached_ids
+            if checksum in photo_by_checksum
+        ]
+        return _photos_to_subject_dicts(ordered_photos)
+
+    photos = list(PhotoModel.objects.filter(pkey__in=cached_ids))
+    photo_dict = {photo.pkey: photo for photo in photos}
+    return [photo_dict[pkey] for pkey in cached_ids if pkey in photo_dict]
 
 
 def invalidate_search_cache():
@@ -59,7 +166,13 @@ def _get_worst_exposure_photos(photos, limit=5):
     return sorted(analyzed, key=exposure_problem_score, reverse=True)[:limit]
 
 
-def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
+def get_search_queryset(
+    search_term,
+    apply_fuzzy=True,
+    fuzzy_threshold=75,
+    search_fields=None,
+    result_mode=RESULT_MODE_PHOTOS,
+):
     """
     Recherche full-text multi-mots avec fuzzy (rapidfuzz) - Mode Option A strict (règle dure).
 
@@ -78,31 +191,38 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
 
     Seuil 75 par défaut (relevé pour supprimer le bruit tout en préservant les typos utiles
     comme "davud"→"david", "furte"↔"fuerte" etc.).
+
+    Extensions (mode sujets) :
+        search_fields limite les champs SQL + tokenisation (ex. date + sujet uniquement).
+        result_mode='subjects' déduplique par checksum et retourne des dicts série pour SubjectsBySearch.
     """
+    if search_fields is None:
+        search_fields = PHOTO_SEARCH_FIELDS
+    search_fields = tuple(search_fields)
+
     if not search_term or not search_term.strip():
-        return PhotoModel.objects.none()
+        return _empty_search_result(result_mode)
 
     normalized = unidecode(search_term).lower().strip()
     words = [w for w in normalized.split() if len(w) >= 2]
 
+    cache_key = _search_cache_key(
+        normalized, apply_fuzzy, fuzzy_threshold, search_fields, result_mode
+    )
+
     if not words:
         # On met aussi en cache les recherches vides pour éviter des recalculs inutiles
-        cache_key = _search_cache_key(normalized, apply_fuzzy, fuzzy_threshold)
         cache.set(cache_key, [], timeout=900)
-        return PhotoModel.objects.none()
+        return _empty_search_result(result_mode)
 
     # ========== CACHE ==========
-    # On met en cache la liste des pkeys (et non les objets complets) pour éviter
-    # de recalculer le scoring fuzzy à chaque affichage de la planche ou de la galerie.
-    cache_key = _search_cache_key(normalized, apply_fuzzy, fuzzy_threshold)
-    cached_pkeys = cache.get(cache_key)
+    # On met en cache la liste des pkeys ou checksums (et non les objets complets) pour éviter
+    # de recalculer le scoring fuzzy à chaque affichage de la planche, de la galerie ou des sujets.
+    cached_ids = cache.get(cache_key)
 
-    if cached_pkeys is not None:
-        # Reconstruction de la liste ordonnée à partir des pkeys en cache
-        photos = list(PhotoModel.objects.filter(pkey__in=cached_pkeys))
-        photo_dict = {p.pkey: p for p in photos}
-        ordered_photos = [photo_dict[pk] for pk in cached_pkeys if pk in photo_dict]
-        return ordered_photos
+    if cached_ids is not None:
+        # Reconstruction de la liste ordonnée à partir des identifiants en cache
+        return _restore_cached_search(cached_ids, result_mode)
 
     # ========== PHASE 1 : Récupération LARGE par mot EXACT (union OR) ==========
     # Les records sont trouvés via les mots exacts (david, 2013...). Pas de fuzzy ici.
@@ -111,14 +231,9 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
     candidates_qs = PhotoModel.objects.none()
 
     for word in words:
-        word_q = (
-            Q(sujet_dias__icontains=word) |
-            Q(commentaire__icontains=word) |
-            Q(lieu__icontains=word) |
-            Q(date__icontains=word) |
-            Q(sujet__icontains=word)
+        candidates_qs |= PhotoModel.objects.filter(
+            base_filter & _word_filter_q(word, search_fields)
         )
-        candidates_qs |= PhotoModel.objects.filter(base_filter & word_q)
 
     # On ramène un pool large (le filtrage dur se fait en phase 2)
     candidates = list(
@@ -126,23 +241,22 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
     )
 
     if not apply_fuzzy:
+        if result_mode == RESULT_MODE_SUBJECTS:
+            final_photos = _dedupe_photos_by_checksum(candidates)
+            cache.set(cache_key, [photo.checksum for photo in final_photos], timeout=900)
+            return _photos_to_subject_dicts(final_photos)
+        cache.set(cache_key, [photo.pkey for photo in candidates[:1000]], timeout=900)
         return candidates[:1000]
 
     # ========== PHASE 2 : RÈGLE DURE + scoring hybride ==========
     scored_photos = []
+    # Boost sujet_dias uniquement quand ce champ participe à la recherche (mode photos classique)
+    use_sujet_dias_boost = 'sujet_dias' in search_fields
 
     for photo in candidates:
-        # Tokenisation de tous les champs texte (mots >= 2 chars)
-        raw_tokens = set()
-        for field in (photo.sujet_dias, photo.commentaire, photo.lieu, photo.date, photo.sujet):
-            if field:
-                for tok in re.split(r'[^a-z0-9]+', field.lower()):
-                    if len(tok) >= 2:
-                        raw_tokens.add(tok)
+        photo_tokens = _photo_search_tokens(photo, search_fields)
 
         # Note: on garde les tokens tels quels (david's reste "david's") pour ne pas être trop permissif
-        photo_tokens = raw_tokens
-
         word_scores = []
         exact_in_sujet_dias = 0
 
@@ -153,7 +267,7 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
             if word in photo_tokens:
                 best_score = 100
                 # Boost très fort si l'exact match est dans sujet_dias (règle métier)
-                if photo.sujet_dias:
+                if use_sujet_dias_boost and photo.sujet_dias:
                     dias_tokens = re.split(r'[^a-z0-9]+', photo.sujet_dias.lower())
                     if word in dias_tokens:
                         exact_in_sujet_dias += 1
@@ -178,9 +292,9 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
 
         min_word_score = min(word_scores) if word_scores else 0
 
-        # === RÈGLE DURE (Option A stricte) : un seul mot en dessous du seuil → EXCLUSION TOTALE (pas dans les résultats) ===
+        # === RÈGLE DURE (Option A stricte) : un seul mot en dessous du seuil → EXCLUSION TOTALE ===
         if min_word_score < fuzzy_threshold:
-            # On ne garde pas la photo du tout (c''est la "règle dure pour filtrer")
+            # On ne garde pas la photo du tout (c'est la "règle dure pour filtrer")
             continue
 
         # Score hybride : priorité aux matches exacts + qualité fuzzy + boost sujet_dias
@@ -190,7 +304,8 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
         # Base forte pour les matches exacts (chaque mot exact = gros poids)
         base = num_exact * 12
         # Bonus supplémentaire très important pour les matches dans sujet_dias (exigence utilisateur)
-        base += exact_in_sujet_dias * 18
+        if use_sujet_dias_boost:
+            base += exact_in_sujet_dias * 18
 
         # Partie fuzzy (qualité de la tolérance typo) + récompense forte du pire mot (plus strict sur la "règle dure")
         final_score = base + (avg_fuzzy * 0.25) + (min_word_score * 0.35)
@@ -206,12 +321,17 @@ def get_search_queryset(search_term, apply_fuzzy=True, fuzzy_threshold=75):
     # Tri par score final (les bons matches avec tous mots forts remontent en premier)
     scored_photos.sort(key=lambda x: x[0], reverse=True)
 
-    # Limite finale 1000 (cohérent avec les autres galeries)
-    final_results = [p for _, p in scored_photos[:1000]]
+    if result_mode == RESULT_MODE_SUBJECTS:
+        # Limite finale 1000 séries (cohérent avec les autres vues)
+        final_photos = _dedupe_photos_by_checksum(photo for _, photo in scored_photos)
+        cache.set(cache_key, [photo.checksum for photo in final_photos], timeout=900)  # 15 minutes
+        return _photos_to_subject_dicts(final_photos)
+
+    # Limite finale 1000 photos (cohérent avec les autres galeries)
+    final_results = [photo for _, photo in scored_photos[:1000]]
 
     # Mise en cache des pkeys (pour éviter de recalculer le fuzzy sur les affichages suivants)
-    pkeys = [p.pkey for p in final_results]
-    cache.set(cache_key, pkeys, timeout=900)  # 15 minutes
+    cache.set(cache_key, [photo.pkey for photo in final_results], timeout=900)  # 15 minutes
 
     return final_results
 
@@ -252,6 +372,8 @@ def search_form(request):
         form = SearchForm(request.POST)
         if form.is_valid():
             search_term = form.cleaned_data['search_term']
+            if form.cleaned_data.get('only_subjects'):
+                return redirect('SubjectsBySearch', search_term=search_term)
             return redirect('ContactsSheetBySearch', search_term=search_term)
     else:
         form = SearchForm()
@@ -522,6 +644,26 @@ def Gallery(request, desiredsubjectMD5):
         'desiredsubjectMD5': desiredsubjectMD5,
         'linktogooglemaps': GetLinkToGoogleMaps(photo)
     })
+
+
+def subjectsBySearch(request, search_term):
+    """
+    Display photo series (subjects) matching the search term in sujet and date only.
+    """
+    subjects = get_search_queryset(
+        search_term,
+        search_fields=SUBJECT_SEARCH_FIELDS,
+        result_mode=RESULT_MODE_SUBJECTS,
+    )
+    paginator = Paginator(subjects, 100)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        'subjectsBySearch.html',
+        {'page_obj': page_obj, 'search_term': search_term},
+    )
 
 
 def contactsSheetBySearch(request, search_term):

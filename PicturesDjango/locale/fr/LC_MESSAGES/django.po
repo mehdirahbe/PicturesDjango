@@ -22,6 +22,10 @@ msgstr ""
 msgid "Word to search"
 msgstr "Mot à chercher"
 
+#: PicturesApp/forms.py:42
+msgid "Only subjects"
+msgstr "Sujets uniquement"
+
 #: PicturesApp/forms.py:80
 msgid "JPEGs directory"
 msgstr "Dossier des JPEGs"
@@ -344,3 +348,11 @@ msgstr "Recherche dans les séries et sous-dossiers"
 #: templates/thirdlevel.html:15
 msgid "Search series"
 msgstr "Recherche dans les séries"
+
+#: templates/subjectsBySearch.html:15
+msgid "Search subjects"
+msgstr "Recherche dans les sujets"
+
+#: templates/subjectsBySearch.html:25
+msgid "No subjects found for this search."
+msgstr "Aucun sujet trouvé pour cette recherche."
