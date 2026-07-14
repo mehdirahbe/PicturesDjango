@@ -1,29 +1,26 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}Recherche · Ma photothèque{% endblock %}
-{% block breadcrumbs %}<ol class="app-breadcrumbs"><li><a href="{% url 'home' %}">Collections</a></li><li aria-current="page">Recherche</li></ol>{% endblock %}
-
+{% block title %}{% trans 'Search' %} · {% trans 'My photo library' %}{% endblock %}
 {% block content %}
 <section class="page-heading">
   <div class="page-heading__copy">
-    <p class="eyebrow">Explorer la photothèque</p>
-    <h1 class="page-title page-title--compact">Que recherchez-vous&nbsp;?</h1>
-    <p class="page-subtitle">Une personne, un lieu, une année ou un souvenir décrit dans vos photos.</p>
+    <p class="eyebrow">{% trans 'Explore the library' %}</p>
+    <h1 class="page-title page-title--compact">{% trans 'What are you looking for?' %}</h1>
+    <p class="page-subtitle">{% trans 'A person, a place, a year, or a memory described in your photos.' %}</p>
   </div>
 </section>
 
 <form method="post" class="form-card">
   {% csrf_token %}
   <div class="mb-4">
-    <label for="{{ form.search_term.id_for_label }}">Terme de recherche</label>
+    <label for="{{ form.search_term.id_for_label }}">{% trans 'Search term' %}</label>
     {{ form.search_term }}
   </div>
   <div class="form-check mb-4">
     {{ form.only_subjects }}
-    <label class="form-check-label" for="{{ form.only_subjects.id_for_label }}">Limiter la recherche aux titres des séries</label>
+    <label class="form-check-label" for="{{ form.only_subjects.id_for_label }}">{% trans 'Limit search to series titles only' %}</label>
   </div>
-  <button type="submit" class="app-button app-button--primary">Lancer la recherche</button>
+  <button type="submit" class="app-button app-button--primary">{% trans 'Start search' %}</button>
 </form>
 {% endblock %}
-

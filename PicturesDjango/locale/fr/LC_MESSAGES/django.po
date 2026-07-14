@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-31 19:50+0000\n"
+"POT-Creation-Date: 2026-07-14 22:15+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,64 +18,48 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: PicturesApp/forms.py:41
 msgid "Word to search"
 msgstr "Mot à chercher"
 
-#: PicturesApp/forms.py:42
 msgid "Only subjects"
 msgstr "Sujets uniquement"
 
-#: PicturesApp/forms.py:80
 msgid "JPEGs directory"
 msgstr "Dossier des JPEGs"
 
-#: PicturesApp/forms.py:81
 msgid ""
 "Full path to the hard drive folder (scans subdirectory) containing the JPEGs"
 msgstr ""
 "Chemin complet sur le disque dur (sous dossier de scans) contenant les JPEGs"
 
-#: PicturesApp/forms.py:82
 msgid "Subject"
 msgstr "Sujet"
 
-#: PicturesApp/forms.py:82
 msgid "Brief description of the subject, must be unique"
 msgstr "Brève description du sujet, doit être unique"
 
-#: PicturesApp/forms.py:83
 msgid "Date"
 msgstr "Date"
 
-#: PicturesApp/forms.py:83
 msgid "Information about the period"
 msgstr "Informations sur la période"
 
-#: PicturesApp/forms.py:84
 msgid "Comment"
 msgstr "Commentaire"
 
-#: PicturesApp/forms.py:84
 msgid "Detailed text (max ~2KB)"
 msgstr "Texte détaillé"
 
-#: PicturesApp/forms.py:94
 msgid "Please select a folder."
 msgstr "Vieuillez sélectionner un dossier"
 
-#: PicturesApp/forms.py:98 PicturesApp/forms.py:118
 msgid "The specified path does not exist or is invalid."
 msgstr "Le chemin spécifié n'existe pas ou n'est pas valide."
 
-#: PicturesApp/forms.py:104
 #, python-brace-format
 msgid "The folder must be under {scans_path}"
 msgstr "Le dossier doit se trouver sous {scans_path}."
 
-#: PicturesApp/forms.py:108 PicturesApp/forms.py:122
-#: PicturesApp/management/commands/ImportSeries.py:60
-#: PicturesApp/management/commands/PrepareEntreesJpegs.py:28
 msgid ""
 "You must select a subdirectory inside 'scans/' (e.g. scans/voyages/"
 "fuerteventura_2013), not the scans folder itself."
@@ -83,52 +67,39 @@ msgstr ""
 "Vous devez sélectionner un sous-dossier à l'intérieur de 'scans/' (ex: scans/"
 "voyages/fuerteventura_2013), pas le dossier scans lui-même."
 
-#: PicturesApp/forms.py:127 PicturesApp/management/commands/ImportSeries.py:56
 msgid "The folder must be inside the 'scans/' directory."
 msgstr "Le dossier doit se trouver à l'intérieur du dossier 'scans/'."
 
-#: PicturesApp/forms.py:136
 msgid "Subject cannot be empty."
 msgstr "Le sujet ne peut pas être vide."
 
-#: PicturesApp/forms.py:142
-#: PicturesApp/management/commands/PrepareEntreesJpegs.py:43
 msgid "This subject already exists."
 msgstr "Ce sujet existe déjà."
 
-#: PicturesApp/forms.py:150
 msgid "Comment cannot be empty."
 msgstr "Le commentaire ne peut pas être vide."
 
-#: PicturesApp/forms.py:165
 msgid "Description cannot be empty."
 msgstr "La description ne peut pas être vide."
 
-#: PicturesApp/forms.py:170
 msgid "Description is too long (max 2KB)."
 msgstr "La description est trop longue (max 2 Ko)."
 
-#: PicturesApp/management/commands/AnalyzePhotoQuality.py:131
 msgid "WARNING: Full database mode (can be slow)"
 msgstr "ATTENTION : mode TOUTE LA BASE (peut être long)"
 
-#: PicturesApp/management/commands/AnalyzePhotoQuality.py:132
 msgid "Press Ctrl+C to cancel if needed."
 msgstr "Appuyez sur Ctrl+C pour annuler si nécessaire."
 
-#: PicturesApp/management/commands/AnalyzePhotoQuality.py:136
 msgid "No photos to analyze."
 msgstr "Aucune photo à analyser."
 
-#: PicturesApp/management/commands/AnalyzePhotoQuality.py:150
 msgid "  [{}/{}] ... (skip already analyzed)"
 msgstr "  [{}/{}] ... (skip déjà analysées)"
 
-#: PicturesApp/management/commands/AnalyzePhotoQuality.py:175
 msgid "  [{}/{}] updated: {} | errors: {}"
 msgstr "  [{}/{}] mis à jour: {} | erreurs: {}"
 
-#: PicturesApp/management/commands/AnalyzePhotoQuality.py:179
 msgid ""
 "\n"
 "Done. {} photos analyzed/updated, {} skipped (already analyzed), {} errors."
@@ -137,222 +108,531 @@ msgstr ""
 "Terminé. {} photos analysées/mises à jour, {} ignorées (déjà analysées), {} "
 "erreurs."
 
-#: PicturesApp/management/commands/ImportSeries.py:53
-#: PicturesApp/management/commands/PrepareEntreesJpegs.py:17
 msgid "The specified folder does not exist or is not accessible."
 msgstr "Le dossier spécifié n'existe pas ou n'est pas accessible."
 
-#: PicturesApp/management/commands/PrepareEntreesJpegs.py:22
 msgid "The selected folder must be inside the 'scans' subdirectory."
 msgstr "Le dossier sélectionné doit être dans le sous-répertoire 'scans'."
 
-#: PicturesApp/management/commands/PrepareEntreesJpegs.py:37
 msgid "Maximum of three subdirectory levels is allowed"
 msgstr "Le niveau maximum de sous-répertoires est de trois."
 
-#: PicturesApp/management/commands/PrepareEntreesJpegs.py:39
 msgid "You must select a subdirectory containing photos."
 msgstr "Vous devez sélectionner un sous-dossier contenant des photos."
 
-#: PicturesApp/views.py:254
-msgid "Smartphone folder prepared successfully."
-msgstr "Dossier smartphone préparé avec succès."
+msgid "Collections"
+msgstr "Collections"
 
-#: PicturesApp/views.py:256
-msgid "Error while preparing smartphone folder: {}"
-msgstr "Erreur lors de la préparation du dossier smartphone : {}"
-
-#: PicturesApp/views.py:401
-msgid "Intelligent resizing re-triggered successfully."
-msgstr "Redimensionnement intelligent relancé avec succès."
-
-#: PicturesApp/views.py:403
-msgid "Error during resizing: {}"
-msgstr "Erreur lors du redimensionnement : {}"
-
-#: PicturesApp/views.py:410
-msgid "Exposure quality analysis completed for this series."
-msgstr "Analyse d'exposition terminée pour cette série."
-
-#: PicturesApp/views.py:412
-msgid "Error during analysis: {}"
-msgstr "Erreur lors de l'analyse : {}"
-
-#: PicturesDjango/settings.py:185
-msgid "English"
-msgstr "English"
-
-#: PicturesDjango/settings.py:186
-msgid "Français"
-msgstr "Français"
-
-#: templates/InsertNewPictures.html:10 templates/contactsSheet.html:9
-#: templates/contactsSheetBySearch.html:9 templates/gallery.html:9
-#: templates/galleryBySearch.html:10 templates/list_missing_scans.html:9
-#: templates/photo_detail.html:10 templates/search_form.html:10
-#: templates/secondlevel.html:10
-msgid "Home"
-msgstr "Accueil"
-
-#: templates/InsertNewPictures.html:12 templates/contactsSheet.html:11
-#: templates/contactsSheetBySearch.html:11 templates/gallery.html:11
-#: templates/galleryBySearch.html:12 templates/list_missing_scans.html:11
-#: templates/photo_detail.html:12 templates/search_form.html:12
-#: templates/secondlevel.html:12
-msgid "Previous"
-msgstr "Précédent"
-
-#: templates/InsertNewPictures.html:18
-msgid "Please enter the information about the image folder:"
-msgstr "Veuillez entrer les informations sur le dossier des images:"
-
-#: templates/InsertNewPictures.html:24
-msgid "Start the import and resizing"
-msgstr "Démarre l'import et le redimensionement"
-
-#: templates/contactsSheet.html:13 templates/contactsSheetBySearch.html:13
-msgid "Gallery"
-msgstr "Gallerie"
-
-#: templates/contactsSheet.html:42
-msgid "Re-trigger resizing"
-msgstr "Relancer le redimensionnement"
-
-#: templates/contactsSheet.html:50
-msgid "Analyze exposure quality"
-msgstr "Analyser la qualité d'exposition"
-
-#: templates/contactsSheet.html:61
-msgid "Images to improve"
-msgstr "Images à améliorer"
-
-#: templates/contactsSheet.html:62
-msgid "the darkest or brightest in this series."
-msgstr "les plus sombres ou les plus claires de cette série."
-
-#: templates/contactsSheet.html:63
-msgid "Click to view details and retouch."
-msgstr "Clique pour voir le détail et retoucher."
-
-#: templates/contactsSheet.html:78
-msgid "Blocked shadows"
-msgstr "Ombres bouchées"
-
-#: templates/contactsSheet.html:80
-msgid "Blown highlights"
-msgstr "Hautes lumières cramées"
-
-#: templates/contactsSheet.html:82
-msgid "Very extreme exposure"
-msgstr "Exposition très extrême"
-
-#: templates/contactsSheet.html:54
-msgid "No photos found for this subject."
-msgstr "Aucune photo trouvée pour ce sujet."
-
-#: templates/contactsSheetBySearch.html:25
-msgid "No photos found for this search."
-msgstr "Aucune photo trouvée pour cette recherche."
-
-#: PicturesApp/views.py:577
-msgid "Import failed: {}"
-msgstr "Échec de l'import : {}"
-
-#: templates/gallery.html:13 templates/galleryBySearch.html:14
-msgid "Contact Sheet"
-msgstr "Planche contact"
-
-#: templates/home.html:22 templates/search_form.html:24
-#: templates/secondlevel.html:13
 msgid "Search"
 msgstr "Recherche"
 
-#: templates/home.html:25
-msgid "This will copy a large number of images. Continue?"
-msgstr "Cela va copier un grand nombre d'images. Continuer ?"
+#, python-format
+msgid "Photo %(position)s"
+msgstr "Photo %(position)s"
 
-#: templates/home.html:29
-msgid "Copy to smartphone"
-msgstr "Copier pour le smartphone"
+msgid "Photo detail"
+msgstr "Détail de la photo"
 
-#: templates/home.html:34
-msgid "Add new pictures"
-msgstr "Ajout de nouvelles images"
+msgid "Gallery"
+msgstr "Galerie"
 
-#: templates/home.html:39
-msgid "Search levels"
-msgstr "Recherche dans les niveaux"
+msgid "Import"
+msgstr "Import"
 
-#: templates/includes/_technical_exif_info.html:8
+msgid "New series"
+msgstr "Nouvelle série"
+
+msgid "Smartphone folder prepared successfully."
+msgstr "Dossier smartphone préparé avec succès."
+
+msgid "Error while preparing smartphone folder: {}"
+msgstr "Erreur lors de la préparation du dossier smartphone : {}"
+
+msgid "Intelligent resizing re-triggered successfully."
+msgstr "Redimensionnement intelligent relancé avec succès."
+
+msgid "Error during resizing: {}"
+msgstr "Erreur lors du redimensionnement : {}"
+
+msgid "Exposure quality analysis completed for this series."
+msgstr "Analyse d'exposition terminée pour cette série."
+
+msgid "Error during analysis: {}"
+msgstr "Erreur lors de l'analyse : {}"
+
+msgid "Contact sheet"
+msgstr "Planche contact"
+
+msgid "Import failed: {}"
+msgstr "Échec de l'import : {}"
+
+msgid "English"
+msgstr "English"
+
+msgid "Français"
+msgstr "Français"
+
+msgid "Import photos"
+msgstr "Importer des photos"
+
+msgid "My photo library"
+msgstr "Ma photothèque"
+
+msgid "Management"
+msgstr "Gestion"
+
+msgid "Import a new series"
+msgstr "Importer une nouvelle série"
+
+msgid ""
+"Check the folder and series information before starting the import and "
+"resizing."
+msgstr ""
+"Vérifiez le dossier et les informations de la série avant de lancer "
+"l'import et le redimensionnement."
+
+msgid "Import and resize"
+msgstr "Importer et redimensionner"
+
+msgid "Personal photo library"
+msgstr "Photothèque personnelle"
+
+msgid "Back to photo library"
+msgstr "Retour à la photothèque"
+
+msgid "Memories & archives"
+msgstr "Souvenirs & archives"
+
+msgid "Breadcrumb"
+msgstr "Fil d'Ariane"
+
+msgid "Main navigation"
+msgstr "Navigation principale"
+
+msgid "Open tools menu"
+msgstr "Ouvrir les outils"
+
+msgid "Tools"
+msgstr "Outils"
+
+msgid "Library management"
+msgstr "Gestion de la photothèque"
+
+msgid "Import new photos"
+msgstr "Importer de nouvelles photos"
+
+msgid ""
+"This will prepare a large number of photos for your smartphone. Continue?"
+msgstr ""
+"Cette action va préparer un grand nombre de photos pour le smartphone. "
+"Continuer ?"
+
+msgid "Prepare for smartphone"
+msgstr "Préparer pour le smartphone"
+
+msgid "Close"
+msgstr "Fermer"
+
+msgid "Series"
+msgstr "Série"
+
+#, python-format
+msgid "%(counter)s photo in this series."
+msgid_plural "%(counter)s photos in this series."
+msgstr[0] "%(counter)s photo dans cette série."
+msgstr[1] "%(counter)s photos dans cette série."
+
+msgid "Open gallery"
+msgstr "Ouvrir la galerie"
+
+msgid "Contact sheet display"
+msgstr "Affichage de la planche-contact"
+
+msgid "Grid density"
+msgstr "Densité de la grille"
+
+msgid "Comfortable thumbnails"
+msgstr "Vignettes confortables"
+
+msgid "Compact thumbnails"
+msgstr "Vignettes compactes"
+
+msgid "Series tools"
+msgstr "Outils de la série"
+
+msgid "Maintenance"
+msgstr "Maintenance"
+
+msgid "Re-trigger resizing"
+msgstr "Relancer le redimensionnement"
+
+msgid "Analyze exposure quality"
+msgstr "Analyser la qualité d'exposition"
+
+msgid "Images to improve"
+msgstr "Images à améliorer"
+
+msgid "The darkest or brightest photos in this series."
+msgstr "Les photos les plus sombres ou les plus claires de cette série."
+
+#, python-format
+msgid "Photo %(id)s"
+msgstr "Photo %(id)s"
+
+#, python-format
+msgid "Brightness %(value)s"
+msgstr "Luminosité %(value)s"
+
+msgid "Blocked shadows"
+msgstr "Ombres bouchées"
+
+msgid "Blown highlights"
+msgstr "Hautes lumières cramées"
+
+msgid "Very extreme exposure"
+msgstr "Exposition très extrême"
+
+msgid "No photos found for this subject."
+msgstr "Aucune photo trouvée pour ce sujet."
+
+#, python-format
+msgid "Search “%(term)s”"
+msgstr "Recherche « %(term)s »"
+
+msgid "Search results"
+msgstr "Résultats de recherche"
+
+#, python-format
+msgid "%(counter)s matching photo"
+msgid_plural "%(counter)s matching photos"
+msgstr[0] "%(counter)s photo correspondante"
+msgstr[1] "%(counter)s photos correspondantes"
+
+msgid "View as gallery"
+msgstr "Voir en galerie"
+
+msgid "Contact sheet results"
+msgstr "Résultats en planche-contact"
+
+msgid "No photos found for this search."
+msgstr "Aucune photo trouvée pour cette recherche."
+
+msgid "Photo viewer"
+msgstr "Visionneuse de photos"
+
+msgid "Previous photo"
+msgstr "Photo précédente"
+
+msgid "Next photo"
+msgstr "Photo suivante"
+
+msgid "← → to navigate · I for information"
+msgstr "← → pour naviguer · I pour les informations"
+
+msgid "Details"
+msgstr "Fiche"
+
+msgid "Information"
+msgstr "Informations"
+
+msgid "Photo information"
+msgstr "Informations de la photo"
+
+msgid "Hide information"
+msgstr "Masquer les informations"
+
+msgid "Search results viewer"
+msgstr "Visionneuse des résultats"
+
+#, python-format
+msgid "Result for “%(term)s”"
+msgstr "Résultat pour « %(term)s »"
+
+msgid "Personal library"
+msgstr "Bibliothèque personnelle"
+
+msgid "All your memories,"
+msgstr "Tous vos souvenirs,"
+
+msgid "in one place."
+msgstr "au même endroit."
+
+msgid ""
+"Browse your photos by person, place, or collection. Images become the "
+"doorway into every album."
+msgstr ""
+"Parcourez vos photos par personne, lieu ou collection. Les images deviennent "
+"la porte d'entrée de chaque album."
+
+msgid "Search for a photo"
+msgstr "Rechercher une photo"
+
+#, python-format
+msgid "%(counter)s collection"
+msgid_plural "%(counter)s collections"
+msgstr[0] "%(counter)s collection"
+msgstr[1] "%(counter)s collections"
+
+msgid "Filter collections"
+msgstr "Filtrer les collections"
+
+msgid "Filter collections…"
+msgstr "Filtrer les collections…"
+
+#, python-format
+msgid "%(counter)s photo"
+msgid_plural "%(counter)s photos"
+msgstr[0] "%(counter)s photo"
+msgstr[1] "%(counter)s photos"
+
+#, python-format
+msgid "%(counter)s series"
+msgid_plural "%(counter)s series"
+msgstr[0] "%(counter)s série"
+msgstr[1] "%(counter)s séries"
+
+msgid "No collections are available yet."
+msgstr "Aucune collection n'est encore disponible."
+
+msgid "No collections match this filter."
+msgstr "Aucune collection ne correspond à ce filtre."
+
+msgid "Page navigation"
+msgstr "Navigation des pages"
+
+msgid "Previous page"
+msgstr "Page précédente"
+
+msgid "Next page"
+msgstr "Page suivante"
+
+msgid "About this photo"
+msgstr "À propos de cette photo"
+
+msgid "Classification"
+msgstr "Classement"
+
+msgid "Physical archive"
+msgstr "Archive physique"
+
+msgid "Box"
+msgstr "Boîte"
+
+msgid "Row"
+msgstr "Rangée"
+
+msgid "Number"
+msgstr "Numéro"
+
+msgid "Show location on map"
+msgstr "Afficher le lieu sur la carte"
+
+msgid "Technical data"
+msgstr "Informations techniques"
+
 msgid "Location"
 msgstr "Lieu"
 
-#: templates/includes/_technical_exif_info.html:12
 msgid "Camera"
 msgstr "Appareil"
 
-#: templates/includes/_technical_exif_info.html:15
 msgid "Focal length"
 msgstr "Focale"
 
-#: templates/includes/_technical_exif_info.html:18
 msgid "Aperture"
 msgstr "Diaphragme"
 
-#: templates/includes/_technical_exif_info.html:21
 msgid "Exposure time"
 msgstr "Temps de pose"
 
-#: templates/list_missing_scans.html:19
-msgid "Unprocessed folders in scans/"
-msgstr "Dossiers non traités dans scans/"
+msgid "File"
+msgstr "Fichier"
 
-#: templates/list_missing_scans.html:33
-msgid "Process"
-msgstr "Traiter"
+msgid "Photos to import"
+msgstr "Photos à importer"
 
-#: templates/list_missing_scans.html:41
+msgid "Import management"
+msgstr "Gestion des imports"
+
+msgid "Folders to process"
+msgstr "Dossiers à traiter"
+
+#, python-format
+msgid "%(counter)s folder in scans/ missing from the library."
+msgid_plural "%(counter)s folders in scans/ missing from the library."
+msgstr[0] "%(counter)s dossier présent dans scans/ et absent de la photothèque."
+msgstr[1] "%(counter)s dossiers présents dans scans/ et absents de la photothèque."
+
 msgid "Everything is up to date!"
 msgstr "Tout est à jour !"
 
-#: templates/list_missing_scans.html:42
-msgid "No missing folders in scans/."
-msgstr "Aucun dossier manquant dans scans/."
+msgid "No new folders are waiting to be imported."
+msgstr "Aucun nouveau dossier n'attend d'être importé."
 
-#: templates/list_missing_scans.html:50
-msgid "Links open the pre-filled form — submit to import and resize."
-msgstr ""
-"Les liens ouvrent le formulaire pré-rempli — validez pour importer et "
-"redimensionner."
+#, python-format
+msgid "Photo %(position)s of %(count)s"
+msgid_plural "Photo %(position)s of %(count)s"
+msgstr[0] "Photo %(position)s sur %(count)s"
+msgstr[1] "Photo %(position)s sur %(count)s"
 
-#: templates/photo_detail.html:46
-msgid "Change subject"
-msgstr "Modifie le sujet"
+msgid "Back to series"
+msgstr "Revenir à la série"
 
-#: templates/photo_detail.html:51
-msgid "Save subject"
-msgstr "Sauve le sujet"
+msgid "Series navigation"
+msgstr "Navigation dans la série"
 
-#: templates/search_form.html:18
-msgid "Please enter a search term:"
-msgstr "Veuillez entrer un mot à rechercher :"
+msgid "Photo"
+msgstr "Photo"
 
-#: templates/secondlevel.html:18
-msgid "Search second levels"
-msgstr "Recherche dans les second niveaux"
+msgid "Information and editing"
+msgstr "Informations et modification"
 
-#: templates/secondlevel.html:15
-msgid "Search series and subfolders"
-msgstr "Recherche dans les séries et sous-dossiers"
+msgid "Edit subject"
+msgstr "Modifier le sujet"
 
-#: templates/thirdlevel.html:15
-msgid "Search series"
-msgstr "Recherche dans les séries"
+msgid "Save changes"
+msgstr "Enregistrer les modifications"
 
-#: templates/subjectsBySearch.html:15
-msgid "Search subjects"
-msgstr "Recherche dans les sujets"
+msgid "Explore the library"
+msgstr "Explorer la photothèque"
 
-#: templates/subjectsBySearch.html:25
+msgid "What are you looking for?"
+msgstr "Que recherchez-vous ?"
+
+msgid "A person, a place, a year, or a memory described in your photos."
+msgstr "Une personne, un lieu, une année ou un souvenir décrit dans vos photos."
+
+msgid "Search term"
+msgstr "Terme de recherche"
+
+msgid "Limit search to series titles only"
+msgstr "Limiter la recherche aux titres des séries"
+
+msgid "Start search"
+msgstr "Lancer la recherche"
+
+msgid "Collection"
+msgstr "Collection"
+
+msgid "Choose a folder or series to open its memories."
+msgstr "Choisissez un dossier ou une série pour ouvrir ses souvenirs."
+
+msgid "All collections"
+msgstr "Toutes les collections"
+
+msgid "Folders and series"
+msgstr "Dossiers et séries"
+
+msgid "visible items"
+msgstr "éléments visibles"
+
+msgid "Filter folders and series"
+msgstr "Filtrer les dossiers et séries"
+
+msgid "Filter folders and series…"
+msgstr "Filtrer les dossiers et séries…"
+
+msgid "Folders"
+msgstr "Dossiers"
+
+msgid "folder"
+msgstr "dossier"
+
+msgid "Folder"
+msgstr "Dossier"
+
+msgid "series"
+msgstr "série"
+
+msgid "No folder or series matches this filter."
+msgstr "Aucun dossier ou série ne correspond à ce filtre."
+
+#, python-format
+msgid "Series “%(term)s”"
+msgstr "Séries « %(term)s »"
+
+msgid "Series found"
+msgstr "Séries trouvées"
+
+#, python-format
+msgid "%(counter)s matching series"
+msgid_plural "%(counter)s matching series"
+msgstr[0] "%(counter)s série correspondante"
+msgstr[1] "%(counter)s séries correspondantes"
+
+msgid "Results"
+msgstr "Résultats"
+
+msgid "Filter results"
+msgstr "Filtrer les résultats"
+
+msgid "Filter series…"
+msgstr "Filtrer les séries…"
+
 msgid "No subjects found for this search."
 msgstr "Aucun sujet trouvé pour cette recherche."
+
+msgid "No series matches this filter."
+msgstr "Aucune série ne correspond à ce filtre."
+
+#, python-format
+msgid "%(counter)s series in this folder."
+msgid_plural "%(counter)s series in this folder."
+msgstr[0] "%(counter)s série dans ce dossier."
+msgstr[1] "%(counter)s séries dans ce dossier."
+
+msgid "Back to"
+msgstr "Retour à"
+
+msgid "Filter series"
+msgstr "Filtrer les séries"
+
+msgid "No series are available in this folder."
+msgstr "Aucune série n'est disponible dans ce dossier."
+
+#~ msgid "Home"
+#~ msgstr "Accueil"
+
+#~ msgid "Please enter the information about the image folder:"
+#~ msgstr "Veuillez entrer les informations sur le dossier des images:"
+
+#~ msgid "Click to view details and retouch."
+#~ msgstr "Clique pour voir le détail et retoucher."
+
+#~ msgid "Contact Sheet"
+#~ msgstr "Planche contact"
+
+#~ msgid "This will copy a large number of images. Continue?"
+#~ msgstr "Cela va copier un grand nombre d'images. Continuer ?"
+
+#~ msgid "Copy to smartphone"
+#~ msgstr "Copier pour le smartphone"
+
+#~ msgid "Add new pictures"
+#~ msgstr "Ajout de nouvelles images"
+
+#~ msgid "Search levels"
+#~ msgstr "Recherche dans les niveaux"
+
+#~ msgid "Unprocessed folders in scans/"
+#~ msgstr "Dossiers non traités dans scans/"
+
+#~ msgid "Process"
+#~ msgstr "Traiter"
+
+#~ msgid "No missing folders in scans/."
+#~ msgstr "Aucun dossier manquant dans scans/."
+
+#~ msgid "Links open the pre-filled form — submit to import and resize."
+#~ msgstr ""
+#~ "Les liens ouvrent le formulaire pré-rempli — validez pour importer et "
+#~ "redimensionner."
+
+#~ msgid "Change subject"
+#~ msgstr "Modifie le sujet"
+
+#~ msgid "Please enter a search term:"
+#~ msgstr "Veuillez entrer un mot à rechercher :"
+
+#~ msgid "Search second levels"
+#~ msgstr "Recherche dans les second niveaux"

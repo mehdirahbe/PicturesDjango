@@ -11,10 +11,12 @@ import os
 import re
 from django.db.models import Q, Count, Min, Case, When, Value, IntegerField
 from django.conf import settings
+from django.urls import reverse
 from unidecode import unidecode
 from rapidfuzz import fuzz
 from .forms import SearchForm, InsertNewPicturesForm, PhotoSubjectForm
 from .PhotoModel import PhotoModel
+from .templatetags.custom_filters import proper_case
 from pathlib import Path
 
 import logging
@@ -38,6 +40,133 @@ _SEARCH_FIELD_LOOKUPS = {
     'date': lambda word: Q(date__icontains=word),
     'sujet': lambda word: Q(sujet__icontains=word),
 }
+
+
+def _nav_label(value):
+    if not value:
+        return ''
+    return value.replace('_', '/').capitalize()
+
+
+def _crumb(label, url=None):
+    return {'label': label, 'url': url}
+
+
+def _collections_crumb():
+    return _crumb(_('Collections'), reverse('home'))
+
+
+def _breadcrumbs_home():
+    return [_crumb(_('Collections'))]
+
+
+def _breadcrumbs_search():
+    return [
+        _collections_crumb(),
+        _crumb(_('Search')),
+    ]
+
+
+def _breadcrumbs_search_term(search_term):
+    return [
+        _collections_crumb(),
+        _crumb(_('Search'), reverse('search_form')),
+        _crumb(search_term),
+    ]
+
+
+def _breadcrumbs_second_level(first_level):
+    return [
+        _collections_crumb(),
+        _crumb(_nav_label(first_level)),
+    ]
+
+
+def _breadcrumbs_third_level(first_level, second_level):
+    return [
+        _collections_crumb(),
+        _crumb(_nav_label(first_level), reverse('DisplaySecondLevel', args=[first_level])),
+        _crumb(_nav_label(second_level)),
+    ]
+
+
+def _breadcrumbs_from_photo(photo, current_label=None):
+    label = current_label or proper_case(photo.sujet)
+    crumbs = [
+        _collections_crumb(),
+        _crumb(
+            _nav_label(photo.premier_niveau),
+            reverse('DisplaySecondLevel', args=[photo.premier_niveau]),
+        ),
+    ]
+    if photo.troisieme_niveau:
+        crumbs.append(_crumb(
+            _nav_label(photo.second_niveau),
+            reverse('DisplayThirdLevel', args=[photo.premier_niveau, photo.second_niveau]),
+        ))
+    crumbs.append(_crumb(label))
+    return crumbs
+
+
+def _breadcrumbs_photo_detail(photo, series_position=None):
+    crumbs = _breadcrumbs_from_photo(photo)[:-1]
+    crumbs.append(_crumb(
+        proper_case(photo.sujet),
+        reverse('ContactsSheet', args=[photo.checksum]),
+    ))
+    if series_position is not None:
+        crumbs.append(_crumb(_('Photo %(position)s') % {'position': series_position}))
+    else:
+        detail_label = proper_case(photo.sujet_dias) if photo.sujet_dias else _('Photo detail')
+        if len(detail_label) > 48:
+            detail_label = f'{detail_label[:45]}…'
+        crumbs.append(_crumb(detail_label))
+    return crumbs
+
+
+def _breadcrumbs_gallery(photo):
+    crumbs = _breadcrumbs_from_photo(photo)[:-1]
+    crumbs.append(_crumb(
+        proper_case(photo.sujet),
+        reverse('ContactsSheet', args=[photo.checksum]),
+    ))
+    crumbs.append(_crumb(_('Gallery')))
+    return crumbs
+
+
+def _breadcrumbs_search_gallery(search_term, photo):
+    crumbs = [
+        _collections_crumb(),
+        _crumb(_('Search'), reverse('search_form')),
+        _crumb(search_term, reverse('ContactsSheetBySearch', args=[search_term])),
+    ]
+    if photo:
+        crumbs.append(_crumb(proper_case(photo.sujet)))
+    crumbs.append(_crumb(_('Gallery')))
+    return crumbs
+
+
+def _breadcrumbs_add_pictures():
+    return [
+        _collections_crumb(),
+        _crumb(_('Import')),
+    ]
+
+
+def _breadcrumbs_import():
+    return [
+        _collections_crumb(),
+        _crumb(_('Import'), reverse('list_missing_scans')),
+        _crumb(_('New series')),
+    ]
+
+
+def _import_form_context(form):
+    return {
+        'form': form,
+        'breadcrumbs': _breadcrumbs_import(),
+        'page_title': _('Import'),
+    }
 
 
 def _search_cache_version():
@@ -378,7 +507,10 @@ def search_form(request):
             return redirect('ContactsSheetBySearch', search_term=search_term)
     else:
         form = SearchForm()
-    return render(request, 'search_form.html', {'form': form})
+    return render(request, 'search_form.html', {
+        'form': form,
+        'breadcrumbs': _breadcrumbs_search(),
+    })
 
 
 def home(request):
@@ -417,7 +549,10 @@ def home(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    context = {'page_obj': page_obj}
+    context = {
+        'page_obj': page_obj,
+        'breadcrumbs': _breadcrumbs_home(),
+    }
     return render(request, 'home.html', context)
 
 
@@ -466,6 +601,7 @@ def DisplaySecondLevel(request, firstLevel):
         'firstLevel': firstLevel,
         'direct_series_page': direct_series_page,
         'second_folders': second_folders,
+        'breadcrumbs': _breadcrumbs_second_level(firstLevel),
     }
     return render(request, 'secondlevel.html', context)
 
@@ -499,6 +635,7 @@ def DisplayThirdLevel(request, firstLevel, secondLevel):
         'firstLevel': firstLevel,
         'secondLevel': secondLevel,
         'page_obj': page_obj,
+        'breadcrumbs': _breadcrumbs_third_level(firstLevel, secondLevel),
     }
     return render(request, 'thirdlevel.html', context)
 
@@ -587,6 +724,7 @@ def photoDetail(request, photo_id):
         'next_photo': next_photo,
         'series_count': series_count,
         'series_position': series_position,
+        'breadcrumbs': _breadcrumbs_photo_detail(photo, series_position),
     })
 
 
@@ -639,6 +777,9 @@ def contactsSheet(request, desiredsubjectMD5):
     show_quality = request.GET.get('show_quality') == '1'
     worst_photos = _get_worst_exposure_photos(allphotos) if show_quality else []
 
+    first_photo = allphotos[0] if allphotos else None
+    breadcrumbs = _breadcrumbs_from_photo(first_photo) if first_photo else [_crumb(_('Contact sheet'))]
+
     return render(
         request,
         'contactsSheet.html',
@@ -647,6 +788,7 @@ def contactsSheet(request, desiredsubjectMD5):
             'desiredsubjectMD5': desiredsubjectMD5,
             'worst_photos': worst_photos,
             'total_count': total_count,
+            'breadcrumbs': breadcrumbs,
         }
     )
 
@@ -679,11 +821,14 @@ def Gallery(request, desiredsubjectMD5):
     except (IndexError, TypeError):
         photo = None
 
+    breadcrumbs = _breadcrumbs_gallery(photo) if photo else [_crumb(_('Gallery'))]
+
     return render(request, 'gallery.html', {
         'photo': photo,
         'photos': photos_page,
         'desiredsubjectMD5': desiredsubjectMD5,
-        'linktogooglemaps': GetLinkToGoogleMaps(photo)
+        'linktogooglemaps': GetLinkToGoogleMaps(photo),
+        'breadcrumbs': breadcrumbs,
     })
 
 
@@ -703,7 +848,11 @@ def subjectsBySearch(request, search_term):
     return render(
         request,
         'subjectsBySearch.html',
-        {'page_obj': page_obj, 'search_term': search_term},
+        {
+            'page_obj': page_obj,
+            'search_term': search_term,
+            'breadcrumbs': _breadcrumbs_search_term(search_term),
+        },
     )
 
 
@@ -719,7 +868,15 @@ def contactsSheetBySearch(request, search_term):
     - HttpResponse: Renders the search result contact sheet (possibly empty).
     """
     allphotos = get_search_queryset(search_term)
-    return render(request, 'contactsSheetBySearch.html', {'photoRecs': allphotos, 'search_term': search_term})
+    first_photo = allphotos[0] if allphotos else None
+    breadcrumbs = _breadcrumbs_search_term(search_term)
+    if first_photo:
+        breadcrumbs = breadcrumbs[:-1] + [_crumb(proper_case(first_photo.sujet))]
+    return render(request, 'contactsSheetBySearch.html', {
+        'photoRecs': allphotos,
+        'search_term': search_term,
+        'breadcrumbs': breadcrumbs,
+    })
 
 
 def GalleryBySearch(request, search_term):
@@ -740,11 +897,14 @@ def GalleryBySearch(request, search_term):
 
     photo = photos_page[0] if photos_page else None
 
+    breadcrumbs = _breadcrumbs_search_gallery(search_term, photo)
+
     return render(request, 'galleryBySearch.html', {
         'photo': photo,
         'photos': photos_page,
         'search_term': search_term,
-        'linktogooglemaps': GetLinkToGoogleMaps(photo)
+        'linktogooglemaps': GetLinkToGoogleMaps(photo),
+        'breadcrumbs': breadcrumbs,
     })
 
 
@@ -796,7 +956,7 @@ def InsertNewPictures(request):
             except CommandError as e:
                 logger.exception("ImportSeries failed for %s", jpegsdirectory)
                 messages.error(request, _("Import failed: {}").format(e))
-                return render(request, 'InsertNewPictures.html', {'form': form})
+                return render(request, 'InsertNewPictures.html', _import_form_context(form))
 
             invalidate_search_cache()
 
@@ -806,11 +966,11 @@ def InsertNewPictures(request):
             # Redirect to the contact sheet of the newly imported series
             return redirect('ContactsSheet', desiredsubjectMD5=desiredsubjectMD5)
         else:
-            return render(request, 'InsertNewPictures.html', {'form': form})
+            return render(request, 'InsertNewPictures.html', _import_form_context(form))
     else:
         form = InsertNewPicturesForm(initial=initial)
 
-    return render(request, 'InsertNewPictures.html', {'form': form})
+    return render(request, 'InsertNewPictures.html', _import_form_context(form))
 
 def list_missing_scans(request):
     scans_root = Path(settings.IMAGES_PATH) / "scans"
@@ -865,6 +1025,7 @@ def list_missing_scans(request):
 
     context = {
         'missing_dirs': missing_with_url,
-        'total': len(missing_with_url)
+        'total': len(missing_with_url),
+        'breadcrumbs': _breadcrumbs_add_pictures(),
     }
     return render(request, 'list_missing_scans.html', context)

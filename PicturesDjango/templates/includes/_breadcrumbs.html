@@ -1,0 +1,12 @@
+{% load i18n %}
+{% if breadcrumbs %}
+<ol class="app-breadcrumbs" aria-label="{% trans 'Breadcrumb' %}">
+  {% for crumb in breadcrumbs %}
+    {% if crumb.url %}
+      <li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+    {% else %}
+      <li aria-current="page">{{ crumb.label }}</li>
+    {% endif %}
+  {% endfor %}
+</ol>
+{% endif %}

@@ -2,34 +2,22 @@
 {% load i18n %}
 {% load custom_filters %}
 
-{% block title %}{{ photoRec.sujet|proper_case }} · Photo {{ series_position }}{% endblock %}
-
-{% block breadcrumbs %}
-<ol class="app-breadcrumbs">
-  <li><a href="{% url 'home' %}">Collections</a></li>
-  <li><a href="{% url 'DisplaySecondLevel' firstLevel=photoRec.premier_niveau %}">{{ photoRec.premier_niveau|capfirst|replace_underscore }}</a></li>
-  {% if photoRec.troisieme_niveau %}
-  <li><a href="{% url 'DisplayThirdLevel' firstLevel=photoRec.premier_niveau secondLevel=photoRec.second_niveau %}">{{ photoRec.second_niveau|capfirst|replace_underscore }}</a></li>
-  {% endif %}
-  <li><a href="{% url 'ContactsSheet' photoRec.checksum %}">{{ photoRec.sujet|proper_case }}</a></li>
-  <li aria-current="page">Photo {{ series_position }}</li>
-</ol>
-{% endblock %}
+{% block title %}{{ photoRec.sujet|proper_case }} · {% blocktrans with position=series_position %}Photo {{ position }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <div class="detail-heading">
   <div>
-    <p class="eyebrow">Photo {{ series_position }} sur {{ series_count }}</p>
-    <a class="detail-kicker" href="{% url 'ContactsSheet' photoRec.checksum %}">← Revenir à la série</a>
+    <p class="eyebrow">{% blocktrans with position=series_position count=series_count %}Photo {{ position }} of {{ count }}{% endblocktrans %}</p>
+    <a class="detail-kicker" href="{% url 'ContactsSheet' photoRec.checksum %}">← {% trans 'Back to series' %}</a>
   </div>
-  <nav class="detail-pagination" aria-label="Navigation dans la série">
+  <nav class="detail-pagination" aria-label="{% trans 'Series navigation' %}">
     {% if previous_photo %}
-    <a class="detail-nav-button" href="{% url 'photoDetail' previous_photo.pkey %}" aria-label="Photo précédente">
+    <a class="detail-nav-button" href="{% url 'photoDetail' previous_photo.pkey %}" aria-label="{% trans 'Previous photo' %}">
       <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg>
     </a>
     {% else %}<span class="detail-nav-button" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></span>{% endif %}
     {% if next_photo %}
-    <a class="detail-nav-button" href="{% url 'photoDetail' next_photo.pkey %}" aria-label="Photo suivante">
+    <a class="detail-nav-button" href="{% url 'photoDetail' next_photo.pkey %}" aria-label="{% trans 'Next photo' %}">
       <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg>
     </a>
     {% else %}<span class="detail-nav-button" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg></span>{% endif %}
@@ -37,11 +25,11 @@
 </div>
 
 <div class="photo-detail-layout">
-  <section class="detail-media" aria-label="Photo">
+  <section class="detail-media" aria-label="{% trans 'Photo' %}">
     <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photoRec.sujet_dias|default:photoRec.sujet|capfirst }}" decoding="async">
   </section>
 
-  <aside class="detail-panel" aria-label="Informations et modification">
+  <aside class="detail-panel" aria-label="{% trans 'Information and editing' %}">
     <h1 class="detail-panel__title">{{ photoRec.sujet|proper_case }}</h1>
     <p class="detail-panel__date">{{ photoRec.date }}</p>
     {% with photo=photoRec %}
@@ -50,11 +38,11 @@
     {% endwith %}
 
     <div class="metadata-section">
-      <button class="app-button" type="button" data-edit-toggle="#subjectForm" aria-controls="subjectForm" aria-expanded="false">Modifier le sujet</button>
+      <button class="app-button" type="button" data-edit-toggle="#subjectForm" aria-controls="subjectForm" aria-expanded="false">{% trans 'Edit subject' %}</button>
       <form class="edit-panel" id="subjectForm" method="post" hidden>
         {% csrf_token %}
         {{ subject_form.as_p }}
-        <button type="submit" class="app-button app-button--primary">Enregistrer les modifications</button>
+        <button type="submit" class="app-button app-button--primary">{% trans 'Save changes' %}</button>
       </form>
     </div>
   </aside>

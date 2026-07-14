@@ -2,19 +2,19 @@
 {% load i18n %}
 {% load custom_filters %}
 
-{% block title %}Ma photothèque{% endblock %}
+{% block title %}{% trans 'My photo library' %}{% endblock %}
 
 {% block content %}
 <section class="page-heading">
   <div class="page-heading__copy">
-    <p class="eyebrow">Bibliothèque personnelle</p>
-    <h1 class="page-title">Tous vos souvenirs,<br>au même endroit.</h1>
-    <p class="page-subtitle">Parcourez vos photos par personne, lieu ou collection. Les images deviennent la porte d’entrée de chaque album.</p>
+    <p class="eyebrow">{% trans 'Personal library' %}</p>
+    <h1 class="page-title">{% trans 'All your memories,' %}<br>{% trans 'in one place.' %}</h1>
+    <p class="page-subtitle">{% trans 'Browse your photos by person, place, or collection. Images become the doorway into every album.' %}</p>
   </div>
   <div class="page-heading__actions">
     <a class="app-button app-button--primary" href="{% url 'search_form' %}">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-      Rechercher une photo
+      {% trans 'Search for a photo' %}
     </a>
   </div>
 </section>
@@ -22,14 +22,17 @@
 <section aria-labelledby="albums-title">
   <div class="section-header">
     <div>
-      <h2 class="section-title" id="albums-title">Collections</h2>
-      <span class="section-count"><span id="visibleAlbumCount">{{ page_obj.paginator.count }}</span> collections</span>
+      <h2 class="section-title" id="albums-title">{% trans 'Collections' %}</h2>
+      <span class="section-count">
+        <span id="visibleAlbumCount">{{ page_obj.paginator.count }}</span>
+        {% blocktrans count counter=page_obj.paginator.count %}{{ counter }} collection{% plural %}{{ counter }} collections{% endblocktrans %}
+      </span>
     </div>
     <div class="filter-bar">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-      <label class="visually-hidden" for="albumFilter">Filtrer les collections</label>
+      <label class="visually-hidden" for="albumFilter">{% trans 'Filter collections' %}</label>
       <input class="form-control" id="albumFilter" type="search"
-             placeholder="Filtrer les collections…"
+             placeholder="{% trans 'Filter collections…' %}"
              autocomplete="off"
              data-filter-input
              data-filter-target="#albumGrid"
@@ -58,19 +61,19 @@
               <span class="card-chevron" aria-hidden="true">→</span>
             </div>
             <div class="album-card__meta">
-              <span>{{ level.count }} photo{{ level.count|pluralize }}</span>
-              <span class="meta-dot">{{ level.series_count }} série{{ level.series_count|pluralize }}</span>
+              <span>{% blocktrans count counter=level.count %}{{ counter }} photo{% plural %}{{ counter }} photos{% endblocktrans %}</span>
+              <span class="meta-dot">{% blocktrans count counter=level.series_count %}{{ counter }} series{% plural %}{{ counter }} series{% endblocktrans %}</span>
             </div>
           </div>
         </a>
       </article>
       {% endif %}
     {% empty %}
-      <div class="empty-state">Aucune collection n’est encore disponible.</div>
+      <div class="empty-state">{% trans 'No collections are available yet.' %}</div>
     {% endfor %}
   </div>
 
-  <div class="no-results" id="albumEmpty" hidden>Aucune collection ne correspond à ce filtre.</div>
+  <div class="no-results" id="albumEmpty" hidden>{% trans 'No collections match this filter.' %}</div>
   {% include 'includes/_pagination.html' with page_obj=page_obj %}
 </section>
 {% endblock %}

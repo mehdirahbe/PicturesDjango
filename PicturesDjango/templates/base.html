@@ -9,8 +9,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0b0f14">
     <meta name="author" content="Mehdi Rahman">
-    <meta name="description" content="Photothèque personnelle">
-    <title>{% block title %}Ma photothèque{% endblock %}</title>
+    <meta name="description" content="{% trans 'Personal photo library' %}">
+    <title>{% block title %}{% trans 'My photo library' %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}" crossorigin="anonymous">
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <style>{% block cssstyle %}{% endblock %}</style>
@@ -19,7 +19,7 @@
 <body class="{% block body_class %}{% endblock %}">
     <header class="app-header" data-app-header>
         <div class="app-header__inner">
-            <a class="app-brand" href="{% url 'home' %}" aria-label="Retour à la photothèque">
+            <a class="app-brand" href="{% url 'home' %}" aria-label="{% trans 'Back to photo library' %}">
                 <span class="app-brand__mark" aria-hidden="true">
                     <svg viewBox="0 0 24 24" focusable="false">
                         <circle cx="12" cy="12" r="8.5"></circle>
@@ -28,38 +28,38 @@
                     </svg>
                 </span>
                 <span class="app-brand__copy">
-                    <span class="app-brand__name">Ma photothèque</span>
-                    <span class="app-brand__tagline">Souvenirs &amp; archives</span>
+                    <span class="app-brand__name">{% trans 'My photo library' %}</span>
+                    <span class="app-brand__tagline">{% trans 'Memories & archives' %}</span>
                 </span>
             </a>
 
-            <div class="app-header__trail" aria-label="Fil d’Ariane">
-                {% block breadcrumbs %}{% endblock %}
+            <div class="app-header__trail" aria-label="{% trans 'Breadcrumb' %}">
+                {% include "includes/_breadcrumbs.html" %}
             </div>
 
-            <nav class="app-actions" aria-label="Navigation principale">
-                <a class="icon-button app-search-link" href="{% url 'search_form' %}" aria-label="Rechercher">
+            <nav class="app-actions" aria-label="{% trans 'Main navigation' %}">
+                <a class="icon-button app-search-link" href="{% url 'search_form' %}" aria-label="{% trans 'Search' %}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-                    <span>Rechercher</span>
+                    <span>{% trans 'Search' %}</span>
                 </a>
 
                 <div class="dropdown">
-                    <button class="icon-button" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Ouvrir les outils">
+                    <button class="icon-button" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{% trans 'Open tools menu' %}">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle></svg>
-                        <span>Outils</span>
+                        <span>{% trans 'Tools' %}</span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end app-tools-menu">
-                        <div class="dropdown-header">Gestion de la photothèque</div>
+                        <div class="dropdown-header">{% trans 'Library management' %}</div>
                         <a class="dropdown-item" href="{% url 'list_missing_scans' %}">
                             <span class="menu-icon" aria-hidden="true">＋</span>
-                            Importer de nouvelles photos
+                            {% trans 'Import new photos' %}
                         </a>
-                        <form method="post" action="{% url 'home' %}" onsubmit="return confirm('Cette action va préparer un grand nombre de photos pour le smartphone. Continuer ?');">
+                        <form method="post" action="{% url 'home' %}" onsubmit="return confirm('{% trans "This will prepare a large number of photos for your smartphone. Continue?" %}');">
                             {% csrf_token %}
                             <input type="hidden" name="action" value="copy_to_smartphone">
                             <button type="submit" class="dropdown-item">
                                 <span class="menu-icon" aria-hidden="true">↗</span>
-                                Préparer pour le smartphone
+                                {% trans 'Prepare for smartphone' %}
                             </button>
                         </form>
                     </div>
@@ -73,7 +73,7 @@
         {% for message in messages %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show app-alert" role="alert">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="{% trans 'Close' %}"></button>
         </div>
         {% endfor %}
     </div>

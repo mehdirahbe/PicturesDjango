@@ -1,14 +1,15 @@
+{% load i18n %}
 {% if photo.nom_fichier_jpeg or photo.lieu or photo.appareil or photo.focale or photo.diaphragme or photo.temps_pose or photo.iso %}
 <details class="metadata-disclosure">
-  <summary>Informations techniques</summary>
+  <summary>{% trans 'Technical data' %}</summary>
   <dl class="metadata-list">
-    {% if photo.lieu %}<div class="metadata-list__row"><dt>Lieu</dt><dd>{{ photo.lieu }}</dd></div>{% endif %}
-    {% if photo.appareil %}<div class="metadata-list__row"><dt>Appareil</dt><dd>{{ photo.appareil }}</dd></div>{% endif %}
-    {% if photo.focale %}<div class="metadata-list__row"><dt>Focale</dt><dd>{{ photo.focale }}</dd></div>{% endif %}
-    {% if photo.diaphragme %}<div class="metadata-list__row"><dt>Ouverture</dt><dd>{{ photo.diaphragme }}</dd></div>{% endif %}
-    {% if photo.temps_pose %}<div class="metadata-list__row"><dt>Temps de pose</dt><dd>{{ photo.temps_pose }}</dd></div>{% endif %}
+    {% if photo.lieu %}<div class="metadata-list__row"><dt>{% trans 'Location' %}</dt><dd>{{ photo.lieu }}</dd></div>{% endif %}
+    {% if photo.appareil %}<div class="metadata-list__row"><dt>{% trans 'Camera' %}</dt><dd>{{ photo.appareil }}</dd></div>{% endif %}
+    {% if photo.focale %}<div class="metadata-list__row"><dt>{% trans 'Focal length' %}</dt><dd>{{ photo.focale }}</dd></div>{% endif %}
+    {% if photo.diaphragme %}<div class="metadata-list__row"><dt>{% trans 'Aperture' %}</dt><dd>{{ photo.diaphragme }}</dd></div>{% endif %}
+    {% if photo.temps_pose %}<div class="metadata-list__row"><dt>{% trans 'Exposure time' %}</dt><dd>{{ photo.temps_pose }}</dd></div>{% endif %}
     {% if photo.iso %}<div class="metadata-list__row" aria-label="ISO: {{ photo.iso }}"><dt>ISO</dt><dd>{{ photo.iso }}</dd></div>{% endif %}
-    {% if photo.nom_fichier_jpeg %}<div class="metadata-list__row"><dt>Fichier</dt><dd>{{ photo.nom_fichier_jpeg }}</dd></div>{% endif %}
+    {% if photo.nom_fichier_jpeg %}<div class="metadata-list__row"><dt>{% trans 'File' %}</dt><dd>{{ photo.nom_fichier_jpeg }}</dd></div>{% endif %}
   </dl>
 </details>
 {% endif %}

@@ -2,24 +2,22 @@
 {% load i18n %}
 {% load custom_filters %}
 
-{% block title %}Séries « {{ search_term }} » · Ma photothèque{% endblock %}
-{% block breadcrumbs %}<ol class="app-breadcrumbs"><li><a href="{% url 'home' %}">Collections</a></li><li><a href="{% url 'search_form' %}">Recherche</a></li><li aria-current="page">{{ search_term }}</li></ol>{% endblock %}
-
+{% block title %}{% blocktrans with term=search_term %}Series “{{ term }}”{% endblocktrans %} · {% trans 'My photo library' %}{% endblock %}
 {% block content %}
 <section class="page-heading">
   <div class="page-heading__copy">
-    <p class="eyebrow">Séries trouvées</p>
+    <p class="eyebrow">{% trans 'Series found' %}</p>
     <h1 class="page-title page-title--compact">« {{ search_term }} »</h1>
-    <p class="page-subtitle">{{ page_obj.paginator.count }} série{{ page_obj.paginator.count|pluralize }} correspondante{{ page_obj.paginator.count|pluralize }}.</p>
+    <p class="page-subtitle">{% blocktrans count counter=page_obj.paginator.count %}{{ counter }} matching series{% plural %}{{ counter }} matching series{% endblocktrans %}</p>
   </div>
 </section>
 
 <div class="section-header">
-  <h2 class="section-title">Résultats</h2>
+  <h2 class="section-title">{% trans 'Results' %}</h2>
   <div class="filter-bar">
     <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-    <label class="visually-hidden" for="subjectFilter">Filtrer les résultats</label>
-    <input class="form-control" id="subjectFilter" type="search" placeholder="Filtrer les séries…"
+    <label class="visually-hidden" for="subjectFilter">{% trans 'Filter results' %}</label>
+    <input class="form-control" id="subjectFilter" type="search" placeholder="{% trans 'Filter series…' %}"
            data-filter-input data-filter-target="#subjectGrid" data-empty-target="#subjectEmpty">
   </div>
 </div>
@@ -38,8 +36,8 @@
       </div>
     </a>
   </article>
-  {% empty %}<div class="empty-state">Aucune série ne correspond à cette recherche.</div>{% endfor %}
+  {% empty %}<div class="empty-state">{% trans 'No subjects found for this search.' %}</div>{% endfor %}
 </div>
-<div class="no-results" id="subjectEmpty" hidden>Aucune série ne correspond à ce filtre.</div>
+<div class="no-results" id="subjectEmpty" hidden>{% trans 'No series matches this filter.' %}</div>
 {% include 'includes/_pagination.html' with page_obj=page_obj %}
 {% endblock %}

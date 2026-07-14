@@ -2,33 +2,25 @@
 {% load i18n %}
 {% load custom_filters %}
 
-{% block title %}{{ secondLevel|capfirst|replace_underscore }} · Ma photothèque{% endblock %}
-
-{% block breadcrumbs %}
-<ol class="app-breadcrumbs">
-  <li><a href="{% url 'home' %}">Collections</a></li>
-  <li><a href="{% url 'DisplaySecondLevel' firstLevel=firstLevel %}">{{ firstLevel|capfirst|replace_underscore }}</a></li>
-  <li aria-current="page">{{ secondLevel|capfirst|replace_underscore }}</li>
-</ol>
-{% endblock %}
+{% block title %}{{ secondLevel|capfirst|replace_underscore }} · {% trans 'My photo library' %}{% endblock %}
 
 {% block content %}
 <section class="page-heading">
   <div class="page-heading__copy">
-    <p class="eyebrow">Dossier · {{ firstLevel|capfirst|replace_underscore }}</p>
+    <p class="eyebrow">{% trans 'Folder' %} · {{ firstLevel|capfirst|replace_underscore }}</p>
     <h1 class="page-title page-title--compact">{{ secondLevel|capfirst|replace_underscore }}</h1>
-    <p class="page-subtitle">{{ page_obj.paginator.count }} série{{ page_obj.paginator.count|pluralize }} dans ce dossier.</p>
+    <p class="page-subtitle">{% blocktrans count counter=page_obj.paginator.count %}{{ counter }} series in this folder.{% plural %}{{ counter }} series in this folder.{% endblocktrans %}</p>
   </div>
-  <a class="app-button app-button--quiet" href="{% url 'DisplaySecondLevel' firstLevel=firstLevel %}">← Retour à {{ firstLevel|capfirst|replace_underscore }}</a>
+  <a class="app-button app-button--quiet" href="{% url 'DisplaySecondLevel' firstLevel=firstLevel %}">← {% trans 'Back to' %} {{ firstLevel|capfirst|replace_underscore }}</a>
 </section>
 
 <div class="section-header">
-  <h2 class="section-title">Séries</h2>
+  <h2 class="section-title">{% trans 'Series' %}</h2>
   <div class="filter-bar">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
-    <label class="visually-hidden" for="seriesFilter">Filtrer les séries</label>
+    <label class="visually-hidden" for="seriesFilter">{% trans 'Filter series' %}</label>
     <input class="form-control" id="seriesFilter" type="search"
-           placeholder="Filtrer les séries…" autocomplete="off"
+           placeholder="{% trans 'Filter series…' %}" autocomplete="off"
            data-filter-input data-filter-target="#seriesGrid" data-empty-target="#seriesEmpty">
   </div>
 </div>
@@ -48,15 +40,15 @@
           <h3 class="series-card__title">{{ series.sujet|proper_case }}</h3>
           <span class="card-chevron" aria-hidden="true">→</span>
         </div>
-        <div class="series-card__meta"><span>{{ series.count }} photo{{ series.count|pluralize }}</span></div>
+        <div class="series-card__meta"><span>{% blocktrans count counter=series.count %}{{ counter }} photo{% plural %}{{ counter }} photos{% endblocktrans %}</span></div>
       </div>
     </a>
   </article>
   {% empty %}
-  <div class="empty-state">Aucune série n’est disponible dans ce dossier.</div>
+  <div class="empty-state">{% trans 'No series are available in this folder.' %}</div>
   {% endfor %}
 </div>
 
-<div class="no-results" id="seriesEmpty" hidden>Aucune série ne correspond à ce filtre.</div>
+<div class="no-results" id="seriesEmpty" hidden>{% trans 'No series matches this filter.' %}</div>
 {% include 'includes/_pagination.html' with page_obj=page_obj %}
 {% endblock %}

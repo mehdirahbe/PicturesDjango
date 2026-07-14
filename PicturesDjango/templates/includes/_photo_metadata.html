@@ -1,6 +1,7 @@
+{% load i18n %}
 {% if photo.sujet_dias or photo.commentaire %}
 <section class="metadata-section" aria-labelledby="description-title-{{ photo.pkey }}">
-  <h3 class="metadata-section__title" id="description-title-{{ photo.pkey }}">À propos de cette photo</h3>
+  <h3 class="metadata-section__title" id="description-title-{{ photo.pkey }}">{% trans 'About this photo' %}</h3>
   <div class="metadata-copy">
     {% if photo.sujet_dias %}<p>{{ photo.sujet_dias|capfirst|linebreaksbr }}</p>{% endif %}
     {% if photo.commentaire %}<p>{{ photo.commentaire|linebreaksbr }}</p>{% endif %}
@@ -10,7 +11,7 @@
 
 {% if photo.premier_niveau or photo.second_niveau or photo.troisieme_niveau %}
 <section class="metadata-section" aria-labelledby="collection-title-{{ photo.pkey }}">
-  <h3 class="metadata-section__title" id="collection-title-{{ photo.pkey }}">Classement</h3>
+  <h3 class="metadata-section__title" id="collection-title-{{ photo.pkey }}">{% trans 'Classification' %}</h3>
   <div class="hierarchy-chips">
     {% if photo.premier_niveau %}<span class="hierarchy-chip">{{ photo.premier_niveau }}</span>{% endif %}
     {% if photo.second_niveau %}<span class="hierarchy-chip">{{ photo.second_niveau }}</span>{% endif %}
@@ -21,18 +22,17 @@
 
 {% if photo.boite or photo.rangee or photo.numero %}
 <section class="metadata-section" aria-labelledby="archive-title-{{ photo.pkey }}">
-  <h3 class="metadata-section__title" id="archive-title-{{ photo.pkey }}">Archive physique</h3>
+  <h3 class="metadata-section__title" id="archive-title-{{ photo.pkey }}">{% trans 'Physical archive' %}</h3>
   <dl class="metadata-list">
-    {% if photo.boite %}<div class="metadata-list__row"><dt>Boîte</dt><dd>{{ photo.boite }}</dd></div>{% endif %}
-    {% if photo.rangee %}<div class="metadata-list__row"><dt>Rangée</dt><dd>{{ photo.rangee }}</dd></div>{% endif %}
-    {% if photo.numero %}<div class="metadata-list__row"><dt>Numéro</dt><dd>{{ photo.numero }}</dd></div>{% endif %}
+    {% if photo.boite %}<div class="metadata-list__row"><dt>{% trans 'Box' %}</dt><dd>{{ photo.boite }}</dd></div>{% endif %}
+    {% if photo.rangee %}<div class="metadata-list__row"><dt>{% trans 'Row' %}</dt><dd>{{ photo.rangee }}</dd></div>{% endif %}
+    {% if photo.numero %}<div class="metadata-list__row"><dt>{% trans 'Number' %}</dt><dd>{{ photo.numero }}</dd></div>{% endif %}
   </dl>
 </section>
 {% endif %}
 
 {% if linktogooglemaps %}
 <section class="metadata-section">
-  <a class="maps-link" href="{{ linktogooglemaps }}" rel="noopener noreferrer" target="_blank">Afficher le lieu sur la carte ↗</a>
+  <a class="maps-link" href="{{ linktogooglemaps }}" rel="noopener noreferrer" target="_blank">{% trans 'Show location on map' %} ↗</a>
 </section>
 {% endif %}
-

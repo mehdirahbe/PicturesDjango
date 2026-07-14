@@ -1,15 +1,13 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}Photos à importer · Ma photothèque{% endblock %}
-{% block breadcrumbs %}<ol class="app-breadcrumbs"><li><a href="{% url 'home' %}">Collections</a></li><li aria-current="page">Import</li></ol>{% endblock %}
-
+{% block title %}{% trans 'Photos to import' %} · {% trans 'My photo library' %}{% endblock %}
 {% block content %}
 <section class="page-heading">
   <div class="page-heading__copy">
-    <p class="eyebrow">Gestion des imports</p>
-    <h1 class="page-title page-title--compact">Dossiers à traiter</h1>
-    <p class="page-subtitle">{{ total }} dossier{{ total|pluralize }} présent{{ total|pluralize }} dans scans/ et absent{{ total|pluralize }} de la photothèque.</p>
+    <p class="eyebrow">{% trans 'Import management' %}</p>
+    <h1 class="page-title page-title--compact">{% trans 'Folders to process' %}</h1>
+    <p class="page-subtitle">{% blocktrans count counter=total %}{{ counter }} folder in scans/ missing from the library.{% plural %}{{ counter }} folders in scans/ missing from the library.{% endblocktrans %}</p>
   </div>
 </section>
 
@@ -26,8 +24,8 @@
   </div>
   {% else %}
   <div class="empty-state">
-    <strong>Tout est à jour.</strong><br>
-    Aucun nouveau dossier n’attend d’être importé.
+    <strong>{% trans 'Everything is up to date!' %}</strong><br>
+    {% trans 'No new folders are waiting to be imported.' %}
   </div>
   {% endif %}
 </section>

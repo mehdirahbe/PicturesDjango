@@ -1,22 +1,19 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}Importer des photos · Ma photothèque{% endblock %}
-{% block breadcrumbs %}<ol class="app-breadcrumbs"><li><a href="{% url 'home' %}">Collections</a></li><li><a href="{% url 'list_missing_scans' %}">Import</a></li><li aria-current="page">Nouvelle série</li></ol>{% endblock %}
-
+{% block title %}{% trans 'Import photos' %} · {% trans 'My photo library' %}{% endblock %}
 {% block content %}
 <section class="page-heading">
   <div class="page-heading__copy">
-    <p class="eyebrow">Gestion</p>
-    <h1 class="page-title page-title--compact">Importer une nouvelle série</h1>
-    <p class="page-subtitle">Vérifiez le dossier et les informations de la série avant de lancer l’import et le redimensionnement.</p>
+    <p class="eyebrow">{% trans 'Management' %}</p>
+    <h1 class="page-title page-title--compact">{% trans 'Import a new series' %}</h1>
+    <p class="page-subtitle">{% trans 'Check the folder and series information before starting the import and resizing.' %}</p>
   </div>
 </section>
 
 <form method="post" class="form-card">
   {% csrf_token %}
   {{ form.as_p }}
-  <button type="submit" class="app-button app-button--primary">Importer et redimensionner</button>
+  <button type="submit" class="app-button app-button--primary">{% trans 'Import and resize' %}</button>
 </form>
 {% endblock %}
-

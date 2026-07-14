@@ -1,40 +1,32 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block title %}Recherche « {{ search_term }} » · Ma photothèque{% endblock %}
-
-{% block breadcrumbs %}
-<ol class="app-breadcrumbs">
-  <li><a href="{% url 'home' %}">Collections</a></li>
-  <li><a href="{% url 'search_form' %}">Recherche</a></li>
-  <li aria-current="page">{{ search_term }}</li>
-</ol>
-{% endblock %}
+{% block title %}{% blocktrans with term=search_term %}Search “{{ term }}”{% endblocktrans %} · {% trans 'My photo library' %}{% endblock %}
 
 {% block content %}
 <section class="page-heading">
   <div class="page-heading__copy">
-    <p class="eyebrow">Résultats de recherche</p>
+    <p class="eyebrow">{% trans 'Search results' %}</p>
     <h1 class="page-title page-title--compact">« {{ search_term }} »</h1>
-    <p class="page-subtitle">{{ photoRecs|length }} photo{{ photoRecs|length|pluralize }} correspondante{{ photoRecs|length|pluralize }}.</p>
+    <p class="page-subtitle">{% blocktrans count counter=photoRecs|length %}{{ counter }} matching photo{% plural %}{{ counter }} matching photos{% endblocktrans %}</p>
   </div>
   {% if photoRecs %}
-  <a class="app-button app-button--primary" href="{% url 'photo_galleryBySearch' search_term %}">Voir en galerie</a>
+  <a class="app-button app-button--primary" href="{% url 'photo_galleryBySearch' search_term %}">{% trans 'View as gallery' %}</a>
   {% endif %}
 </section>
 
 {% if photoRecs %}
 <div class="series-toolbar">
-  <span class="series-toolbar__label">Résultats en planche-contact</span>
-  <div class="density-control" data-density-group data-density-target="#photoGrid" aria-label="Densité de la grille">
-    <button type="button" data-density="comfortable" aria-label="Vignettes confortables"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg></button>
-    <button type="button" data-density="compact" aria-label="Vignettes compactes"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="4" height="4"></rect><rect x="10" y="3" width="4" height="4"></rect><rect x="17" y="3" width="4" height="4"></rect><rect x="3" y="10" width="4" height="4"></rect><rect x="10" y="10" width="4" height="4"></rect><rect x="17" y="10" width="4" height="4"></rect><rect x="3" y="17" width="4" height="4"></rect><rect x="10" y="17" width="4" height="4"></rect><rect x="17" y="17" width="4" height="4"></rect></svg></button>
+  <span class="series-toolbar__label">{% trans 'Contact sheet results' %}</span>
+  <div class="density-control" data-density-group data-density-target="#photoGrid" aria-label="{% trans 'Grid density' %}">
+    <button type="button" data-density="comfortable" aria-label="{% trans 'Comfortable thumbnails' %}"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg></button>
+    <button type="button" data-density="compact" aria-label="{% trans 'Compact thumbnails' %}"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="4" height="4"></rect><rect x="10" y="3" width="4" height="4"></rect><rect x="17" y="3" width="4" height="4"></rect><rect x="3" y="10" width="4" height="4"></rect><rect x="10" y="10" width="4" height="4"></rect><rect x="17" y="10" width="4" height="4"></rect><rect x="3" y="17" width="4" height="4"></rect><rect x="10" y="17" width="4" height="4"></rect><rect x="17" y="17" width="4" height="4"></rect></svg></button>
   </div>
 </div>
 <div class="photo-grid" id="photoGrid" data-density="comfortable">
   {% for photo in photoRecs %}{% include 'includes/_photo_thumbnail_card.html' %}{% endfor %}
 </div>
 {% else %}
-<div class="empty-state">Aucune photo ne correspond à cette recherche.</div>
+<div class="empty-state">{% trans 'No photos found for this search.' %}</div>
 {% endif %}
 {% endblock %}

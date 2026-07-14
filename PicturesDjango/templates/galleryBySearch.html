@@ -2,29 +2,21 @@
 {% load i18n %}
 {% load custom_filters %}
 
-{% block title %}Recherche « {{ search_term }} » · Galerie{% endblock %}
+{% block title %}{% blocktrans with term=search_term %}Search “{{ term }}”{% endblocktrans %} · {% trans 'Gallery' %}{% endblock %}
 {% block body_class %}viewer-page{% endblock %}
 {% block main_class %}viewer-main{% endblock %}
-
-{% block breadcrumbs %}
-<ol class="app-breadcrumbs">
-  <li><a href="{% url 'home' %}">Collections</a></li>
-  <li><a href="{% url 'search_form' %}">Recherche</a></li>
-  <li aria-current="page">{{ search_term }}</li>
-</ol>
-{% endblock %}
 
 {% block content %}
 {% if photo %}
 <div class="viewer-layout" data-gallery>
-  <section class="viewer-canvas" data-gallery-canvas aria-label="Visionneuse des résultats">
+  <section class="viewer-canvas" data-gallery-canvas aria-label="{% trans 'Search results viewer' %}">
     <div class="viewer-topbar">
-      <div class="viewer-caption"><strong>{{ photo.sujet|proper_case }}</strong>Résultat pour « {{ search_term }} »</div>
+      <div class="viewer-caption"><strong>{{ photo.sujet|proper_case }}</strong>{% blocktrans with term=search_term %}Result for “{{ term }}”{% endblocktrans %}</div>
       <span class="viewer-counter">{{ photos.number }} / {{ photos.paginator.num_pages }}</span>
     </div>
 
     {% if photos.has_previous %}
-    <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.previous_page_number }}" class="viewer-nav viewer-nav--previous" data-gallery-prev aria-label="Photo précédente">
+    <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.previous_page_number }}" class="viewer-nav viewer-nav--previous" data-gallery-prev aria-label="{% trans 'Previous photo' %}">
       <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg>
     </a>
     {% endif %}
@@ -32,22 +24,22 @@
       <img class="viewer-image" src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|default:photo.sujet|capfirst }}" decoding="async">
     </div>
     {% if photos.has_next %}
-    <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="viewer-nav viewer-nav--next" data-gallery-next aria-label="Photo suivante">
+    <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="viewer-nav viewer-nav--next" data-gallery-next aria-label="{% trans 'Next photo' %}">
       <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg>
     </a>
     {% endif %}
 
     <div class="viewer-bottombar">
-      <span class="viewer-hint">← → pour naviguer · I pour les informations</span>
+      <span class="viewer-hint">{% trans '← → to navigate · I for information' %}</span>
       <div class="viewer-tools">
-        <a class="viewer-tool" href="{% url 'ContactsSheetBySearch' search_term %}"><span>Planche-contact</span></a>
-        <a class="viewer-tool" href="{% url 'photoDetail' photo.pkey %}"><span>Fiche</span></a>
-        <button class="viewer-tool" type="button" data-panel-toggle aria-controls="viewerDetails" aria-expanded="true"><span>Informations</span></button>
+        <a class="viewer-tool" href="{% url 'ContactsSheetBySearch' search_term %}"><span>{% trans 'Contact sheet' %}</span></a>
+        <a class="viewer-tool" href="{% url 'photoDetail' photo.pkey %}"><span>{% trans 'Details' %}</span></a>
+        <button class="viewer-tool" type="button" data-panel-toggle aria-controls="viewerDetails" aria-expanded="true"><span>{% trans 'Information' %}</span></button>
       </div>
     </div>
   </section>
-  <aside class="viewer-sidebar" id="viewerDetails" aria-label="Informations de la photo">
-    <button class="viewer-sidebar__close" type="button" data-panel-close aria-label="Masquer les informations">×</button>
+  <aside class="viewer-sidebar" id="viewerDetails" aria-label="{% trans 'Photo information' %}">
+    <button class="viewer-sidebar__close" type="button" data-panel-close aria-label="{% trans 'Hide information' %}">×</button>
     <h1 class="viewer-sidebar__title">{{ photo.sujet|proper_case }}</h1>
     <p class="viewer-sidebar__date">{{ photo.date }}</p>
     {% include 'includes/_photo_metadata.html' %}
@@ -55,7 +47,6 @@
   </aside>
 </div>
 {% else %}
-<div class="app-main"><div class="empty-state">Aucune photo ne correspond à cette recherche.</div></div>
+<div class="app-main"><div class="empty-state">{% trans 'No photos found for this search.' %}</div></div>
 {% endif %}
 {% endblock %}
-
