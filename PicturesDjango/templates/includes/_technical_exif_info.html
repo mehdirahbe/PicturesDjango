@@ -1,25 +1,14 @@
-{% load i18n %}
-
-{% if photo.nom_fichier_jpeg %}
-    <p class="mt-2 text-white">JPEG File Name: {{ photo.nom_fichier_jpeg }}</p>
-{% endif %}
-
-{% if photo.lieu %}
-    <p class="mt-2 text-white">{% trans "Location" %}: {{ photo.lieu }}</p>
-{% endif %}
-
-{% if photo.appareil %}
-    <p class="mt-2 text-white">{% trans "Camera" %}: {{ photo.appareil }}</p>
-{% endif %}
-{% if photo.focale %}
-    <p class="mt-2 text-white">{% trans "Focal length" %}: {{ photo.focale }}</p>
-{% endif %}
-{% if photo.diaphragme %}
-    <p class="mt-2 text-white">{% trans "Aperture" %}: {{ photo.diaphragme }}</p>
-{% endif %}
-{% if photo.temps_pose %}
-    <p class="mt-2 text-white">{% trans "Exposure time" %}: {{ photo.temps_pose }}</p>
-{% endif %}
-{% if photo.iso %}
-    <p class="mt-2 text-white">ISO: {{ photo.iso }}</p>
+{% if photo.nom_fichier_jpeg or photo.lieu or photo.appareil or photo.focale or photo.diaphragme or photo.temps_pose or photo.iso %}
+<details class="metadata-disclosure">
+  <summary>Informations techniques</summary>
+  <dl class="metadata-list">
+    {% if photo.lieu %}<div class="metadata-list__row"><dt>Lieu</dt><dd>{{ photo.lieu }}</dd></div>{% endif %}
+    {% if photo.appareil %}<div class="metadata-list__row"><dt>Appareil</dt><dd>{{ photo.appareil }}</dd></div>{% endif %}
+    {% if photo.focale %}<div class="metadata-list__row"><dt>Focale</dt><dd>{{ photo.focale }}</dd></div>{% endif %}
+    {% if photo.diaphragme %}<div class="metadata-list__row"><dt>Ouverture</dt><dd>{{ photo.diaphragme }}</dd></div>{% endif %}
+    {% if photo.temps_pose %}<div class="metadata-list__row"><dt>Temps de pose</dt><dd>{{ photo.temps_pose }}</dd></div>{% endif %}
+    {% if photo.iso %}<div class="metadata-list__row" aria-label="ISO: {{ photo.iso }}"><dt>ISO</dt><dd>{{ photo.iso }}</dd></div>{% endif %}
+    {% if photo.nom_fichier_jpeg %}<div class="metadata-list__row"><dt>Fichier</dt><dd>{{ photo.nom_fichier_jpeg }}</dd></div>{% endif %}
+  </dl>
+</details>
 {% endif %}

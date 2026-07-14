@@ -1,92 +1,62 @@
 {% extends 'base.html' %}
 {% load i18n %}
-
-
-{% block content %}
 {% load custom_filters %}
 
-   <nav class="navbar navbar-expand-lg navbar-dark">
-       <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
-       <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
-       <!-- Bootstrap class for branding, typically used for the site's logo or title -->
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
-   </nav>
+{% block title %}{{ photoRec.sujet|proper_case }} · Photo {{ series_position }}{% endblock %}
 
-<div class="container">
-  <!-- Bootstrap container class for responsive design -->
-  <div class="row justify-content-center mt-4">
-    <!-- Bootstrap row class, justify-content-center centers content horizontally, mt-4 adds margin top -->
-    <div class="col-md-auto">
-      <!-- Bootstrap column class, col-md-auto adjusts width automatically -->
-      <a class="mt-2 text-white" href="{% url 'ContactsSheet' photoRec.checksum %}"><h1>{{ photoRec.sujet|proper_case }}</h1></a>
-      <!-- mt-2 adds margin top, text-white sets text color to white -->
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-auto">
-      <!-- Image column -->
-      {% with photo=photoRec %}
-        {% include "includes/_photo_image.html" %}
-      {% endwith %}
-       <!-- img-fluid makes the image responsive -->
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-auto">
-      {# Shared description + location + maps link #}
-      {% with photo=photoRec %}
-          {% include "includes/_photo_metadata.html" %}
-      {% endwith %}
-
-      {# Technical EXIF (shared partial) #}
-      {% with photo=photoRec %}
-          {% include "includes/_technical_exif_info.html" %}
-      {% endwith %}
-
-      <button id="edit-subject-btn">{% trans 'Change subject' %}</button>
-
-      <form id="subject-form" method="post" action="" style="display: none;">
-          {% csrf_token %}
-          {{ subject_form.as_p }}
-          <button type="submit">{% trans 'Save subject' %}</button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<style>
-#subject-form {
-    color: white;
-    padding: 10px;
-    border-radius: 5px;
-    margin-top: 10px;
-}
-
-#subject-form input,
-#subject-form textarea {
-    background-color: #444;
-    color: white;
-    border: 1px solid #666;
-}
-</style>
-
+{% block breadcrumbs %}
+<ol class="app-breadcrumbs">
+  <li><a href="{% url 'home' %}">Collections</a></li>
+  <li><a href="{% url 'DisplaySecondLevel' firstLevel=photoRec.premier_niveau %}">{{ photoRec.premier_niveau|capfirst|replace_underscore }}</a></li>
+  {% if photoRec.troisieme_niveau %}
+  <li><a href="{% url 'DisplayThirdLevel' firstLevel=photoRec.premier_niveau secondLevel=photoRec.second_niveau %}">{{ photoRec.second_niveau|capfirst|replace_underscore }}</a></li>
+  {% endif %}
+  <li><a href="{% url 'ContactsSheet' photoRec.checksum %}">{{ photoRec.sujet|proper_case }}</a></li>
+  <li aria-current="page">Photo {{ series_position }}</li>
+</ol>
 {% endblock %}
 
-{% block javascript %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    var editButton = document.getElementById('edit-subject-btn');
-    var form = document.getElementById('subject-form');
-    var saveButton = form.querySelector('button[type="submit"]');
+{% block content %}
+<div class="detail-heading">
+  <div>
+    <p class="eyebrow">Photo {{ series_position }} sur {{ series_count }}</p>
+    <a class="detail-kicker" href="{% url 'ContactsSheet' photoRec.checksum %}">← Revenir à la série</a>
+  </div>
+  <nav class="detail-pagination" aria-label="Navigation dans la série">
+    {% if previous_photo %}
+    <a class="detail-nav-button" href="{% url 'photoDetail' previous_photo.pkey %}" aria-label="Photo précédente">
+      <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg>
+    </a>
+    {% else %}<span class="detail-nav-button" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg></span>{% endif %}
+    {% if next_photo %}
+    <a class="detail-nav-button" href="{% url 'photoDetail' next_photo.pkey %}" aria-label="Photo suivante">
+      <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg>
+    </a>
+    {% else %}<span class="detail-nav-button" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg></span>{% endif %}
+  </nav>
+</div>
 
-    editButton.addEventListener('click', function() {
-        form.style.display = 'block';
-    });
+<div class="photo-detail-layout">
+  <section class="detail-media" aria-label="Photo">
+    <img src="{% url 'photo_Jpeg' photoRec.pkey 'big' %}" alt="{{ photoRec.sujet_dias|default:photoRec.sujet|capfirst }}" decoding="async">
+  </section>
 
-    saveButton.addEventListener('click', function() {
-        // Après la soumission du formulaire
-        form.style.display = 'none';
-    });
-});
-</script>
+  <aside class="detail-panel" aria-label="Informations et modification">
+    <h1 class="detail-panel__title">{{ photoRec.sujet|proper_case }}</h1>
+    <p class="detail-panel__date">{{ photoRec.date }}</p>
+    {% with photo=photoRec %}
+      {% include 'includes/_photo_metadata.html' %}
+      {% include 'includes/_technical_exif_info.html' %}
+    {% endwith %}
+
+    <div class="metadata-section">
+      <button class="app-button" type="button" data-edit-toggle="#subjectForm" aria-controls="subjectForm" aria-expanded="false">Modifier le sujet</button>
+      <form class="edit-panel" id="subjectForm" method="post" hidden>
+        {% csrf_token %}
+        {{ subject_form.as_p }}
+        <button type="submit" class="app-button app-button--primary">Enregistrer les modifications</button>
+      </form>
+    </div>
+  </aside>
+</div>
 {% endblock %}

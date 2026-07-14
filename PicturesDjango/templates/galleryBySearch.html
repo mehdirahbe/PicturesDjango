@@ -1,71 +1,61 @@
 {% extends 'base.html' %}
 {% load i18n %}
-
-
-{% block content %}
 {% load custom_filters %}
 
-   <nav class="navbar navbar-expand-lg navbar-dark">
-       <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
-       <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
-       <!-- Bootstrap class for branding, typically used for the site's logo or title -->
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
-       <!-- Same as above, used for navigation links -->
-       <a class="navbar-brand" href="{% url 'ContactsSheetBySearch' search_term %}">{% trans 'Contact Sheet' %}</a>
-   </nav>
+{% block title %}Recherche « {{ search_term }} » · Galerie{% endblock %}
+{% block body_class %}viewer-page{% endblock %}
+{% block main_class %}viewer-main{% endblock %}
 
-<div class="container mt-5">
-  <!-- Bootstrap container class for responsive design, mt-5 adds margin top -->
-  {% if photo %}
-  <div class="row justify-content-center mt-4">
-    <div class="col-md-auto">
-      <a class="mt-2 text-white" href="{% url 'ContactsSheet' photo.checksum %}"><h1>{{ photo.sujet|proper_case }}</h1></a>
+{% block breadcrumbs %}
+<ol class="app-breadcrumbs">
+  <li><a href="{% url 'home' %}">Collections</a></li>
+  <li><a href="{% url 'search_form' %}">Recherche</a></li>
+  <li aria-current="page">{{ search_term }}</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+{% if photo %}
+<div class="viewer-layout" data-gallery>
+  <section class="viewer-canvas" data-gallery-canvas aria-label="Visionneuse des résultats">
+    <div class="viewer-topbar">
+      <div class="viewer-caption"><strong>{{ photo.sujet|proper_case }}</strong>Résultat pour « {{ search_term }} »</div>
+      <span class="viewer-counter">{{ photos.number }} / {{ photos.paginator.num_pages }}</span>
     </div>
-  </div>
-  {% endif %}
-  <div class="row justify-content-center mt-4">
-    <div class="col-md-10">
-      <div class="photo-viewer text-center position-relative">
-        {% if photo %}
-        {% if photos.has_previous %}
-          <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
-        {% endif %}
-        {% include "includes/_photo_image.html" %}
-        {% with photo=photo %}
-            {% include "includes/_photo_metadata.html" %}
-        {% endwith %}
-        {% with photo=photo %}
-            {% include "includes/_technical_exif_info.html" %}
-        {% endwith %}
-        {% if photos.has_next %}
-          <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
-        {% endif %}
-        {% else %}
-        <div class="alert alert-secondary" role="alert">
-            {% trans "No photos found for this search." %}
-        </div>
-        {% endif %}
+
+    {% if photos.has_previous %}
+    <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.previous_page_number }}" class="viewer-nav viewer-nav--previous" data-gallery-prev aria-label="Photo précédente">
+      <svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg>
+    </a>
+    {% endif %}
+    <div class="viewer-image-wrap">
+      <img class="viewer-image" src="{% url 'photo_Jpeg' photo.pkey 'big' %}" alt="{{ photo.sujet_dias|default:photo.sujet|capfirst }}" decoding="async">
     </div>
-  </div>
+    {% if photos.has_next %}
+    <a href="{% url 'photo_galleryBySearch' search_term %}?page={{ photos.next_page_number }}" class="viewer-nav viewer-nav--next" data-gallery-next aria-label="Photo suivante">
+      <svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"></path></svg>
+    </a>
+    {% endif %}
+
+    <div class="viewer-bottombar">
+      <span class="viewer-hint">← → pour naviguer · I pour les informations</span>
+      <div class="viewer-tools">
+        <a class="viewer-tool" href="{% url 'ContactsSheetBySearch' search_term %}"><span>Planche-contact</span></a>
+        <a class="viewer-tool" href="{% url 'photoDetail' photo.pkey %}"><span>Fiche</span></a>
+        <button class="viewer-tool" type="button" data-panel-toggle aria-controls="viewerDetails" aria-expanded="true"><span>Informations</span></button>
+      </div>
+    </div>
+  </section>
+  <aside class="viewer-sidebar" id="viewerDetails" aria-label="Informations de la photo">
+    <button class="viewer-sidebar__close" type="button" data-panel-close aria-label="Masquer les informations">×</button>
+    <h1 class="viewer-sidebar__title">{{ photo.sujet|proper_case }}</h1>
+    <p class="viewer-sidebar__date">{{ photo.date }}</p>
+    {% include 'includes/_photo_metadata.html' %}
+    {% include 'includes/_technical_exif_info.html' %}
+  </aside>
 </div>
-
+{% else %}
+<div class="app-main"><div class="empty-state">Aucune photo ne correspond à cette recherche.</div></div>
+{% endif %}
 {% endblock %}
 
-{% block javascript %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const prevBtn = document.getElementById('prev-btn');
-  const nextBtn = document.getElementById('next-btn');
-
-  document.addEventListener('keydown', function(event) {
-    if (event.key === 'ArrowLeft' && prevBtn) {
-      event.preventDefault();
-      prevBtn.click();
-    } else if (event.key === 'ArrowRight' && nextBtn) {
-      event.preventDefault();
-      nextBtn.click();
-    }
-  });
-});
-</script>
-{% endblock %}

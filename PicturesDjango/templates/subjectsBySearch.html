@@ -1,80 +1,45 @@
 {% extends 'base.html' %}
 {% load i18n %}
-
-
-{% block content %}
 {% load custom_filters %}
 
-   <nav class="navbar navbar-expand-lg navbar-dark">
-       <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
-       <a class="navbar-brand" href="{% url 'search_form' %}">{% trans 'Search' %}</a>
-   </nav>
+{% block title %}Séries « {{ search_term }} » · Ma photothèque{% endblock %}
+{% block breadcrumbs %}<ol class="app-breadcrumbs"><li><a href="{% url 'home' %}">Collections</a></li><li><a href="{% url 'search_form' %}">Recherche</a></li><li aria-current="page">{{ search_term }}</li></ol>{% endblock %}
 
-<div class="container my-4">
-  <input class="form-control mb-3" id="searchInput" type="text" placeholder="{% trans 'Search subjects' %}...">
-
-  <div class="list-group" id="levelList">
-    {% for subject in page_obj %}
-      <a href="{% url 'ContactsSheet' desiredsubjectMD5=subject.checksum %}"
-         class="list-group-item list-group-item-action list-group-item-dark">
-        {% include "includes/_subject_search_row.html" %}
-      </a>
-    {% empty %}
-      <div class="alert alert-secondary" role="alert">
-        {% trans "No subjects found for this search." %}
-      </div>
-    {% endfor %}
+{% block content %}
+<section class="page-heading">
+  <div class="page-heading__copy">
+    <p class="eyebrow">Séries trouvées</p>
+    <h1 class="page-title page-title--compact">« {{ search_term }} »</h1>
+    <p class="page-subtitle">{{ page_obj.paginator.count }} série{{ page_obj.paginator.count|pluralize }} correspondante{{ page_obj.paginator.count|pluralize }}.</p>
   </div>
+</section>
 
-  {% if page_obj.paginator.num_pages > 1 %}
-  <nav aria-label="Page navigation">
-    <ul class="pagination justify-content-center pagination-dark">
-      {% if page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>
-      {% endif %}
-      {% for num in page_obj.paginator.page_range %}
-        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
-          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
-        </li>
-      {% endfor %}
-      {% if page_obj.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
-      {% endif %}
-    </ul>
-  </nav>
-  {% endif %}
+<div class="section-header">
+  <h2 class="section-title">Résultats</h2>
+  <div class="filter-bar">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4 4"></path></svg>
+    <label class="visually-hidden" for="subjectFilter">Filtrer les résultats</label>
+    <input class="form-control" id="subjectFilter" type="search" placeholder="Filtrer les séries…"
+           data-filter-input data-filter-target="#subjectGrid" data-empty-target="#subjectEmpty">
+  </div>
 </div>
 
-{% endblock %}
-
-
-{% block javascript %}
-<script>
-  document.getElementById('searchInput').addEventListener('keyup', function() {
-    var input, filter, ul, li, a, i, txtValue;
-    input = document.getElementById('searchInput');
-    filter = input.value.toUpperCase();
-    ul = document.getElementById('levelList');
-    li = ul.getElementsByTagName('a');
-
-    for (i = 0; i < li.length; i++) {
-      a = li[i];
-      txtValue = a.textContent || a.innerText;
-      if (txtValue.toUpperCase().indexOf(filter) > -1) {
-        li[i].style.display = "";
-      } else {
-        li[i].style.display = "none";
-      }
-    }
-  });
-</script>
+<div class="album-grid" id="subjectGrid">
+  {% for subject in page_obj %}
+  <article class="series-card" data-filter-item data-filter-value="{{ subject.sujet }} {{ subject.date }}">
+    <a class="series-card__link" href="{% url 'ContactsSheet' desiredsubjectMD5=subject.checksum %}">
+      <div class="series-card__media" data-media>
+        <span class="cover-fallback" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="m4 17 5-4 3 2 3-3 5 5"></path></svg></span>
+        {% if subject.cover_id %}<img src="{% url 'photo_Jpeg' subject.cover_id 'view' %}" alt="" loading="lazy">{% endif %}
+      </div>
+      <div class="series-card__body">
+        <div class="series-card__topline"><h2 class="series-card__title">{% include 'includes/_subject_search_row.html' %}</h2><span class="card-chevron">→</span></div>
+        <div class="series-card__meta"><span>{{ subject.date }}</span><span class="meta-dot">{{ subject.premier_niveau|capfirst|replace_underscore }}</span></div>
+      </div>
+    </a>
+  </article>
+  {% empty %}<div class="empty-state">Aucune série ne correspond à cette recherche.</div>{% endfor %}
+</div>
+<div class="no-results" id="subjectEmpty" hidden>Aucune série ne correspond à ce filtre.</div>
+{% include 'includes/_pagination.html' with page_obj=page_obj %}
 {% endblock %}

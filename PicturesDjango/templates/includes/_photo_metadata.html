@@ -1,35 +1,38 @@
-<p><strong>{{ photo.date }}</strong></p>
-<p>{{ photo.sujet_dias|capfirst|linebreaksbr }}</p>
-<p>{{ photo.commentaire|linebreaksbr }}</p>
-
-{# Archive location / levels (shown when available) #}
-{% if photo.boite or photo.rangee or photo.numero or photo.premier_niveau %}
-<div class="text-start mt-2">
-    {% if photo.boite %}
-        <p>Boîte: {{ photo.boite }}</p>
-    {% endif %}
-    {% if photo.rangee %}
-        <p>Row: {{ photo.rangee }}</p>
-    {% endif %}
-    {% if photo.numero %}
-        <p>Number: {{ photo.numero }}</p>
-    {% endif %}
-
-    {% if photo.premier_niveau %}
-        <p>Level 1: {{ photo.premier_niveau }}</p>
-    {% endif %}
-    {% if photo.second_niveau %}
-        <p>Level 2: {{ photo.second_niveau }}</p>
-    {% endif %}
-    {% if photo.troisieme_niveau %}
-        <p>Level 3: {{ photo.troisieme_niveau }}</p>
-    {% endif %}
-</div>
+{% if photo.sujet_dias or photo.commentaire %}
+<section class="metadata-section" aria-labelledby="description-title-{{ photo.pkey }}">
+  <h3 class="metadata-section__title" id="description-title-{{ photo.pkey }}">À propos de cette photo</h3>
+  <div class="metadata-copy">
+    {% if photo.sujet_dias %}<p>{{ photo.sujet_dias|capfirst|linebreaksbr }}</p>{% endif %}
+    {% if photo.commentaire %}<p>{{ photo.commentaire|linebreaksbr }}</p>{% endif %}
+  </div>
+</section>
 {% endif %}
 
-{# Google Maps link - now consistent across pages that have coordinates #}
+{% if photo.premier_niveau or photo.second_niveau or photo.troisieme_niveau %}
+<section class="metadata-section" aria-labelledby="collection-title-{{ photo.pkey }}">
+  <h3 class="metadata-section__title" id="collection-title-{{ photo.pkey }}">Classement</h3>
+  <div class="hierarchy-chips">
+    {% if photo.premier_niveau %}<span class="hierarchy-chip">{{ photo.premier_niveau }}</span>{% endif %}
+    {% if photo.second_niveau %}<span class="hierarchy-chip">{{ photo.second_niveau }}</span>{% endif %}
+    {% if photo.troisieme_niveau %}<span class="hierarchy-chip">{{ photo.troisieme_niveau }}</span>{% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if photo.boite or photo.rangee or photo.numero %}
+<section class="metadata-section" aria-labelledby="archive-title-{{ photo.pkey }}">
+  <h3 class="metadata-section__title" id="archive-title-{{ photo.pkey }}">Archive physique</h3>
+  <dl class="metadata-list">
+    {% if photo.boite %}<div class="metadata-list__row"><dt>Boîte</dt><dd>{{ photo.boite }}</dd></div>{% endif %}
+    {% if photo.rangee %}<div class="metadata-list__row"><dt>Rangée</dt><dd>{{ photo.rangee }}</dd></div>{% endif %}
+    {% if photo.numero %}<div class="metadata-list__row"><dt>Numéro</dt><dd>{{ photo.numero }}</dd></div>{% endif %}
+  </dl>
+</section>
+{% endif %}
+
 {% if linktogooglemaps %}
-    <p class="mt-2">
-        <a href="{{ linktogooglemaps }}" rel="noopener noreferrer" target="_blank">View in Maps</a>
-    </p>
+<section class="metadata-section">
+  <a class="maps-link" href="{{ linktogooglemaps }}" rel="noopener noreferrer" target="_blank">Afficher le lieu sur la carte ↗</a>
+</section>
 {% endif %}
+

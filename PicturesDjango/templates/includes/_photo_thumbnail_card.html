@@ -1,14 +1,19 @@
-<div class="col-md-2 mb-2">
-    <a href="{% url 'photoDetail' photo.pkey %}" class="d-block">
-        <div class="thumbnail-slot">
-            <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                 data-src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
-                 alt="{{ photo.sujet_dias|capfirst }}"
-                 class="lazyload"
-                 data-bs-toggle="tooltip"
-                 data-bs-placement="top"
-                 title="{{ photo.sujet_dias|capfirst }}">
-        </div>
-    </a>
-    <p class="mb-0">{{ photo.sujet_dias|capfirst|truncatechars:20 }}</p>
-</div>
+<article class="photo-card">
+  <a href="{% url 'photoDetail' photo.pkey %}" class="photo-card__link" aria-label="Ouvrir {{ photo.sujet_dias|default:photo.sujet|capfirst }}">
+    <div class="photo-card__media" data-media>
+      <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+           data-src="{% url 'photo_Jpeg' photo.pkey 'contactsheet' %}"
+           alt="{{ photo.sujet_dias|default:photo.sujet|capfirst }}"
+           class="lazyload"
+           decoding="async">
+      <span class="photo-card__overlay" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M8 12h8"></path><path d="m13 9 3 3-3 3"></path></svg>
+      </span>
+    </div>
+    <div class="photo-card__caption">
+      <strong title="{{ photo.sujet_dias|default:photo.sujet|capfirst }}">{{ photo.sujet_dias|default:photo.sujet|capfirst|truncatechars:34 }}</strong>
+      {% if photo.date %}<small>{{ photo.date }}</small>{% endif %}
+    </div>
+  </a>
+</article>
+

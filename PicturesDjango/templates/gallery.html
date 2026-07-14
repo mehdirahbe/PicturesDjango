@@ -1,69 +1,84 @@
 {% extends 'base.html' %}
 {% load i18n %}
-
-{% block content %}
 {% load custom_filters %}
 
-<nav class="navbar navbar-expand-lg navbar-dark">
-    <!-- 'navbar' creates a navigation bar. 'navbar-expand-lg' allows the nav to expand across the screen for large screen widths. 'navbar-dark' gives it a dark theme -->
-    <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
-    <!-- 'navbar-brand' is used for the site's logo or name -->
-    <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
-    <!-- A link to go back with a JavaScript script -->
-    <a class="navbar-brand" href="{% url 'ContactsSheet' desiredsubjectMD5 %}">{% trans 'Contact Sheet' %}</a>
-</nav>
+{% block title %}{% if photo %}{{ photo.sujet|proper_case }}{% else %}Galerie{% endif %} · Ma photothèque{% endblock %}
+{% block body_class %}viewer-page{% endblock %}
+{% block main_class %}viewer-main{% endblock %}
 
-<div class="container mt-5">
-    <!-- 'container' creates a centered content area. 'mt-5' adds margin at the top -->
-    <div class="row justify-content-center">
-        <!-- 'row' to organize content in a row. 'justify-content-center' centers the content horizontally -->
-    </div>
-    <div class="row justify-content-center mt-4">
-        <!-- 'mt-4' adds margin at the top -->
-        <div class="col-md-10">
-            <!-- 'col-md-10' takes up 10 units out of 12 in the grid on medium screens and up -->
-            <div class="photo-viewer text-center position-relative">
-                {% if photo %}
-                {% if photos.has_previous %}
-                    <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.previous_page_number }}" class="prev-btn" id="prev-btn"><</a>
-                {% endif %}
-                {% include "includes/_photo_image.html" %}
-                {% with photo=photo %}
-                    {% include "includes/_photo_metadata.html" %}
-                {% endwith %}
-                {% with photo=photo %}
-                    {% include "includes/_technical_exif_info.html" %}
-                {% endwith %}
-                {% if photos.has_next %}
-                    <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.next_page_number }}" class="next-btn" id="next-btn">></a>
-                {% endif %}
-                {% else %}
-                <div class="alert alert-secondary" role="alert">
-                    {% trans "No photos found for this subject." %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block breadcrumbs %}
+{% if photo %}
+<ol class="app-breadcrumbs">
+  <li><a href="{% url 'home' %}">Collections</a></li>
+  <li><a href="{% url 'DisplaySecondLevel' firstLevel=photo.premier_niveau %}">{{ photo.premier_niveau|capfirst|replace_underscore }}</a></li>
+  {% if photo.troisieme_niveau %}
+  <li><a href="{% url 'DisplayThirdLevel' firstLevel=photo.premier_niveau secondLevel=photo.second_niveau %}">{{ photo.second_niveau|capfirst|replace_underscore }}</a></li>
+  {% endif %}
+  <li><a href="{% url 'ContactsSheet' photo.checksum %}">{{ photo.sujet|proper_case }}</a></li>
+  <li aria-current="page">Galerie</li>
+</ol>
+{% endif %}
 {% endblock %}
 
-{% block javascript %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const prevBtn = document.getElementById('prev-btn');
-  const nextBtn = document.getElementById('next-btn');
+{% block content %}
+{% if photo %}
+<div class="viewer-layout" data-gallery>
+  <section class="viewer-canvas" data-gallery-canvas aria-label="Visionneuse de photos">
+    <div class="viewer-topbar">
+      <div class="viewer-caption">
+        <strong>{{ photo.sujet|proper_case }}</strong>
+        {{ photo.date }}
+      </div>
+      <span class="viewer-counter">{{ photos.number }} / {{ photos.paginator.num_pages }}</span>
+    </div>
 
-  document.addEventListener('keydown', function(event) {
-    if (event.key === 'ArrowLeft' && prevBtn) {
-      event.preventDefault();
-      prevBtn.click();
-    } else if (event.key === 'ArrowRight' && nextBtn) {
-      event.preventDefault();
-      nextBtn.click();
-    }
-  });
-});
-</script>
+    {% if photos.has_previous %}
+    <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.previous_page_number }}"
+       class="viewer-nav viewer-nav--previous" data-gallery-prev aria-label="Photo précédente">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+    </a>
+    {% endif %}
+
+    <div class="viewer-image-wrap">
+      <img class="viewer-image" src="{% url 'photo_Jpeg' photo.pkey 'big' %}"
+           alt="{{ photo.sujet_dias|default:photo.sujet|capfirst }}" decoding="async">
+    </div>
+
+    {% if photos.has_next %}
+    <a href="{% url 'photo_gallery' desiredsubjectMD5 %}?page={{ photos.next_page_number }}"
+       class="viewer-nav viewer-nav--next" data-gallery-next aria-label="Photo suivante">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+    </a>
+    {% endif %}
+
+    <div class="viewer-bottombar">
+      <span class="viewer-hint">← → pour naviguer · I pour les informations</span>
+      <div class="viewer-tools">
+        <a class="viewer-tool" href="{% url 'ContactsSheet' desiredsubjectMD5 %}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+          <span>Planche-contact</span>
+        </a>
+        <a class="viewer-tool" href="{% url 'photoDetail' photo.pkey %}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg>
+          <span>Fiche</span>
+        </a>
+        <button class="viewer-tool" type="button" data-panel-toggle aria-controls="viewerDetails" aria-expanded="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"></path><path d="M15 5v14"></path></svg>
+          <span>Informations</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="viewer-sidebar" id="viewerDetails" aria-label="Informations de la photo">
+    <button class="viewer-sidebar__close" type="button" data-panel-close aria-label="Masquer les informations">×</button>
+    <h1 class="viewer-sidebar__title">{{ photo.sujet|proper_case }}</h1>
+    <p class="viewer-sidebar__date">{{ photo.date }}</p>
+    {% include 'includes/_photo_metadata.html' %}
+    {% include 'includes/_technical_exif_info.html' %}
+  </aside>
+</div>
+{% else %}
+<div class="app-main"><div class="empty-state">Aucune photo n’a été trouvée pour cette série.</div></div>
+{% endif %}
 {% endblock %}

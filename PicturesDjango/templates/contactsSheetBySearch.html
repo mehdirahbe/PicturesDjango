@@ -1,49 +1,40 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
-{% block content %}
-{% load custom_filters %}
+{% block title %}Recherche « {{ search_term }} » · Ma photothèque{% endblock %}
 
-<nav class="navbar navbar-expand-lg navbar-dark">
-    <!-- 'navbar' creates a navigation bar. 'navbar-expand-lg' allows the nav to expand across the screen for large screen widths. 'navbar-dark' gives it a dark theme -->
-    <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
-    <!-- 'navbar-brand' is used for the site's logo or name -->
-    <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
-    <!-- A link to go back with a JavaScript script -->
-    <a class="navbar-brand" href="{% url 'photo_galleryBySearch' search_term %}">{% trans 'Gallery' %}</a>
-</nav>
-
-<div class="container">
-    <!-- 'container' creates a centered content area -->
-    <div class="row">
-        <div class="col-md-12">
-            {% if photoRecs %}
-            <h2>{{ photoRecs.0.sujet|proper_case }}</h2>
-            <p><strong>{{ photoRecs.0.date }}</strong></p>
-            {% else %}
-            <div class="alert alert-secondary" role="alert">
-                {% trans "No photos found for this search." %}
-            </div>
-            {% endif %}
-        </div>
-    </div>
-    <div class="row">
-        {% for photo in photoRecs %}
-            {% include "includes/_photo_thumbnail_card.html" %}
-        {% endfor %}
-    </div>
-</div>
-
+{% block breadcrumbs %}
+<ol class="app-breadcrumbs">
+  <li><a href="{% url 'home' %}">Collections</a></li>
+  <li><a href="{% url 'search_form' %}">Recherche</a></li>
+  <li aria-current="page">{{ search_term }}</li>
+</ol>
 {% endblock %}
 
-{% block javascript %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Bootstrap 5 native tooltips (no jQuery required)
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
-        new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-});
-</script>
+{% block content %}
+<section class="page-heading">
+  <div class="page-heading__copy">
+    <p class="eyebrow">Résultats de recherche</p>
+    <h1 class="page-title page-title--compact">« {{ search_term }} »</h1>
+    <p class="page-subtitle">{{ photoRecs|length }} photo{{ photoRecs|length|pluralize }} correspondante{{ photoRecs|length|pluralize }}.</p>
+  </div>
+  {% if photoRecs %}
+  <a class="app-button app-button--primary" href="{% url 'photo_galleryBySearch' search_term %}">Voir en galerie</a>
+  {% endif %}
+</section>
+
+{% if photoRecs %}
+<div class="series-toolbar">
+  <span class="series-toolbar__label">Résultats en planche-contact</span>
+  <div class="density-control" data-density-group data-density-target="#photoGrid" aria-label="Densité de la grille">
+    <button type="button" data-density="comfortable" aria-label="Vignettes confortables"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg></button>
+    <button type="button" data-density="compact" aria-label="Vignettes compactes"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="4" height="4"></rect><rect x="10" y="3" width="4" height="4"></rect><rect x="17" y="3" width="4" height="4"></rect><rect x="3" y="10" width="4" height="4"></rect><rect x="10" y="10" width="4" height="4"></rect><rect x="17" y="10" width="4" height="4"></rect><rect x="3" y="17" width="4" height="4"></rect><rect x="10" y="17" width="4" height="4"></rect><rect x="17" y="17" width="4" height="4"></rect></svg></button>
+  </div>
+</div>
+<div class="photo-grid" id="photoGrid" data-density="comfortable">
+  {% for photo in photoRecs %}{% include 'includes/_photo_thumbnail_card.html' %}{% endfor %}
+</div>
+{% else %}
+<div class="empty-state">Aucune photo ne correspond à cette recherche.</div>
+{% endif %}
 {% endblock %}

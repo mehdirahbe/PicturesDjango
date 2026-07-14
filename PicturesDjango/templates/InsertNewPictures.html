@@ -1,30 +1,22 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
+{% block title %}Importer des photos · Ma photothèque{% endblock %}
+{% block breadcrumbs %}<ol class="app-breadcrumbs"><li><a href="{% url 'home' %}">Collections</a></li><li><a href="{% url 'list_missing_scans' %}">Import</a></li><li aria-current="page">Nouvelle série</li></ol>{% endblock %}
 
 {% block content %}
-{% load custom_filters %}
+<section class="page-heading">
+  <div class="page-heading__copy">
+    <p class="eyebrow">Gestion</p>
+    <h1 class="page-title page-title--compact">Importer une nouvelle série</h1>
+    <p class="page-subtitle">Vérifiez le dossier et les informations de la série avant de lancer l’import et le redimensionnement.</p>
+  </div>
+</section>
 
-   <nav class="navbar navbar-expand-lg navbar-dark">
-       <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
-       <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
-       <!-- Bootstrap class for branding, typically used for the site's logo or title -->
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
-   </nav>
-
-    <form method="post" class="form-inline">
-        <!-- Bootstrap class for inline form layout -->
-        {% csrf_token %}
-        {% trans "Please enter the information about the image folder:" %}
-        <div class="form-group mb-2">
-            <!-- Bootstrap class for form groups, mb-2 adds margin bottom -->
-            {{ form.as_p }}
-            <!-- Renders form fields as paragraphs -->
-        </div>
-        <button type="submit" class="btn btn-primary mb-2">{% trans "Start the import and resizing" %}'</button>
-        <!-- btn is a Bootstrap class for buttons, btn-primary gives it a primary color -->
-    </form>
-
-    {# Dark form styles are now centralized in static/css/custom.css #}
-
+<form method="post" class="form-card">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="app-button app-button--primary">Importer et redimensionner</button>
+</form>
 {% endblock %}
+

@@ -1,34 +1,29 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
+{% block title %}Recherche · Ma photothèque{% endblock %}
+{% block breadcrumbs %}<ol class="app-breadcrumbs"><li><a href="{% url 'home' %}">Collections</a></li><li aria-current="page">Recherche</li></ol>{% endblock %}
 
 {% block content %}
-{% load custom_filters %}
+<section class="page-heading">
+  <div class="page-heading__copy">
+    <p class="eyebrow">Explorer la photothèque</p>
+    <h1 class="page-title page-title--compact">Que recherchez-vous&nbsp;?</h1>
+    <p class="page-subtitle">Une personne, un lieu, une année ou un souvenir décrit dans vos photos.</p>
+  </div>
+</section>
 
-   <nav class="navbar navbar-expand-lg navbar-dark">
-       <!-- Bootstrap class for a dark-themed navigation bar that expands on larger screens -->
-       <a class="navbar-brand" href="{% url 'home' %}">{% trans 'Home' %}</a>
-       <!-- Bootstrap class for branding, typically used for the site's logo or title -->
-       <a class="navbar-brand" href="#" onclick="goBack(); return false;">{% trans 'Previous' %}</a>
-   </nav>
-
-    <form method="post" class="form-inline">
-        <!-- Bootstrap class for inline form layout -->
-        {% csrf_token %}
-        {% trans "Please enter a search term:" %}
-        <div class="form-group mb-2">
-            {{ form.search_term }}
-        </div>
-        <div class="form-check mb-2">
-            {{ form.only_subjects }}
-            <label class="form-check-label" for="{{ form.only_subjects.id_for_label }}">
-                {{ form.only_subjects.label }}
-            </label>
-        </div>
-        <button type="submit" class="btn btn-primary mb-2">{% trans "Search" %}</button>
-        <!-- btn is a Bootstrap class for buttons, btn-primary gives it a primary color -->
-    </form>
-
-    {# Dark form styles are now centralized in static/css/custom.css #}
-
+<form method="post" class="form-card">
+  {% csrf_token %}
+  <div class="mb-4">
+    <label for="{{ form.search_term.id_for_label }}">Terme de recherche</label>
+    {{ form.search_term }}
+  </div>
+  <div class="form-check mb-4">
+    {{ form.only_subjects }}
+    <label class="form-check-label" for="{{ form.only_subjects.id_for_label }}">Limiter la recherche aux titres des séries</label>
+  </div>
+  <button type="submit" class="app-button app-button--primary">Lancer la recherche</button>
+</form>
 {% endblock %}
+

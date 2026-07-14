@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.utils.translation import gettext as _
 import os
 import re
-from django.db.models import Q, Count, Case, When, Value, IntegerField
+from django.db.models import Q, Count, Min, Case, When, Value, IntegerField
 from django.conf import settings
 from unidecode import unidecode
 from rapidfuzz import fuzz
@@ -97,6 +97,7 @@ def _photo_to_subject_dict(photo):
     subject = {
         'checksum': photo.checksum,
         'sujet': photo.sujet,
+        'cover_id': photo.pkey,
         'premier_niveau': photo.premier_niveau,
         'second_niveau': photo.second_niveau,
         'troisieme_niveau': photo.troisieme_niveau or '',
@@ -401,7 +402,14 @@ def home(request):
         PhotoModel.objects
         .filter(Q(premier_niveau__isnull=False) & ~Q(premier_niveau=''))
         .values('premier_niveau')
-        .annotate(count=Count('pkey'))
+        .annotate(
+            count=Count('pkey'),
+            series_count=Count('checksum', distinct=True),
+            cover_id=Min(
+                'pkey',
+                filter=Q(agrandi=True, nom_fichier_jpeg__isnull=False),
+            ),
+        )
         .order_by('premier_niveau')
     )
     paginator = Paginator(photo_niveaux, 100)  # Show 100 items per page
@@ -426,14 +434,27 @@ def DisplaySecondLevel(request, firstLevel):
     direct_series = (
         base_qs.filter(no_third)
         .values('checksum', 'sujet')
-        .annotate(count=Count('pkey'))
+        .annotate(
+            count=Count('pkey'),
+            cover_id=Min(
+                'pkey',
+                filter=Q(agrandi=True, nom_fichier_jpeg__isnull=False),
+            ),
+        )
         .order_by('sujet')
     )
 
     second_folders = (
         base_qs.exclude(no_third)
         .values('second_niveau')
-        .annotate(count=Count('pkey'))
+        .annotate(
+            count=Count('pkey'),
+            series_count=Count('checksum', distinct=True),
+            cover_id=Min(
+                'pkey',
+                filter=Q(agrandi=True, nom_fichier_jpeg__isnull=False),
+            ),
+        )
         .order_by('second_niveau')
     )
 
@@ -460,7 +481,13 @@ def DisplayThirdLevel(request, firstLevel, secondLevel):
         )
         .exclude(Q(troisieme_niveau__isnull=True) | Q(troisieme_niveau=''))
         .values('checksum', 'sujet')
-        .annotate(count=Count('pkey'))
+        .annotate(
+            count=Count('pkey'),
+            cover_id=Min(
+                'pkey',
+                filter=Q(agrandi=True, nom_fichier_jpeg__isnull=False),
+            ),
+        )
         .order_by('sujet')
     )
 
@@ -543,10 +570,23 @@ def photoDetail(request, photo_id):
     else:
         form = PhotoSubjectForm(instance=photo)
 
+    series_qs = PhotoModel.objects.filter(
+        checksum=photo.checksum,
+        agrandi=True,
+    ).order_by('pkey')
+    previous_photo = series_qs.filter(pkey__lt=photo.pkey).order_by('-pkey').first()
+    next_photo = series_qs.filter(pkey__gt=photo.pkey).order_by('pkey').first()
+    series_count = series_qs.count()
+    series_position = series_qs.filter(pkey__lte=photo.pkey).count()
+
     return render(request, 'photo_detail.html', {
         'photoRec': photo,
         'linktogooglemaps': GetLinkToGoogleMaps(photo),
-        'subject_form': form
+        'subject_form': form,
+        'previous_photo': previous_photo,
+        'next_photo': next_photo,
+        'series_count': series_count,
+        'series_position': series_position,
     })
 
 
@@ -606,6 +646,7 @@ def contactsSheet(request, desiredsubjectMD5):
             'photoRecs': allphotos,
             'desiredsubjectMD5': desiredsubjectMD5,
             'worst_photos': worst_photos,
+            'total_count': total_count,
         }
     )
 
