@@ -161,6 +161,12 @@ a:hover {
     border-color: #138496;
     color: #ffffff;
 }
+
+.pagination {
+    display: flex;
+    padding-left: 0;
+    list-style: none;
+}
 /* Miniatures en lazy loading - on réserve l'espace pour éviter les sauts de scroll */
 img.lazyload {
     aspect-ratio: 4 / 3;           /* ← le hint important */

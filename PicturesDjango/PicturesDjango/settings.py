@@ -102,7 +102,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'PicturesDjango.middleware.ShortHtmlCacheMiddleware',
 ]
+
+# Browser cache TTL for HTML pages (seconds). 0 disables the header.
+HTML_PAGE_CACHE_SECONDS = 30
 
 # Django Debug Toolbar middleware (must be early, only in DEBUG)
 if DEBUG and 'debug_toolbar' in INSTALLED_APPS:
