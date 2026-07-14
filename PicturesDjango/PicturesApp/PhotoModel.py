@@ -139,9 +139,12 @@ class PhotoModel(models.Model):
 
     class Meta:
         indexes = [
-            #Index with more than 1 field
             models.Index(fields=['premier_niveau', 'second_niveau', 'troisieme_niveau']),
             models.Index(fields=['sujet_dias', 'commentaire']),
+            # Planches contact / galerie : filter(checksum=…, agrandi=True)
+            models.Index(fields=['checksum', 'agrandi']),
+            # Recherche et navigation : filter(agrandi=True, premier_niveau__isnull=False)
+            models.Index(fields=['agrandi', 'premier_niveau']),
         ]
 
     def __str__(self):
