@@ -590,6 +590,12 @@ msgstr "Filtrer les séries"
 msgid "No series are available in this folder."
 msgstr "Aucune série n'est disponible dans ce dossier."
 
+msgid "Share"
+msgstr "Partager"
+
+msgid "Share photo"
+msgstr "Partager la photo"
+
 #~ msgid "Home"
 #~ msgstr "Accueil"
 

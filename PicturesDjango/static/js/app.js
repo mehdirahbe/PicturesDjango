@@ -142,6 +142,137 @@
     });
   }
 
+  function initPhotoShare() {
+    // HTTP : le lien <a target="_blank"> ouvre la photo sans JS.
+    // HTTPS : prefetch + share() synchrone au clic (Android invalide le geste après fetch).
+    if (!window.isSecureContext || typeof navigator.share !== "function") {
+      return;
+    }
+
+    var shareCache = new WeakMap();
+
+    function getCacheEntry(link) {
+      var entry = shareCache.get(link);
+      if (!entry) {
+        entry = {};
+        shareCache.set(link, entry);
+      }
+      return entry;
+    }
+
+    function buildFile(link, blob) {
+      var filename = link.getAttribute("data-share-filename") || "photo.jpg";
+      return new File([blob], filename, { type: blob.type || "image/jpeg" });
+    }
+
+    function prefetchShareAsset(link) {
+      var entry = getCacheEntry(link);
+      if (entry.file || entry.loading) {
+        return entry.promise;
+      }
+
+      entry.loading = true;
+      entry.promise = fetch(link.href, { credentials: "same-origin" })
+        .then(function (response) {
+          if (!response.ok) throw new Error("Image unavailable");
+          return response.blob();
+        })
+        .then(function (blob) {
+          entry.blob = blob;
+          entry.file = buildFile(link, blob);
+          return entry;
+        })
+        .catch(function () {
+          return entry;
+        })
+        .finally(function () {
+          entry.loading = false;
+        });
+      return entry.promise;
+    }
+
+    function sharePhoto(link) {
+      var url = link.href;
+      var title = link.getAttribute("data-share-title") || "";
+      var entry = getCacheEntry(link);
+
+      link.setAttribute("aria-busy", "true");
+
+      function finish() {
+        link.removeAttribute("aria-busy");
+      }
+
+      function fallback() {
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+
+      if (entry.file) {
+        navigator.share({ files: [entry.file], title: title })
+          .catch(function (error) {
+            if (error && error.name === "AbortError") return;
+            return navigator.share({ title: title, url: url }).catch(fallback);
+          })
+          .finally(finish);
+        return;
+      }
+
+      navigator.share({ title: title, url: url })
+        .catch(function (error) {
+          if (error && error.name === "AbortError") return;
+          fallback();
+        })
+        .finally(finish);
+    }
+
+    function prefetchFromVisibleImage(link) {
+      var root = link.closest("[data-gallery], .photo-detail-layout");
+      var image = root ? root.querySelector(".viewer-image, .detail-media img") : null;
+      if (!image || !image.complete || !image.naturalWidth) return;
+
+      var entry = getCacheEntry(link);
+      if (entry.file || entry.loading) return;
+
+      entry.loading = true;
+      entry.promise = fetch(image.currentSrc || image.src, { credentials: "same-origin" })
+        .then(function (response) {
+          if (!response.ok) throw new Error("Image unavailable");
+          return response.blob();
+        })
+        .then(function (blob) {
+          entry.blob = blob;
+          entry.file = buildFile(link, blob);
+          return entry;
+        })
+        .catch(function () {
+          return prefetchShareAsset(link);
+        })
+        .finally(function () {
+          entry.loading = false;
+        });
+    }
+
+    document.querySelectorAll("a[data-share-photo]").forEach(function (link) {
+      prefetchShareAsset(link);
+
+      var root = link.closest("[data-gallery], .photo-detail-layout");
+      var image = root ? root.querySelector(".viewer-image, .detail-media img") : null;
+      if (image) {
+        if (image.complete) prefetchFromVisibleImage(link);
+        else image.addEventListener("load", function () { prefetchFromVisibleImage(link); }, { once: true });
+      }
+
+      link.addEventListener("pointerdown", function () {
+        prefetchShareAsset(link);
+        prefetchFromVisibleImage(link);
+      }, { passive: true });
+
+      link.addEventListener("click", function (event) {
+        event.preventDefault();
+        sharePhoto(link);
+      });
+    });
+  }
+
   function initImageLoading() {
     document.querySelectorAll("img").forEach(function (image) {
       if (image.complete) image.classList.add("is-loaded");
@@ -158,6 +289,7 @@
     initDensityControls();
     initGallery();
     initEditPanels();
+    initPhotoShare();
     initImageLoading();
   });
 })();

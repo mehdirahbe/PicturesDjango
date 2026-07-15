@@ -364,7 +364,9 @@ img {
   gap: 10px;
 }
 
-.app-button {
+.app-button,
+a.app-button,
+button.app-button {
   min-height: 42px;
   padding: 0 16px;
   display: inline-flex;
@@ -377,7 +379,22 @@ img {
   color: var(--app-text);
   font-size: 0.88rem;
   font-weight: 680;
+  font-family: inherit;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
   transition: transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+a.app-button:hover {
+  color: var(--app-text);
+  text-decoration: none;
+}
+
+button.app-button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
 }
 
 .app-button:hover {
@@ -1001,7 +1018,9 @@ select:focus {
   gap: 8px;
 }
 
-.viewer-tool {
+.viewer-tool,
+a.viewer-tool,
+button.viewer-tool {
   min-height: 36px;
   padding: 0 11px;
   display: inline-flex;
@@ -1012,8 +1031,22 @@ select:focus {
   background: rgba(20, 27, 36, 0.68);
   color: #dce3ec;
   font-size: 0.78rem;
+  font-family: inherit;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+}
+
+a.viewer-tool:hover {
+  color: #dce3ec;
+  text-decoration: none;
+}
+
+button.viewer-tool:disabled {
+  opacity: 0.55;
+  cursor: wait;
 }
 
 .viewer-tool:hover {
@@ -1072,6 +1105,29 @@ select:focus {
 /* Metadata */
 .metadata-section {
   margin-top: 24px;
+}
+
+.metadata-section--actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.metadata-section--actions .app-button {
+  align-self: center;
+}
+
+/* Web Share API: mobile layout only (matches viewer breakpoint). */
+a.share-photo-button {
+  display: none !important;
+}
+
+@media (max-width: 991.98px) {
+  a.share-photo-button.app-button,
+  a.share-photo-button.viewer-tool {
+    display: inline-flex !important;
+  }
 }
 
 .metadata-section__title {

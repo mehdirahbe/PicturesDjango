@@ -1,0 +1,19 @@
+{% load i18n custom_filters %}
+{% if photo.nom_fichier_jpeg %}
+<a class="share-photo-button {{ button_class|default:'app-button' }}"
+   href="{% url 'photo_Jpeg' photo.pkey 'big' as share_path %}{{ request.scheme }}://{{ request.get_host }}{{ share_path }}"
+   target="_blank"
+   rel="noopener noreferrer"
+   data-share-photo
+   data-share-title="{{ photo.sujet|proper_case }}"
+   data-share-filename="photo-{{ photo.pkey }}.jpg"
+   aria-label="{% trans 'Share photo' %}">
+  {% if tool_style %}
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"></path><path d="M12 3v12"></path><path d="m7 8 5-5 5 5"></path></svg>
+  <span>{% trans 'Share' %}</span>
+  {% else %}
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"></path><path d="M12 3v12"></path><path d="m7 8 5-5 5 5"></path></svg>
+  <span>{% trans 'Share' %}</span>
+  {% endif %}
+</a>
+{% endif %}

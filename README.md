@@ -106,8 +106,14 @@ Exemple minimal :
 IMAGES_PATH=/home/mehdi/Images
 ```
 
-To run in local in release:
-gunicorn PicturesDjango.wsgi:application
+To run in local in release (script habituel, depuis la racine du dépôt) :
+```bash
+./start_django.sh
+```
+Écoute sur `0.0.0.0:8000` (localhost + Tailscale/LAN). Équivalent manuel :
+```bash
+gunicorn PicturesDjango.wsgi:application --bind 0.0.0.0:8000 --reload --timeout 600 --workers 1
+```
 
 
 For internationalisation:
@@ -119,3 +125,13 @@ sudo apt install gettext
 
 2) Each time translations are added in po file(s), you have to compile them:
 python manage.py compilemessages
+
+To use from internet, use tailscape tunnel.
+To enable https:
+run once on the laptop:
+sudo tailscale serve --bg --https=443 http://127.0.0.1:8000 
+
+It give the url to use ptovided your are logged with same account.
+In my case, https://mehdi-thinkbook-13s-g2-itl.taila97662.ts.net/ 
+
+Do NOT activate Funnel or all internet will have access, need strong authentification on the website, which is not the case here.

@@ -228,10 +228,12 @@ def _search_cache_version():
 
 def _search_cache_key(normalized, apply_fuzzy, fuzzy_threshold, search_fields, result_mode):
     fields_key = ','.join(search_fields)
-    return (
-        f"search:{_search_cache_version()}:{normalized}:{apply_fuzzy}:"
-        f"{fuzzy_threshold}:{fields_key}:{result_mode}"
+    payload = (
+        f"{_search_cache_version()}|{normalized}|{int(apply_fuzzy)}|"
+        f"{fuzzy_threshold}|{fields_key}|{result_mode}"
     )
+    digest = hashlib.sha256(payload.encode('utf-8')).hexdigest()
+    return f"search:{digest}"
 
 
 def _empty_search_result(result_mode):

@@ -65,7 +65,15 @@ logger.info(f"DEBUG after evaluation = {DEBUG} | os.environ.get('DEBUG') = {os.e
 # pendant les tests tout en les gardant actifs en utilisation réelle.
 TESTING = 'test' in sys.argv
 
-ALLOWED_HOSTS = ["127.0.0.1"]
+#Mehdi: the second IP is the Tailscape vpn one (https://login.tailscale.com/), it allows to connect to the laptop at home on wifi from everywhere
+#and the third the https tailscape one
+ALLOWED_HOSTS = ["127.0.0.1", "100.70.189.84", "mehdi-thinkbook-13s-g2-itl.taila97662.ts.net"]
+
+# HTTPS via tailscale serve (TLS terminé en amont, Django reçoit du HTTP local).
+CSRF_TRUSTED_ORIGINS = [
+    "https://mehdi-thinkbook-13s-g2-itl.taila97662.ts.net",
+]
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Application definition
 

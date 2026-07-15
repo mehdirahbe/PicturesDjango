@@ -34,6 +34,7 @@
       <div class="viewer-tools">
         <a class="viewer-tool" href="{% url 'ContactsSheetBySearch' search_term %}"><span>{% trans 'Contact sheet' %}</span></a>
         <a class="viewer-tool" href="{% url 'photoDetail' photo.pkey %}"><span>{% trans 'Details' %}</span></a>
+        {% include 'includes/_share_photo_button.html' with photo=photo button_class='viewer-tool' tool_style=True %}
         <button class="viewer-tool" type="button" data-panel-toggle aria-controls="viewerDetails" aria-expanded="true"><span>{% trans 'Information' %}</span></button>
       </div>
     </div>

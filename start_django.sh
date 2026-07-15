@@ -11,8 +11,12 @@ source .venv/bin/activate
 
 cd PicturesDjango
 
-# Lancer le serveur de développement
-# 1 worker: SQLite does not handle concurrent writes well across processes.
+# Écoute sur toutes les interfaces (0.0.0.0:8000) :
+# - local : http://127.0.0.1:8000
+# - Tailscale / LAN : http://100.x.x.x:8000
+# HTTPS smartphone : tailscale serve → http://127.0.0.1:8000 (une fois : voir README)
+# 1 worker : SQLite ne gère pas bien les écritures concurrentes entre processus.
+echo "Gunicorn → 0.0.0.0:8000 (Ctrl+C pour arrêter)"
 gunicorn PicturesDjango.wsgi:application --bind 0.0.0.0:8000 --reload --timeout 600 --workers 1
 
 

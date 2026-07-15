@@ -37,7 +37,8 @@
       {% include 'includes/_technical_exif_info.html' %}
     {% endwith %}
 
-    <div class="metadata-section">
+    <div class="metadata-section metadata-section--actions">
+      {% include 'includes/_share_photo_button.html' with photo=photoRec %}
       <button class="app-button" type="button" data-edit-toggle="#subjectForm" aria-controls="subjectForm" aria-expanded="false">{% trans 'Edit subject' %}</button>
       <form class="edit-panel" id="subjectForm" method="post" hidden>
         {% csrf_token %}
