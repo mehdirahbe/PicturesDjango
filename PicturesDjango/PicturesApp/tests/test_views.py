@@ -519,7 +519,7 @@ class ImageRateLimitTest(PicturesAppTestCase):
             (target_dir / self.photo.nom_fichier_jpeg).write_bytes(b"fake-jpeg")
 
     @override_settings(IMAGE_RATE_LIMIT_BIG_VIEW=5, IMAGE_RATE_LIMIT_WINDOW=60)
-    def test_big_and_view_share_rate_limit_bucket(self):
+    def test_big_is_rate_limited_view_is_not(self):
         big_url = reverse('photo_Jpeg', args=[self.photo.pkey, 'big'])
         view_url = reverse('photo_Jpeg', args=[self.photo.pkey, 'view'])
 
@@ -527,7 +527,9 @@ class ImageRateLimitTest(PicturesAppTestCase):
             self.assertEqual(self.client.get(big_url).status_code, 200)
 
         self.assertEqual(self.client.get(big_url).status_code, 429)
-        self.assertEqual(self.client.get(view_url).status_code, 429)
+
+        for _ in range(12):
+            self.assertEqual(self.client.get(view_url).status_code, 200)
 
     @override_settings(IMAGE_RATE_LIMIT_BIG_VIEW=5, IMAGE_RATE_LIMIT_WINDOW=60)
     def test_contactsheet_is_not_rate_limited(self):

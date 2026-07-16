@@ -117,7 +117,8 @@ MIDDLEWARE = [
 # Browser cache TTL for HTML pages (seconds). 0 disables the header.
 HTML_PAGE_CACHE_SECONDS = 30
 
-# Rate limit for large previews (big/view) per browser session. 0 disables.
+# Rate limit for gallery previews (big only) per browser session. 0 disables.
+# view thumbnails (series cards, folders) are not limited.
 IMAGE_RATE_LIMIT_BIG_VIEW = 20
 IMAGE_RATE_LIMIT_WINDOW = 5
 

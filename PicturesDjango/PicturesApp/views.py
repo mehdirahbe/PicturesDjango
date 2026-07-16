@@ -25,8 +25,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 SEARCH_CACHE_VERSION_KEY = 'search:cache_version'
-IMAGE_RATE_LIMIT_CACHE_PREFIX = 'img_rl:big_view'
-_RATE_LIMITED_IMAGE_SIZES = frozenset({'big', 'view'})
+IMAGE_RATE_LIMIT_CACHE_PREFIX = 'img_rl:big'
+_RATE_LIMITED_IMAGE_SIZES = frozenset({'big'})
 
 # Champs interrogés en mode "photos" (recherche classique → planche contact).
 PHOTO_SEARCH_FIELDS = ('sujet_dias', 'commentaire', 'lieu', 'date', 'sujet')
@@ -723,7 +723,7 @@ def _image_rate_limit_cache_key(request):
 
 
 def _check_big_view_rate_limit(request, size):
-    """Session-based quota for big/view JPEGs. contactsheet is exempt."""
+    """Session-based quota for big JPEGs (gallery viewer). view/contactsheet are exempt."""
     if size not in _RATE_LIMITED_IMAGE_SIZES:
         return None
 
