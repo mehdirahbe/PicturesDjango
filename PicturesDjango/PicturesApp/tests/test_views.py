@@ -413,6 +413,72 @@ class PhotoDetail404Test(PicturesAppTestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class ReadOnlyRemoteTest(PicturesAppTestCase):
+    REMOTE_HOST = 'mehdi-thinkbook-13s-g2-itl.taila97662.ts.net'
+    LOCAL_HOST = '127.0.0.1'
+
+    def setUp(self):
+        super().setUp()
+        activate('en')
+        self.photo = PhotoModel.objects.create(
+            sujet="Read only test",
+            date="2025",
+            sujet_dias="",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="test",
+            second_niveau="readonly",
+            nom_fichier_jpeg="photo.jpg",
+            checksum="readonly1234567890abcdef1234",
+        )
+
+    def test_search_post_allowed_on_remote_host(self):
+        response = self.client.post(
+            reverse('search_form'),
+            {'search_term': 'Rome'},
+            HTTP_HOST=self.REMOTE_HOST,
+        )
+        self.assertRedirects(response, reverse('ContactsSheetBySearch', args=['Rome']))
+
+    def test_subject_edit_blocked_on_remote_host(self):
+        response = self.client.post(
+            reverse('photoDetail', args=[self.photo.pkey]),
+            {'sujet_dias': 'Changed'},
+            HTTP_HOST=self.REMOTE_HOST,
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_subject_edit_allowed_on_local_host(self):
+        response = self.client.post(
+            reverse('photoDetail', args=[self.photo.pkey]),
+            {'sujet_dias': 'Changed locally'},
+            HTTP_HOST=self.LOCAL_HOST,
+        )
+        self.assertEqual(response.status_code, 302)
+        self.photo.refresh_from_db()
+        self.assertEqual(self.photo.sujet_dias, 'Changed locally')
+
+    def test_remote_photo_detail_hides_edit_controls(self):
+        response = self.client.get(
+            reverse('photoDetail', args=[self.photo.pkey]),
+            HTTP_HOST=self.REMOTE_HOST,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'Edit subject')
+        self.assertContains(response, 'Share')
+
+    def test_local_photo_detail_shows_edit_controls(self):
+        response = self.client.get(
+            reverse('photoDetail', args=[self.photo.pkey]),
+            HTTP_HOST=self.LOCAL_HOST,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Edit subject')
+
+
 class ImageRateLimitTest(PicturesAppTestCase):
 
     def setUp(self):

@@ -599,6 +599,15 @@ msgstr "Partager la photo"
 msgid "Too many image requests. Please slow down."
 msgstr "Trop de requêtes d'images. Veuillez ralentir."
 
+msgid "Write operations are only allowed from the local server."
+msgstr "Les modifications sont autorisées uniquement depuis le serveur local."
+
+msgid "Read-only mode"
+msgstr "Mode lecture seule"
+
+msgid "Editing is only available on the local server."
+msgstr "Les modifications sont disponibles uniquement sur le serveur local."
+
 #~ msgid "Home"
 #~ msgstr "Accueil"
 

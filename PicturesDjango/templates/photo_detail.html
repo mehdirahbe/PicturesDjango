@@ -39,12 +39,14 @@
 
     <div class="metadata-section metadata-section--actions">
       {% include 'includes/_share_photo_button.html' with photo=photoRec %}
+      {% if allow_writes %}
       <button class="app-button" type="button" data-edit-toggle="#subjectForm" aria-controls="subjectForm" aria-expanded="false">{% trans 'Edit subject' %}</button>
       <form class="edit-panel" id="subjectForm" method="post" hidden>
         {% csrf_token %}
         {{ subject_form.as_p }}
         <button type="submit" class="app-button app-button--primary">{% trans 'Save changes' %}</button>
       </form>
+      {% endif %}
     </div>
   </aside>
 </div>

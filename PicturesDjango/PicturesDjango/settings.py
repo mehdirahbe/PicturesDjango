@@ -107,6 +107,7 @@ MIDDLEWARE = [
     'django.middleware.locale.LocaleMiddleware',#LocaleMiddleware is responsible for determining the user's language preference based on various factors like the URL prefix, cookies, or the Accept-Language header from the browser
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'PicturesDjango.middleware.ReadOnlyRemoteMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -119,6 +120,10 @@ HTML_PAGE_CACHE_SECONDS = 30
 # Rate limit for large previews (big/view) per browser session. 0 disables.
 IMAGE_RATE_LIMIT_BIG_VIEW = 20
 IMAGE_RATE_LIMIT_WINDOW = 5
+
+# Read-only mode for remote access (HTTPS / Tailscale). Writable only on these hosts.
+WRITABLE_HOSTS = ["127.0.0.1", "localhost"]
+READONLY_SAFE_POST_URL_NAMES = ["search_form"]
 
 # Django Debug Toolbar middleware (must be early, only in DEBUG)
 if DEBUG and 'debug_toolbar' in INSTALLED_APPS:
@@ -152,6 +157,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'PicturesDjango.context_processors.writable_access',
             ],
         },
     },

@@ -12,6 +12,7 @@ import re
 from django.db.models import Q, Count, Min, Case, When, Value, IntegerField
 from django.conf import settings
 from django.urls import reverse
+from PicturesDjango.writable_access import reject_readonly_post
 from unidecode import unidecode
 from rapidfuzz import fuzz
 from .forms import SearchForm, InsertNewPicturesForm, PhotoSubjectForm
@@ -564,6 +565,9 @@ def search_form(request):
     - HttpResponse: Redirects to search results or renders the form.
     """
     if request.method == 'POST':
+        denied = reject_readonly_post(request)
+        if denied:
+            return denied
         form = SearchForm(request.POST)
         if form.is_valid():
             search_term = form.cleaned_data['search_term']
@@ -587,6 +591,9 @@ def home(request):
     Also handles the "Copy to smartphone" action via POST.
     """
     if request.method == 'POST' and request.POST.get('action') == 'copy_to_smartphone':
+        denied = reject_readonly_post(request)
+        if denied:
+            return denied
         try:
             call_command('copy_images_for_smartphone')
             messages.success(request, _("Smartphone folder prepared successfully."))
@@ -816,6 +823,9 @@ def photoDetail(request, photo_id):
         raise Http404("Photo not found")
 
     if request.method == 'POST':
+        denied = reject_readonly_post(request)
+        if denied:
+            return denied
         form = PhotoSubjectForm(request.POST, instance=photo)
         if form.is_valid():
             form.save()
@@ -869,6 +879,9 @@ def contactsSheet(request, desiredsubjectMD5):
     allphotos = viewable_qs.order_by('pkey')[:1000]
 
     if request.method == 'POST' and request.POST.get('action') == 'resize':
+        denied = reject_readonly_post(request)
+        if denied:
+            return denied
         photo = viewable_qs.order_by('pkey').first()
         if photo:
             parts = [photo.premier_niveau, photo.second_niveau]
@@ -886,6 +899,9 @@ def contactsSheet(request, desiredsubjectMD5):
         return redirect(request.path_info)
 
     if request.method == 'POST' and request.POST.get('action') == 'analyze_quality':
+        denied = reject_readonly_post(request)
+        if denied:
+            return denied
         try:
             call_command('AnalyzePhotoQuality', SubjectMD5=desiredsubjectMD5)
             messages.success(request, _("Exposure quality analysis completed for this series."))
@@ -1047,6 +1063,9 @@ def InsertNewPictures(request):
         if jpegsdirectory:
             initial['jpegsdirectory'] = jpegsdirectory
     if request.method == 'POST':
+        denied = reject_readonly_post(request)
+        if denied:
+            return denied
         form = InsertNewPicturesForm(request.POST)
         if form.is_valid():
             cleaned = form.cleaned_data

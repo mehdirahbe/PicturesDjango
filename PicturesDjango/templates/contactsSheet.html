@@ -32,6 +32,7 @@
       </button>
     </div>
 
+    {% if allow_writes %}
     <div class="dropdown">
       <button class="app-button" type="button" data-bs-toggle="dropdown" aria-expanded="false">{% trans 'Series tools' %} ···</button>
       <div class="dropdown-menu dropdown-menu-end app-tools-menu">
@@ -48,6 +49,7 @@
         </form>
       </div>
     </div>
+    {% endif %}
   </div>
 </div>
 

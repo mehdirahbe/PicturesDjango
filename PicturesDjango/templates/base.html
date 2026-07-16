@@ -49,6 +49,7 @@
                         <span>{% trans 'Tools' %}</span>
                     </button>
                     <div class="dropdown-menu dropdown-menu-end app-tools-menu">
+                        {% if allow_writes %}
                         <div class="dropdown-header">{% trans 'Library management' %}</div>
                         <a class="dropdown-item" href="{% url 'list_missing_scans' %}">
                             <span class="menu-icon" aria-hidden="true">＋</span>
@@ -62,6 +63,10 @@
                                 {% trans 'Prepare for smartphone' %}
                             </button>
                         </form>
+                        {% else %}
+                        <div class="dropdown-header">{% trans 'Read-only mode' %}</div>
+                        <span class="dropdown-item-text text-muted">{% trans 'Editing is only available on the local server.' %}</span>
+                        {% endif %}
                     </div>
                 </div>
             </nav>
