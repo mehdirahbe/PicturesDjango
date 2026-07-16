@@ -596,6 +596,9 @@ msgstr "Partager"
 msgid "Share photo"
 msgstr "Partager la photo"
 
+msgid "Too many image requests. Please slow down."
+msgstr "Trop de requêtes d'images. Veuillez ralentir."
+
 #~ msgid "Home"
 #~ msgstr "Accueil"
 

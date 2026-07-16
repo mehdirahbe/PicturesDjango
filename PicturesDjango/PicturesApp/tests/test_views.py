@@ -6,6 +6,9 @@ Stratégie :
 - On ne touche jamais aux vraies photos ni au vrai filesystem.
 - On utilise la classe de base `PicturesAppTestCase` qui configure automatiquement un IMAGES_PATH temporaire.
 """
+from pathlib import Path
+
+from django.test import override_settings
 from django.urls import reverse
 from django.utils.translation import activate
 
@@ -408,3 +411,47 @@ class PhotoDetail404Test(PicturesAppTestCase):
         # follow=True pour gérer d'éventuelles redirections i18n
         response = self.client.get(url, follow=True)
         self.assertEqual(response.status_code, 404)
+
+
+class ImageRateLimitTest(PicturesAppTestCase):
+
+    def setUp(self):
+        super().setUp()
+        activate('en')
+        self.photo = PhotoModel.objects.create(
+            sujet="Rate limit test",
+            date="2025",
+            sujet_dias="",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="test",
+            second_niveau="ratelimit",
+            nom_fichier_jpeg="thumb.jpg",
+            checksum="ratelimit1234567890abcdef1234",
+        )
+        base = Path(self.images_path) / self.photo.premier_niveau / self.photo.second_niveau
+        for size in ('big', 'view', 'contactsheet'):
+            target_dir = base / size
+            target_dir.mkdir(parents=True, exist_ok=True)
+            (target_dir / self.photo.nom_fichier_jpeg).write_bytes(b"fake-jpeg")
+
+    @override_settings(IMAGE_RATE_LIMIT_BIG_VIEW=5, IMAGE_RATE_LIMIT_WINDOW=60)
+    def test_big_and_view_share_rate_limit_bucket(self):
+        big_url = reverse('photo_Jpeg', args=[self.photo.pkey, 'big'])
+        view_url = reverse('photo_Jpeg', args=[self.photo.pkey, 'view'])
+
+        for _ in range(5):
+            self.assertEqual(self.client.get(big_url).status_code, 200)
+
+        self.assertEqual(self.client.get(big_url).status_code, 429)
+        self.assertEqual(self.client.get(view_url).status_code, 429)
+
+    @override_settings(IMAGE_RATE_LIMIT_BIG_VIEW=5, IMAGE_RATE_LIMIT_WINDOW=60)
+    def test_contactsheet_is_not_rate_limited(self):
+        url = reverse('photo_Jpeg', args=[self.photo.pkey, 'contactsheet'])
+
+        for _ in range(12):
+            self.assertEqual(self.client.get(url).status_code, 200)

@@ -24,6 +24,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 SEARCH_CACHE_VERSION_KEY = 'search:cache_version'
+IMAGE_RATE_LIMIT_CACHE_PREFIX = 'img_rl:big_view'
+_RATE_LIMITED_IMAGE_SIZES = frozenset({'big', 'view'})
 
 # Champs interrogés en mode "photos" (recherche classique → planche contact).
 PHOTO_SEARCH_FIELDS = ('sujet_dias', 'commentaire', 'lieu', 'date', 'sujet')
@@ -703,6 +705,53 @@ def DisplayThirdLevel(request, firstLevel, secondLevel):
     return render(request, 'thirdlevel.html', context)
 
 
+def _ensure_session_key(request):
+    if not request.session.session_key:
+        request.session.save()
+    return request.session.session_key
+
+
+def _image_rate_limit_cache_key(request):
+    return f"{IMAGE_RATE_LIMIT_CACHE_PREFIX}:{_ensure_session_key(request)}"
+
+
+def _check_big_view_rate_limit(request, size):
+    """Session-based quota for big/view JPEGs. contactsheet is exempt."""
+    if size not in _RATE_LIMITED_IMAGE_SIZES:
+        return None
+
+    limit = getattr(settings, 'IMAGE_RATE_LIMIT_BIG_VIEW', 0)
+    window = getattr(settings, 'IMAGE_RATE_LIMIT_WINDOW', 60)
+    if limit <= 0:
+        return None
+
+    cache_key = _image_rate_limit_cache_key(request)
+    count = cache.get(cache_key)
+    if count is None:
+        cache.set(cache_key, 1, window)
+        return None
+    if count >= limit:
+        logger.warning(
+            "Image rate limit exceeded (session=%s, count=%s, limit=%s)",
+            request.session.session_key,
+            count,
+            limit,
+        )
+        response = HttpResponse(
+            _("Too many image requests. Please slow down."),
+            status=429,
+            content_type="text/plain",
+        )
+        response["Retry-After"] = str(window)
+        return response
+
+    try:
+        cache.incr(cache_key)
+    except ValueError:
+        cache.set(cache_key, 1, window)
+    return None
+
+
 def photo_Jpeg(request, photo_id, size):
     """
     Serve a JPEG image based on its ID and desired size.
@@ -721,6 +770,10 @@ def photo_Jpeg(request, photo_id, size):
     ALLOWED_SIZES = {'big', 'view', 'contactsheet'}
     if size not in ALLOWED_SIZES:
         raise Http404("Invalid size")
+
+    rate_limit_response = _check_big_view_rate_limit(request, size)
+    if rate_limit_response is not None:
+        return rate_limit_response
 
     try:
         photo = PhotoModel.objects.get(pkey=photo_id)

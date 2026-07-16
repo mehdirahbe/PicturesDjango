@@ -116,6 +116,10 @@ MIDDLEWARE = [
 # Browser cache TTL for HTML pages (seconds). 0 disables the header.
 HTML_PAGE_CACHE_SECONDS = 30
 
+# Rate limit for large previews (big/view) per browser session. 0 disables.
+IMAGE_RATE_LIMIT_BIG_VIEW = 20
+IMAGE_RATE_LIMIT_WINDOW = 5
+
 # Django Debug Toolbar middleware (must be early, only in DEBUG)
 if DEBUG and 'debug_toolbar' in INSTALLED_APPS:
     MIDDLEWARE.insert(1, 'debug_toolbar.middleware.DebugToolbarMiddleware')
