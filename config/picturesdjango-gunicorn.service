@@ -9,7 +9,7 @@ User=mehdi
 Group=mehdi
 WorkingDirectory=/home/mehdi/PycharmProjects/PicturesDjango/PicturesDjango
 EnvironmentFile=-/home/mehdi/PycharmProjects/PicturesDjango/PicturesDjango/.env
-ExecStart=/home/mehdi/PycharmProjects/PicturesDjango/.venv/bin/gunicorn PicturesDjango.wsgi:application --bind 0.0.0.0:8000 --reload --timeout 600 --workers 1
+ExecStart=/home/mehdi/PycharmProjects/PicturesDjango/.venv/bin/gunicorn PicturesDjango.wsgi:application --bind 127.0.0.1:8000 --reload --timeout 600 --workers 1
 # Démarre au boot, mais ne redémarre pas si tué (runserver en dev).
 Restart=no
 

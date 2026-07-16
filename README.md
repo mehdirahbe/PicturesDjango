@@ -138,9 +138,10 @@ To run in local in release (script habituel, depuis la racine du dépôt) :
 ```bash
 ./start_django.sh
 ```
-Écoute sur `0.0.0.0:8000` (localhost + Tailscale/LAN). Équivalent manuel :
+Écoute sur `127.0.0.1:8000` uniquement (pas d'accès direct LAN/Tailscale sur le port 8000).
+Accès smartphone : Tailscale Serve en HTTPS (voir plus bas). Équivalent manuel :
 ```bash
-gunicorn PicturesDjango.wsgi:application --bind 0.0.0.0:8000 --reload --timeout 600 --workers 1
+gunicorn PicturesDjango.wsgi:application --bind 127.0.0.1:8000 --reload --timeout 600 --workers 1
 ```
 
 
