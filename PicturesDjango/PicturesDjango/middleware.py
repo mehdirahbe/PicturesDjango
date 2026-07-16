@@ -4,7 +4,7 @@ from PicturesDjango.writable_access import (
     is_readonly_safe_post,
     is_writable_request,
     readonly_post_forbidden_response,
-    reject_readonly_admin,
+    reject_readonly_remote_access,
 )
 
 _MUTATING_METHODS = frozenset({'POST', 'PUT', 'PATCH', 'DELETE'})
@@ -17,7 +17,7 @@ class ReadOnlyRemoteMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        denied = reject_readonly_admin(request)
+        denied = reject_readonly_remote_access(request)
         if denied is not None:
             return denied
 

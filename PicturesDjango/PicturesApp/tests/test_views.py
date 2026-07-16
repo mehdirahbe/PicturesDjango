@@ -492,6 +492,28 @@ class ReadOnlyRemoteTest(PicturesAppTestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_import_tools_blocked_on_remote_host(self):
+        for url_name in ('insertnewpictures_form', 'list_missing_scans'):
+            response = self.client.get(
+                reverse(url_name),
+                HTTP_HOST=self.REMOTE_HOST,
+            )
+            self.assertEqual(response.status_code, 404, url_name)
+
+    def test_import_tools_allowed_on_local_host(self):
+        response = self.client.get(
+            reverse('list_missing_scans'),
+            HTTP_HOST=self.LOCAL_HOST,
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_accounts_urls_removed(self):
+        response = self.client.get(
+            '/en/accounts/login/',
+            HTTP_HOST=self.LOCAL_HOST,
+        )
+        self.assertEqual(response.status_code, 404)
+
 
 class ImageRateLimitTest(PicturesAppTestCase):
 

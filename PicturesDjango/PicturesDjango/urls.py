@@ -36,7 +36,6 @@ urlpatterns = []
 urlpatterns += i18n_patterns(
     path('admin/', admin.site.urls),
     path('', include('PicturesApp.urls')),
-    path('accounts/', include('django.contrib.auth.urls')),
 )
 
 # Non-i18n URLs (debug toolbar, etc.)

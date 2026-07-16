@@ -30,15 +30,42 @@ def is_admin_request(request):
     return '/admin' in request.path_info
 
 
-def reject_readonly_admin(request):
-    if is_writable_request(request) or not is_admin_request(request):
+def _readonly_allowed_url_names():
+    return frozenset(getattr(settings, 'READONLY_ALLOWED_URL_NAMES', ()))
+
+
+def reject_readonly_remote_access(request):
+    """On remote hosts, allow only the read-only gallery url names (+ block /admin)."""
+    if is_writable_request(request):
         return None
+
+    if is_admin_request(request):
+        logger.warning(
+            "Blocked admin access on read-only host %s path=%s",
+            request.get_host(),
+            request.path,
+        )
+        return HttpResponseNotFound()
+
+    try:
+        match = resolve(request.path_info)
+    except Resolver404:
+        return None
+
+    if match.url_name in _readonly_allowed_url_names():
+        return None
+
     logger.warning(
-        "Blocked admin access on read-only host %s path=%s",
+        "Blocked non-whitelisted access on read-only host %s path=%s url_name=%s",
         request.get_host(),
         request.path,
+        match.url_name,
     )
     return HttpResponseNotFound()
+
+
+def reject_readonly_admin(request):
+    return reject_readonly_remote_access(request)
 
 
 def is_readonly_safe_post(request):

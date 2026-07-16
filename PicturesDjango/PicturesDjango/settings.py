@@ -125,6 +125,20 @@ IMAGE_RATE_LIMIT_WINDOW = 5
 # Read-only mode for remote access (HTTPS / Tailscale). Writable only on these hosts.
 WRITABLE_HOSTS = ["127.0.0.1", "localhost"]
 READONLY_SAFE_POST_URL_NAMES = ["search_form"]
+# Remote hosts may only resolve these url names (gallery read-only surface).
+READONLY_ALLOWED_URL_NAMES = [
+    "home",
+    "DisplaySecondLevel",
+    "DisplayThirdLevel",
+    "photo_Jpeg",
+    "photoDetail",
+    "ContactsSheet",
+    "photo_gallery",
+    "ContactsSheetBySearch",
+    "subjectsBySearch",
+    "photo_galleryBySearch",
+    "search_form",
+]
 
 # Django Debug Toolbar middleware (must be early, only in DEBUG)
 if DEBUG and 'debug_toolbar' in INSTALLED_APPS:
