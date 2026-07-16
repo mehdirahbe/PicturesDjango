@@ -478,6 +478,20 @@ class ReadOnlyRemoteTest(PicturesAppTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Edit subject')
 
+    def test_admin_login_blocked_on_remote_host(self):
+        response = self.client.get(
+            '/en/admin/login/',
+            HTTP_HOST=self.REMOTE_HOST,
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_admin_login_allowed_on_local_host(self):
+        response = self.client.get(
+            '/en/admin/login/',
+            HTTP_HOST=self.LOCAL_HOST,
+        )
+        self.assertEqual(response.status_code, 200)
+
 
 class ImageRateLimitTest(PicturesAppTestCase):
 

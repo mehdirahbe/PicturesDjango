@@ -1,7 +1,7 @@
 import logging
 
 from django.conf import settings
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotFound
 from django.urls import Resolver404, resolve
 from django.utils.translation import gettext as _
 
@@ -24,6 +24,21 @@ def request_host(request):
 
 def is_writable_request(request):
     return request_host(request) in _writable_hosts()
+
+
+def is_admin_request(request):
+    return '/admin' in request.path_info
+
+
+def reject_readonly_admin(request):
+    if is_writable_request(request) or not is_admin_request(request):
+        return None
+    logger.warning(
+        "Blocked admin access on read-only host %s path=%s",
+        request.get_host(),
+        request.path,
+    )
+    return HttpResponseNotFound()
 
 
 def is_readonly_safe_post(request):

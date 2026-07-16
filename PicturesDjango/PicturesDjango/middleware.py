@@ -1,6 +1,11 @@
 from django.conf import settings
 
-from PicturesDjango.writable_access import is_readonly_safe_post, is_writable_request, readonly_post_forbidden_response
+from PicturesDjango.writable_access import (
+    is_readonly_safe_post,
+    is_writable_request,
+    readonly_post_forbidden_response,
+    reject_readonly_admin,
+)
 
 _MUTATING_METHODS = frozenset({'POST', 'PUT', 'PATCH', 'DELETE'})
 
@@ -12,6 +17,10 @@ class ReadOnlyRemoteMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        denied = reject_readonly_admin(request)
+        if denied is not None:
+            return denied
+
         if (
             request.method in _MUTATING_METHODS
             and not is_writable_request(request)
