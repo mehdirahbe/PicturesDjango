@@ -416,6 +416,7 @@ class PhotoDetail404Test(PicturesAppTestCase):
 class ReadOnlyRemoteTest(PicturesAppTestCase):
     REMOTE_HOST = 'mehdi-thinkbook-13s-g2-itl.taila97662.ts.net'
     LOCAL_HOST = '127.0.0.1'
+    LOCAL_ONLY_URL_NAMES = ('insertnewpictures_form', 'list_missing_scans')
 
     def setUp(self):
         super().setUp()
@@ -423,7 +424,7 @@ class ReadOnlyRemoteTest(PicturesAppTestCase):
         self.photo = PhotoModel.objects.create(
             sujet="Read only test",
             date="2025",
-            sujet_dias="",
+            sujet_dias="readonly series",
             commentaire="",
             agrandi=True,
             classe=False,
@@ -434,6 +435,99 @@ class ReadOnlyRemoteTest(PicturesAppTestCase):
             nom_fichier_jpeg="photo.jpg",
             checksum="readonly1234567890abcdef1234",
         )
+        base = Path(self.images_path) / self.photo.premier_niveau / self.photo.second_niveau
+        for size in ('big', 'view', 'contactsheet'):
+            target_dir = base / size
+            target_dir.mkdir(parents=True, exist_ok=True)
+            (target_dir / self.photo.nom_fichier_jpeg).write_bytes(b"fake-jpeg")
+
+    def _whitelisted_get_urls(self):
+        """One concrete GET URL per READONLY_ALLOWED_URL_NAMES entry."""
+        p = self.photo
+        return [
+            ('home', reverse('home')),
+            ('DisplaySecondLevel', reverse('DisplaySecondLevel', args=[p.premier_niveau])),
+            ('DisplayThirdLevel', reverse(
+                'DisplayThirdLevel', args=[p.premier_niveau, p.second_niveau],
+            )),
+            ('photo_Jpeg', reverse('photo_Jpeg', args=[p.pkey, 'view'])),
+            ('photoDetail', reverse('photoDetail', args=[p.pkey])),
+            ('ContactsSheet', reverse('ContactsSheet', args=[p.checksum])),
+            ('photo_gallery', reverse('photo_gallery', args=[p.checksum])),
+            ('ContactsSheetBySearch', reverse('ContactsSheetBySearch', args=['readonly'])),
+            ('SubjectsBySearch', reverse('SubjectsBySearch', args=['readonly'])),
+            ('photo_galleryBySearch', reverse('photo_galleryBySearch', args=['readonly'])),
+            ('search_form', reverse('search_form')),
+        ]
+
+    def test_whitelist_names_match_urlconf_exactly(self):
+        """Every whitelist entry must reverse and match an app url name (case-sensitive)."""
+        from django.conf import settings
+        from django.urls import NoReverseMatch, reverse as rev
+        from PicturesApp import urls as app_urls
+
+        app_names = {p.name for p in app_urls.urlpatterns if p.name}
+        allowed = list(settings.READONLY_ALLOWED_URL_NAMES)
+        self.assertEqual(len(allowed), len(set(allowed)), "duplicate whitelist names")
+
+        for name in allowed:
+            self.assertIn(
+                name,
+                app_names,
+                f"whitelist name {name!r} is missing from PicturesApp.urls "
+                f"(check case; app has: {sorted(app_names)})",
+            )
+            try:
+                rev(name)
+            except NoReverseMatch:
+                # Needs args: existence already proven via app_names; reverse with dummy args.
+                reversed_ok = False
+                for args in (['x'], ['x', 'y'], [1], [1, 'view']):
+                    try:
+                        rev(name, args=args)
+                        reversed_ok = True
+                        break
+                    except NoReverseMatch:
+                        continue
+                self.assertTrue(reversed_ok, f"cannot reverse whitelist name {name!r}")
+
+        for name in self.LOCAL_ONLY_URL_NAMES:
+            self.assertIn(name, app_names)
+            self.assertNotIn(name, allowed)
+
+    def test_all_whitelisted_urls_allowed_on_remote_host(self):
+        from django.conf import settings
+
+        urls = self._whitelisted_get_urls()
+        covered = {name for name, _ in urls}
+        self.assertEqual(
+            covered,
+            set(settings.READONLY_ALLOWED_URL_NAMES),
+            "test URL list is out of sync with READONLY_ALLOWED_URL_NAMES",
+        )
+        for name, url in urls:
+            response = self.client.get(url, HTTP_HOST=self.REMOTE_HOST)
+            self.assertEqual(
+                response.status_code,
+                200,
+                f"{name} ({url}) should be allowed on remote host, got {response.status_code}",
+            )
+
+    def test_local_only_urls_blocked_on_remote_host(self):
+        for url_name in self.LOCAL_ONLY_URL_NAMES:
+            response = self.client.get(
+                reverse(url_name),
+                HTTP_HOST=self.REMOTE_HOST,
+            )
+            self.assertEqual(response.status_code, 404, url_name)
+
+    def test_local_only_urls_allowed_on_local_host(self):
+        for url_name in self.LOCAL_ONLY_URL_NAMES:
+            response = self.client.get(
+                reverse(url_name),
+                HTTP_HOST=self.LOCAL_HOST,
+            )
+            self.assertEqual(response.status_code, 200, url_name)
 
     def test_search_post_allowed_on_remote_host(self):
         response = self.client.post(
@@ -488,21 +582,6 @@ class ReadOnlyRemoteTest(PicturesAppTestCase):
     def test_admin_login_allowed_on_local_host(self):
         response = self.client.get(
             '/en/admin/login/',
-            HTTP_HOST=self.LOCAL_HOST,
-        )
-        self.assertEqual(response.status_code, 200)
-
-    def test_import_tools_blocked_on_remote_host(self):
-        for url_name in ('insertnewpictures_form', 'list_missing_scans'):
-            response = self.client.get(
-                reverse(url_name),
-                HTTP_HOST=self.REMOTE_HOST,
-            )
-            self.assertEqual(response.status_code, 404, url_name)
-
-    def test_import_tools_allowed_on_local_host(self):
-        response = self.client.get(
-            reverse('list_missing_scans'),
             HTTP_HOST=self.LOCAL_HOST,
         )
         self.assertEqual(response.status_code, 200)

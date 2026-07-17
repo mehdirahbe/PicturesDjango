@@ -135,7 +135,7 @@ READONLY_ALLOWED_URL_NAMES = [
     "ContactsSheet",
     "photo_gallery",
     "ContactsSheetBySearch",
-    "subjectsBySearch",
+    "SubjectsBySearch",
     "photo_galleryBySearch",
     "search_form",
 ]
