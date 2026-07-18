@@ -21,11 +21,7 @@
         <div class="app-header__inner">
             <a class="app-brand" href="{% url 'home' %}" aria-label="{% trans 'Back to photo library' %}">
                 <span class="app-brand__mark" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" focusable="false">
-                        <circle cx="12" cy="12" r="8.5"></circle>
-                        <path d="M12 3.5 15 9l5.5.5-4 4 1 5.5-5.5-2.5L7 19l.8-5.5-4-4L9 9z"></path>
-                        <circle cx="12" cy="12" r="2.4"></circle>
-                    </svg>
+                    <img src="{% static 'img/logo.png' %}" alt="" width="24" height="24" decoding="async">
                 </span>
                 <span class="app-brand__copy">
                     <span class="app-brand__name">{% trans 'My photo library' %}</span>
