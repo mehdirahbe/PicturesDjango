@@ -1,25 +1,44 @@
 :root {
-  --app-bg: #0b0f14;
+  /* === Fonds & Surfaces === */
+  --app-bg: #0a0e14;
   --app-bg-soft: #0f141c;
-  --app-surface: #141b24;
-  --app-surface-2: #1a2330;
-  --app-surface-3: #222d3b;
-  --app-border: rgba(255, 255, 255, 0.09);
-  --app-border-strong: rgba(255, 255, 255, 0.16);
-  --app-text: #f4f7fb;
-  --app-muted: #9da9b8;
-  --app-subtle: #697586;
-  --app-accent: #73cabb;
-  --app-accent-strong: #93dfd2;
-  --app-accent-soft: rgba(115, 202, 187, 0.14);
-  --app-warm: #eeb676;
-  --app-danger: #f28c8c;
+  --app-surface: #141b26;
+  --app-surface-2: #1a2332;
+  --app-surface-3: #212c3f;
+
+  /* === Bordures === */
+  --app-border: rgba(255, 255, 255, 0.08);
+  --app-border-strong: rgba(255, 255, 255, 0.15);
+
+  /* === Textes === */
+  --app-text: #f0f4fa;
+  --app-text-emphasis: #ffffff;        /* titres très forts */
+  --app-muted: #a3b0c2;
+  --app-subtle: #6f7f96;
+
+  /* === Accent principal (remplace le orange) === */
+  --app-accent: #4d9cff;               /* bleu lumineux agréable */
+  --app-accent-strong: #70b0ff;
+  --app-accent-hover: #9ac8ff;
+  --app-accent-soft: rgba(77, 156, 255, 0.15);
+
+  /* Variante alternative (teal/cyan si tu préfères) */
+  /* --app-accent: #22d3c4; */
+  /* --app-accent-strong: #5ce6d6; */
+
+  /* === Autres couleurs sémantiques === */
+  --app-warm: #f4c38c;                 /* gardé mais plus doux */
+  --app-danger: #ff4d4d;
+  --app-success: #4ade80;
+
+  /* === Autres === */
   --app-radius-sm: 10px;
   --app-radius: 16px;
   --app-radius-lg: 22px;
-  --app-shadow: 0 18px 46px rgba(0, 0, 0, 0.28);
+  --app-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
   --app-header-height: 72px;
   --app-content-width: 1440px;
+
   color-scheme: dark;
 }
 
@@ -328,7 +347,7 @@ img {
 
 .eyebrow {
   margin: 0 0 7px;
-  color: var(--app-accent);
+  color: var(--app-text-emphasis);
   font-size: 0.73rem;
   font-weight: 760;
   letter-spacing: 0.11em;
@@ -1212,7 +1231,7 @@ a.share-photo-button {
 }
 
 .maps-link {
-  color: var(--app-accent-strong);
+  color: var(--app-accent);
   font-weight: 630;
 }
 
@@ -1312,7 +1331,7 @@ a.share-photo-button {
 
 .detail-panel__date {
   margin: 8px 0 0;
-  color: var(--app-accent);
+  color: var(--app-text-emphasis);
   font-size: 0.84rem;
   font-weight: 680;
 }
