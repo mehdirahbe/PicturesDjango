@@ -10,7 +10,7 @@ requests==2.34.2
 
 # Listed historically; transitive deps of Django/requests are resolved by pip.
 asgiref==3.11.1
-sqlparse==0.5.5
+sqlparse==0.6.0
 certifi==2026.5.20
 charset-normalizer==3.4.7
 idna==3.17
