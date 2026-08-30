@@ -17,6 +17,12 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="m4 17 5-4 3 2 3-3 5 5"></path></svg>
       {% trans 'Open gallery' %}
     </a>
+    {% if total_count > 1 %}
+    <a class="app-button" href="{% url 'photo_gallery' desiredsubjectMD5 %}?play=1">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.14v13.72L19 12 8 5.14z" fill="currentColor" stroke="none"></path></svg>
+      {% trans 'Slideshow' %}
+    </a>
+    {% endif %}
   </div>
 </section>
 

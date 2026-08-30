@@ -8,8 +8,12 @@
 
 {% block content %}
 {% if photo %}
-<div class="viewer-layout" data-gallery>
+<div class="viewer-layout" data-gallery data-gallery-interval="5000"
+     data-gallery-first="{% url 'photo_galleryBySearch' search_term %}">
   <section class="viewer-canvas" data-gallery-canvas aria-label="{% trans 'Search results viewer' %}">
+    <div class="viewer-slideshow-progress" data-gallery-progress aria-hidden="true">
+      <div class="viewer-slideshow-progress__bar"></div>
+    </div>
     <div class="viewer-topbar">
       <div class="viewer-caption"><strong>{{ photo.sujet|proper_case }}</strong>{% blocktrans with term=search_term %}Result for “{{ term }}”{% endblocktrans %}</div>
       <span class="viewer-counter">{{ photos.number }} / {{ photos.paginator.num_pages }}</span>
@@ -30,8 +34,9 @@
     {% endif %}
 
     <div class="viewer-bottombar">
-      <span class="viewer-hint">{% trans '← → to navigate · I for information' %}</span>
+      <span class="viewer-hint">{% trans '← → to navigate · Space to play · I for information' %}</span>
       <div class="viewer-tools">
+        {% include 'includes/_gallery_play_button.html' %}
         <a class="viewer-tool" href="{% url 'ContactsSheetBySearch' search_term %}"><span>{% trans 'Contact sheet' %}</span></a>
         <a class="viewer-tool" href="{% url 'photoDetail' photo.pkey %}"><span>{% trans 'Details' %}</span></a>
         {% include 'includes/_share_photo_button.html' with photo=photo button_class='viewer-tool' tool_style=True %}

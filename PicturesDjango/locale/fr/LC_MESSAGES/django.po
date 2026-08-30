@@ -245,6 +245,9 @@ msgstr[1] "%(counter)s photos dans cette série."
 msgid "Open gallery"
 msgstr "Ouvrir la galerie"
 
+msgid "Slideshow"
+msgstr "Diaporama"
+
 msgid "Contact sheet display"
 msgstr "Affichage de la planche-contact"
 
@@ -326,8 +329,20 @@ msgstr "Photo précédente"
 msgid "Next photo"
 msgstr "Photo suivante"
 
-msgid "← → to navigate · I for information"
-msgstr "← → pour naviguer · I pour les informations"
+msgid "← → to navigate · Space to play · I for information"
+msgstr "← → pour naviguer · Espace pour le diaporama · I pour les informations"
+
+msgid "Play slideshow"
+msgstr "Lancer le diaporama"
+
+msgid "Pause slideshow"
+msgstr "Mettre le diaporama en pause"
+
+msgid "Play"
+msgstr "Lecture"
+
+msgid "Pause"
+msgstr "Pause"
 
 msgid "Details"
 msgstr "Fiche"

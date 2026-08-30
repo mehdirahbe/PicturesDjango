@@ -75,20 +75,191 @@
     var canvas = gallery.querySelector("[data-gallery-canvas]");
     var panelToggle = gallery.querySelector("[data-panel-toggle]");
     var panelClose = gallery.querySelector("[data-panel-close]");
+    var playButton = gallery.querySelector("[data-gallery-play]");
+    var progress = gallery.querySelector("[data-gallery-progress]");
+    var progressBar = progress ? progress.querySelector(".viewer-slideshow-progress__bar") : null;
+    var intervalMs = parseInt(gallery.getAttribute("data-gallery-interval"), 10) || 5000;
+    var firstHref = gallery.getAttribute("data-gallery-first") || window.location.pathname;
+    var playing = false;
+    var advanceTimer = null;
+    var imageWaitTimer = null;
+    var scheduleGeneration = 0;
+
+    function hrefWithPlay(href) {
+      var url = new URL(href, window.location.href);
+      url.searchParams.set("play", "1");
+      return url.pathname + url.search;
+    }
+
+    function hrefWithoutPlay(href) {
+      var url = new URL(href, window.location.href);
+      url.searchParams.delete("play");
+      return url.pathname + url.search;
+    }
+
+    function nextHref() {
+      if (next) return next.href;
+      return firstHref;
+    }
+
+    function syncPlayUrl(active) {
+      var url = new URL(window.location.href);
+      if (active) url.searchParams.set("play", "1");
+      else url.searchParams.delete("play");
+      var nextUrl = url.pathname + url.search + url.hash;
+      if (nextUrl !== window.location.pathname + window.location.search + window.location.hash) {
+        window.history.replaceState(null, "", nextUrl);
+      }
+    }
+
+    function setProgressPlaying(active) {
+      gallery.style.setProperty("--slideshow-duration", intervalMs + "ms");
+      if (progressBar) {
+        progressBar.style.animation = "none";
+        if (active) {
+          void progressBar.offsetWidth;
+          progressBar.style.animation = "";
+        }
+      }
+    }
+
+    function prefetch(href) {
+      if (!href) return;
+      var id = "gallery-slideshow-prefetch";
+      var existing = document.getElementById(id);
+      if (existing) existing.remove();
+      var link = document.createElement("link");
+      link.id = id;
+      link.rel = "prefetch";
+      link.href = href;
+      document.head.appendChild(link);
+    }
+
+    function clearAdvanceTimers() {
+      scheduleGeneration += 1;
+      window.clearTimeout(advanceTimer);
+      window.clearTimeout(imageWaitTimer);
+      advanceTimer = null;
+      imageWaitTimer = null;
+      setProgressPlaying(false);
+    }
+
+    function whenImageReady(callback) {
+      var image = gallery.querySelector(".viewer-image");
+      var settled = false;
+      var token = scheduleGeneration;
+
+      function finish() {
+        if (settled || token !== scheduleGeneration) return;
+        settled = true;
+        window.clearTimeout(imageWaitTimer);
+        imageWaitTimer = null;
+        callback();
+      }
+
+      if (!image || image.complete) {
+        finish();
+        return;
+      }
+      image.addEventListener("load", finish, { once: true });
+      image.addEventListener("error", finish, { once: true });
+      imageWaitTimer = window.setTimeout(finish, 15000);
+    }
+
+    function goTo(href) {
+      window.location.href = playing ? hrefWithPlay(href) : hrefWithoutPlay(href);
+    }
+
+    function advance() {
+      goTo(nextHref());
+    }
+
+    function scheduleAdvance() {
+      clearAdvanceTimers();
+      if (!playing || document.hidden) return;
+      prefetch(hrefWithPlay(nextHref()));
+      whenImageReady(function () {
+        if (!playing || document.hidden) return;
+        setProgressPlaying(true);
+        advanceTimer = window.setTimeout(advance, intervalMs);
+      });
+    }
+
+    function setPlaying(active) {
+      if (!playButton || playButton.disabled) {
+        playing = false;
+        gallery.classList.remove("is-playing");
+        return;
+      }
+      playing = Boolean(active);
+      gallery.classList.toggle("is-playing", playing);
+      playButton.classList.toggle("is-playing", playing);
+      playButton.setAttribute("aria-pressed", playing ? "true" : "false");
+      playButton.setAttribute(
+        "aria-label",
+        playing
+          ? (playButton.getAttribute("data-pause-label") || "Pause")
+          : (playButton.getAttribute("data-play-label") || "Play")
+      );
+
+      var playIcon = playButton.querySelector("[data-icon-play]");
+      var pauseIcon = playButton.querySelector("[data-icon-pause]");
+      var playLabel = playButton.querySelector("[data-label-play]");
+      var pauseLabel = playButton.querySelector("[data-label-pause]");
+      if (playIcon) playIcon.hidden = playing;
+      if (pauseIcon) pauseIcon.hidden = !playing;
+      if (playLabel) playLabel.hidden = playing;
+      if (pauseLabel) pauseLabel.hidden = !playing;
+
+      syncPlayUrl(playing);
+      if (playing) scheduleAdvance();
+      else clearAdvanceTimers();
+    }
+
+    if (playButton) {
+      playButton.addEventListener("click", function () {
+        setPlaying(!playing);
+      });
+    }
+
+    [previous, next].forEach(function (link) {
+      if (!link) return;
+      link.addEventListener("click", function (event) {
+        if (!playing) return;
+        event.preventDefault();
+        goTo(link.href);
+      });
+    });
+
+    document.addEventListener("visibilitychange", function () {
+      if (!playing) return;
+      if (document.hidden) clearAdvanceTimers();
+      else scheduleAdvance();
+    });
 
     document.addEventListener("keydown", function (event) {
-      if (event.target && /input|textarea|select/i.test(event.target.tagName)) return;
+      if (event.target && /input|textarea|select|button/i.test(event.target.tagName)) return;
       if (event.key === "ArrowLeft" && previous) {
         event.preventDefault();
         previous.click();
       } else if (event.key === "ArrowRight" && next) {
         event.preventDefault();
         next.click();
+      } else if (event.key === " " && playButton && !playButton.disabled) {
+        event.preventDefault();
+        setPlaying(!playing);
+      } else if (event.key === "Escape" && playing) {
+        event.preventDefault();
+        setPlaying(false);
       } else if (event.key === "i" && panelToggle) {
         event.preventDefault();
         panelToggle.click();
       }
     });
+
+    if (new URLSearchParams(window.location.search).get("play") === "1") {
+      setPlaying(true);
+    }
 
     if (canvas) {
       var touchStartX = null;

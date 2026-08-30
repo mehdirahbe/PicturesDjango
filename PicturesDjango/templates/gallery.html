@@ -8,8 +8,12 @@
 
 {% block content %}
 {% if photo %}
-<div class="viewer-layout" data-gallery>
+<div class="viewer-layout" data-gallery data-gallery-interval="5000"
+     data-gallery-first="{% url 'photo_gallery' desiredsubjectMD5 %}">
   <section class="viewer-canvas" data-gallery-canvas aria-label="{% trans 'Photo viewer' %}">
+    <div class="viewer-slideshow-progress" data-gallery-progress aria-hidden="true">
+      <div class="viewer-slideshow-progress__bar"></div>
+    </div>
     <div class="viewer-topbar">
       <div class="viewer-caption">
         <strong>{{ photo.sujet|proper_case }}</strong>
@@ -38,8 +42,9 @@
     {% endif %}
 
     <div class="viewer-bottombar">
-      <span class="viewer-hint">{% trans '← → to navigate · I for information' %}</span>
+      <span class="viewer-hint">{% trans '← → to navigate · Space to play · I for information' %}</span>
       <div class="viewer-tools">
+        {% include 'includes/_gallery_play_button.html' %}
         <a class="viewer-tool" href="{% url 'ContactsSheet' desiredsubjectMD5 %}">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
           <span>{% trans 'Contact sheet' %}</span>

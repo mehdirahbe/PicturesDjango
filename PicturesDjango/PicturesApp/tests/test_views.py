@@ -143,6 +143,39 @@ class ContactSheetAndGalleryViewsTest(PicturesAppTestCase):
             response = self.client.get(url, follow=True)
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Photo principale")
+            self.assertContains(response, "data-gallery-play")
+            self.assertContains(response, "Play")
+
+    def test_gallery_slideshow_query_is_accepted(self):
+        url = reverse("photo_gallery", args=[self.subject_md5])
+        response = self.client.get(url, {"play": "1"}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "data-gallery-play")
+
+    def test_contacts_sheet_offers_slideshow_when_several_photos(self):
+        PhotoModel.objects.create(
+            sujet="Test Contact Sheet",
+            date="2023",
+            sujet_dias="Deuxième photo",
+            commentaire="",
+            agrandi=True,
+            classe=False,
+            verifie=False,
+            camera_digitale=True,
+            premier_niveau="test",
+            second_niveau="contact",
+            nom_fichier_jpeg="002.jpg",
+            checksum="placeholder1234567890abcdef123456",
+            appareil="Canon 5D",
+        )
+        PhotoModel.objects.filter(sujet="Test Contact Sheet").update(
+            checksum=self.subject_md5
+        )
+        url = reverse("ContactsSheet", args=[self.subject_md5])
+        response = self.client.get(url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Slideshow")
+        self.assertContains(response, "play=1")
 
     def test_contacts_sheet_unknown_subject_returns_200_with_empty_list(self):
         # Unknown checksum: empty queryset and a friendly empty-state message.

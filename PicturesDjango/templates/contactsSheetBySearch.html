@@ -11,7 +11,15 @@
     <p class="page-subtitle">{% blocktrans count counter=photoRecs|length %}{{ counter }} matching photo{% plural %}{{ counter }} matching photos{% endblocktrans %}</p>
   </div>
   {% if photoRecs %}
-  <a class="app-button app-button--primary" href="{% url 'photo_galleryBySearch' search_term %}">{% trans 'View as gallery' %}</a>
+  <div class="page-heading__actions">
+    <a class="app-button app-button--primary" href="{% url 'photo_galleryBySearch' search_term %}">{% trans 'View as gallery' %}</a>
+    {% if photoRecs|length > 1 %}
+    <a class="app-button" href="{% url 'photo_galleryBySearch' search_term %}?play=1">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.14v13.72L19 12 8 5.14z" fill="currentColor" stroke="none"></path></svg>
+      {% trans 'Slideshow' %}
+    </a>
+    {% endif %}
+  </div>
   {% endif %}
 </section>
 
