@@ -15,11 +15,27 @@
   {% if missing_dirs %}
   <div class="utility-list">
     {% for item in missing_dirs %}
-    <a class="utility-list__item" href="{{ item.url }}">
-      <span class="utility-list__icon" aria-hidden="true">＋</span>
-      <span><strong>{{ item.path }}</strong><small>{{ item.full_path }}</small></span>
-      <span class="card-chevron" aria-hidden="true">→</span>
-    </a>
+    <div class="utility-list__item">
+      <a class="utility-list__import" href="{{ item.url }}" aria-label="{% blocktrans with folder=item.path %}Import {{ folder }}{% endblocktrans %}">
+        <span class="utility-list__icon" aria-hidden="true">＋</span>
+        <strong>{{ item.path }}</strong>
+      </a>
+      <button
+        type="button"
+        class="utility-list__path"
+        data-copy="{{ item.full_path }}"
+        data-copy-label="{% trans 'Copy folder path' %}"
+        data-copied-label="{% trans 'Copied' %}"
+        title="{% trans 'Copy folder path' %}"
+        aria-label="{% trans 'Copy folder path' %}"
+      >
+        <small>{{ item.full_path }}</small>
+        <span class="utility-list__copy-mark" aria-hidden="true">
+          <svg class="icon-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <svg class="icon-check" viewBox="0 0 24 24"><path d="M5 12.5 9.5 17 19 7.5"></path></svg>
+        </span>
+      </button>
+    </div>
     {% endfor %}
   </div>
   {% else %}

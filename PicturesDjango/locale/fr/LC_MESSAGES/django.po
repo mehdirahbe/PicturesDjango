@@ -470,6 +470,16 @@ msgid "No new folders are waiting to be imported."
 msgstr "Aucun nouveau dossier n'attend d'être importé."
 
 #, python-format
+msgid "Import %(folder)s"
+msgstr "Importer %(folder)s"
+
+msgid "Copy folder path"
+msgstr "Copier le chemin du dossier"
+
+msgid "Copied"
+msgstr "Copié"
+
+#, python-format
 msgid "Photo %(position)s of %(count)s"
 msgid_plural "Photo %(position)s of %(count)s"
 msgstr[0] "Photo %(position)s sur %(count)s"

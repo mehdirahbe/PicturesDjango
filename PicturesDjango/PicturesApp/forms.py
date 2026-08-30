@@ -59,27 +59,18 @@ class SearchForm(forms.Form):
         search_term = _clean_control_characters(search_term)
         return search_term
 
-#widget to select a directory
-class DirectoryWidget(forms.widgets.Widget):
-    #template par défaut de Django pour les champs de texte
-    template_name = 'django/forms/widgets/text.html'
-    def render(self, name, value, attrs=None, renderer=None):
-        if value is not None:
-            value = os.path.normpath(value)
-        if attrs is None:
-            attrs = {}
-        attrs['type'] = 'text'
-        attrs['webkitdirectory'] = '' #toolkit from chrome to do that
-        attrs['directory'] = ''
-        return super().render(name, value, attrs, renderer)
-
-    def value_from_datadict(self, data, files, name):
-        return data.get(name)
-
 #Form to ask for info about a new serie of images in a subdir of scans
 class InsertNewPicturesForm(forms.Form):
-    jpegsdirectory = forms.CharField(label=_("JPEGs directory"), widget=DirectoryWidget, max_length=255, help_text=_(
-        "Full path to the hard drive folder (scans subdirectory) containing the JPEGs"))
+    jpegsdirectory = forms.CharField(
+        label=_("JPEGs directory"),
+        max_length=255,
+        help_text=_("Full path to the hard drive folder (scans subdirectory) containing the JPEGs"),
+        widget=forms.TextInput(attrs={
+            "class": "form-card__path",
+            "spellcheck": "false",
+            "autocomplete": "off",
+        }),
+    )
     subject = forms.CharField(label=_("Subject"), max_length=100, help_text=_("Brief description of the subject, must be unique"))
     date = forms.CharField(label=_("Date"), max_length=50, help_text=_("Information about the period"))
     comment = forms.CharField(label=_("Comment"), widget=forms.Textarea, max_length=2048, help_text=_("Detailed text (max ~2KB)"))

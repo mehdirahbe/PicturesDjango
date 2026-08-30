@@ -273,6 +273,62 @@
     });
   }
 
+  function copyText(text) {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      return navigator.clipboard.writeText(text);
+    }
+
+    return new Promise(function (resolve, reject) {
+      var field = document.createElement("textarea");
+      field.value = text;
+      field.setAttribute("readonly", "");
+      field.style.position = "fixed";
+      field.style.left = "-9999px";
+      document.body.appendChild(field);
+      field.select();
+      try {
+        if (!document.execCommand("copy")) {
+          throw new Error("copy failed");
+        }
+        resolve();
+      } catch (error) {
+        reject(error);
+      } finally {
+        document.body.removeChild(field);
+      }
+    });
+  }
+
+  function initCopyButtons() {
+    document.querySelectorAll("[data-copy]").forEach(function (button) {
+      var idleLabel = button.getAttribute("data-copy-label") || button.getAttribute("aria-label") || "";
+      var copiedLabel = button.getAttribute("data-copied-label") || "";
+      var resetTimer = null;
+
+      function markCopied() {
+        button.classList.add("is-copied");
+        if (copiedLabel) {
+          button.setAttribute("aria-label", copiedLabel);
+          button.setAttribute("title", copiedLabel);
+        }
+        window.clearTimeout(resetTimer);
+        resetTimer = window.setTimeout(function () {
+          button.classList.remove("is-copied");
+          if (idleLabel) {
+            button.setAttribute("aria-label", idleLabel);
+            button.setAttribute("title", idleLabel);
+          }
+        }, 1600);
+      }
+
+      button.addEventListener("click", function () {
+        var text = button.getAttribute("data-copy") || "";
+        if (!text) return;
+        copyText(text).then(markCopied).catch(function () {});
+      });
+    });
+  }
+
   function initImageLoading() {
     document.querySelectorAll("img").forEach(function (image) {
       if (image.complete) image.classList.add("is-loaded");
@@ -290,6 +346,7 @@
     initGallery();
     initEditPanels();
     initPhotoShare();
+    initCopyButtons();
     initImageLoading();
   });
 })();

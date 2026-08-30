@@ -1373,6 +1373,10 @@ a.share-photo-button {
   box-shadow: var(--app-shadow);
 }
 
+.form-card p {
+  margin: 0 0 18px;
+}
+
 .form-card label {
   margin-bottom: 7px;
   display: block;
@@ -1384,9 +1388,24 @@ a.share-photo-button {
 .form-card input[type="text"],
 .form-card textarea,
 .form-card select {
+  display: block;
   width: 100%;
   min-height: 46px;
   padding: 10px 12px;
+  box-sizing: border-box;
+}
+
+.form-card .helptext {
+  display: block;
+  margin-top: 6px;
+  color: var(--app-subtle);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.form-card__path {
+  font-family: ui-monospace, "Cascadia Mono", "Segoe UI Mono", monospace;
+  font-size: 0.82rem;
 }
 
 .form-check-input {
@@ -1406,11 +1425,10 @@ a.share-photo-button {
 
 .utility-list__item {
   min-width: 0;
-  padding: 14px;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 13px;
+  padding: 10px 12px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   border: 1px solid var(--app-border);
   border-radius: 13px;
   background: var(--app-bg-soft);
@@ -1422,6 +1440,19 @@ a.share-photo-button {
   background: var(--app-surface-2);
 }
 
+.utility-list__import {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+}
+
+.utility-list__import:hover .utility-list__icon {
+  color: #071311;
+  background: var(--app-accent);
+}
+
 .utility-list__icon {
   width: 38px;
   height: 38px;
@@ -1431,12 +1462,12 @@ a.share-photo-button {
   color: var(--app-accent-strong);
   background: var(--app-accent-soft);
   font-size: 1.2rem;
+  transition: color 160ms ease, background-color 160ms ease;
 }
 
 .utility-list__item strong,
 .utility-list__item small {
   min-width: 0;
-  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1447,10 +1478,72 @@ a.share-photo-button {
   font-size: 0.9rem;
 }
 
-.utility-list__item small {
-  margin-top: 3px;
+.utility-list__path {
+  margin-left: 51px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 5px 8px 5px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
   color: var(--app-subtle);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.utility-list__path:hover,
+.utility-list__path:focus-visible {
+  border-color: var(--app-border-strong);
+  background: var(--app-surface);
+  color: var(--app-muted);
+}
+
+.utility-list__path.is-copied,
+.utility-list__path.is-copied:hover {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: rgba(74, 222, 128, 0.1);
+  color: var(--app-success);
+}
+
+.utility-list__path small {
+  flex: 1;
   font-size: 0.73rem;
+}
+
+.utility-list__copy-mark {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.utility-list__copy-mark svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.utility-list__copy-mark .icon-check {
+  display: none;
+}
+
+.utility-list__path.is-copied .icon-copy {
+  display: none;
+}
+
+.utility-list__path.is-copied .icon-check {
+  display: block;
 }
 
 .pagination {

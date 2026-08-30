@@ -76,6 +76,16 @@ class InsertNewPicturesFormTest(TestCase):
         data.update(overrides)
         return data
 
+    def test_jpegsdirectory_renders_full_path_as_plain_text(self):
+        """Le chemin prérempli doit rester visible en entier, sans widget dossier Chrome."""
+        path = "/home/mehdi/Images/scans/Montblanc/2026/Montblanc_Yoko_26082026"
+        html = InsertNewPicturesForm(initial={"jpegsdirectory": path}).as_p()
+        self.assertIn(f'value="{path}"', html)
+        self.assertIn('type="text"', html)
+        self.assertNotIn('type=""', html)
+        self.assertNotIn("webkitdirectory", html)
+        self.assertNotIn(" directory=", html)
+
     def test_valid_data_with_mocked_directory(self):
         """Test complet quand le répertoire est valide (mocké)."""
         with override_settings(IMAGES_PATH="/tmp/images"):
