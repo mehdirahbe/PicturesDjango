@@ -422,6 +422,30 @@ Le script suggère un cron dimanche 03:45. Ce n'est pas installé par le dépôt
 20. Les deux commandes legacy retournent tout de suite ; le code qui suit le `return` ne s'exécute pas. Ne pas le décommenter.
 21. Fichiers de travail non suivis à la racine : ne pas les committer avec une modification du site.
 
+## Recherche fuzzy
+
+C'est la recherche de photos du site, pas un module à part. Il n'y a pas de commande de management. Le bot ne lance pas une recherche fuzzy tout seul : il ne la touche que si on lui demande de changer `get_search_queryset` ou les vues qui l'appellent.
+
+Périmètre. Tolérance aux fautes sur les mots de la requête, après une première passe SQL exacte. Deux modes, tous les deux fuzzy par défaut (`apply_fuzzy=True`, seuil 75). L'interface ne propose pas de couper le fuzzy.
+
+- Photos (défaut) : champs `sujet_dias`, `commentaire`, `lieu`, `date`, `sujet`. JPEG visible et `premier_niveau` non vide. Max 1000 photos, triées par score.
+- Sujets seulement (case `only_subjects`) : champs `date` et `sujet` seulement. Une série par checksum, max 1000. Le boost `sujet_dias` ne s'applique pas.
+
+Pas de tags. Pas de fuzzy sur les noms de fichiers, l'EXIF technique, ni le GPS. Un mot qui est une année (`isdigit`) n'a pas de fuzzy : il doit être exact. Les mots de moins de 2 caractères sont ignorés. La requête est passée par `unidecode` puis mise en minuscules.
+
+Endpoints, sous le préfixe de langue (`/fr/`) :
+
+- `search/` (`search_form`) : formulaire. POST valide vers `SubjectsBySearch` ou `ContactsSheetBySearch`. Seul POST autorisé depuis un hôte distant.
+- `ContactsSheetBySearch/<search_term>/` : planche, `get_search_queryset(search_term)`.
+- `GalleryBySearch/<search_term>/` (`photo_galleryBySearch`) : galerie, même appel. La variante `.../page/<n>/` ne correspond pas à la vue ; utiliser `?page=`.
+- `SubjectsBySearch/<search_term>/` : séries, `search_fields=('date','sujet')`, `result_mode='subjects'`.
+
+Fichiers. `PicturesApp/views.py` (`get_search_queryset`, `rapidfuzz.fuzz.WRatio`, `search_form`, les trois vues de résultats). `PicturesApp/urls.py`. `PicturesApp/forms.py` (`SearchForm`). Templates `search_form.html`, `contactsSheetBySearch.html`, `galleryBySearch.html`, `subjectsBySearch.html`. Dépendance `rapidfuzz`.
+
+Comportement attendu. Phase 1 : chaque mot en `icontains`, union, max 3000 candidats, pas de fuzzy. Phase 2 : score 100 si le token exact est là, sinon `WRatio` sur les tokens assez longs (`max(3, len(mot)-2)`). Un seul mot sous 75 élimine la photo. Score hybride : +12 par mot exact, +18 si l'exact est dans `sujet_dias` (mode photos), plus moyenne et pire score. En dessous de 12, élimination encore. Cache 15 minutes des `pkey` ou checksums ; une légende modifiée peut rester invisible jusqu'à expiration ou jusqu'au prochain import réussi. Le détail chiffré est aussi dans « Recherche (`get_search_queryset`) ».
+
+Ne pas confondre avec l'en-tête `fuzzy` du fichier `django.po` : c'est gettext, pas la recherche.
+
 ## Documents déjà dans le dépôt
 
 - `README.md` — installation, venv, pillow-simd, `.env` (noms de variables seulement), debug toolbar, `makemessages`, Tailscale Serve. À corriger mentalement avec ce fichier pour la base et le lancement.
